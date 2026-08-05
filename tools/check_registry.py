@@ -57,40 +57,67 @@ def status_span(text: str, start: int) -> str:
     return text[start:end]
 
 
-def github_is_public(repo: str, timeout: float = 20.0) -> "bool | None":
+class NoRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """Expose repository renames instead of following them."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
+def github_is_public(repo: str, timeout: float = 20.0):
     """Anonymous check, deliberately unauthenticated.
 
     A token would see private repositories and report them as fine — which is
-    exactly the blindness this check exists to remove. Returns None when GitHub
-    could not be reached, so a flaky network never reads as a failure.
+    exactly the blindness this check exists to remove. The web endpoint keeps
+    that anonymity while sidestepping the anonymous API's 60-request-per-hour
+    quota, which made skips common on shared CI runner IPs. Redirects are not
+    followed so repository renames become detectable drift.
+
+    Returns True for a public repository, False for private/absent, a
+    ``("moved", location)`` tuple for a redirect, and None when GitHub could not
+    be reached. Push and pull-request runs intentionally leave that last case
+    non-fatal, so a flaky network never reads as a confirmed mismatch.
     """
     request = urllib.request.Request(
-        "https://api.github.com/repos/%s" % repo,
-        headers={
-            "Accept": "application/vnd.github+json",
-            "User-Agent": "family-os-registry-check",
-        },
+        "https://github.com/%s" % repo,
+        method="HEAD",
+        headers={"User-Agent": "family-os-registry-check"},
     )
+    opener = urllib.request.build_opener(NoRedirectHandler())
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
-            json.load(response)
-            return True
+        with opener.open(request, timeout=timeout) as response:
+            if response.status == 200:
+                return True
+            return None
     except urllib.error.HTTPError as exc:
+        if exc.code in (301, 302, 307, 308):
+            return "moved", exc.headers.get("Location")
         if exc.code == 404:
             return False
-        if exc.code in (403, 429):
+        if exc.code in (403, 429) or 500 <= exc.code <= 599:
             return None
         raise
     except (urllib.error.URLError, TimeoutError):
         return None
 
 
-def check_reality(registry: dict, failures: list, notes: list) -> None:
+def check_reality(
+    registry: dict, failures: list, notes: list, require_reality: bool = False
+) -> int:
+    skipped = 0
     for module in registry["modules"]:
         repo = module["repo"]
         public = github_is_public(repo)
         if public is None:
             notes.append("%s: could not reach GitHub, reality check skipped" % repo)
+            skipped += 1
+            continue
+        if isinstance(public, tuple) and public[0] == "moved":
+            failures.append(
+                "moved: %s redirects to %s. Update registry/modules.json with "
+                "the current repository name and re-run tools/render.py."
+                % (repo, public[1] or "an unspecified location")
+            )
             continue
         expected_public = module["status"] == "published"
         if public != expected_public:
@@ -100,6 +127,12 @@ def check_reality(registry: dict, failures: list, notes: list) -> None:
                 "tools/render.py."
                 % (repo, module["status"], "PUBLIC" if public else "PRIVATE/absent")
             )
+    if require_reality and skipped:
+        failures.append(
+            "degraded: could not verify %d modules; --require-reality rejects "
+            "this degraded run, not a confirmed registry mismatch" % skipped
+        )
+    return skipped
 
 
 def check_retired(registry: dict, root: pathlib.Path, failures: list) -> None:
@@ -110,8 +143,9 @@ def check_retired(registry: dict, root: pathlib.Path, failures: list) -> None:
         text = path.read_text(encoding="utf-8")
         for repo, entry in retired.items():
             needle = "github.com/%s" % repo
-            if needle in text:
-                line = text[: text.index(needle)].count("\n") + 1
+            pattern = re.compile(re.escape(needle) + r"(?![A-Za-z0-9_-])")
+            for match in pattern.finditer(text):
+                line = text[: match.start()].count("\n") + 1
                 failures.append(
                     "retired: %s:%d links to %s, which has moved to %s (%s)"
                     % (
@@ -135,15 +169,13 @@ def check_status_text(registry: dict, root: pathlib.Path, failures: list) -> int
 
         for module in registry["modules"]:
             url = "https://github.com/%s" % module["repo"]
+            pattern = re.compile(re.escape(url) + r"(?![A-Za-z0-9_-])")
             correct = module["status"]
             wrong = [s for s in statuses if s != correct]
 
-            start = 0
-            while True:
-                index = text.find(url, start)
-                if index == -1:
-                    break
-                start = index + len(url)
+            for match in pattern.finditer(text):
+                index = match.start()
+                start = match.end()
                 window = status_span(text, start)
 
                 for status in wrong:
@@ -174,12 +206,19 @@ def main() -> int:
         help="skip the GitHub reality check",
     )
     parser.add_argument(
+        "--require-reality",
+        action="store_true",
+        help="fail if any module cannot be checked against GitHub",
+    )
+    parser.add_argument(
         "--root",
         type=pathlib.Path,
         default=REPO_ROOT,
         help="repository checkout to inspect (default: the checkout containing this script)",
     )
     args = parser.parse_args()
+    if args.offline and args.require_reality:
+        parser.error("--require-reality cannot be combined with --offline")
 
     root = args.root.expanduser().resolve()
     registry_path = root / "registry" / "modules.json"
@@ -192,8 +231,9 @@ def main() -> int:
     failures: list = []
     notes: list = []
 
+    skipped = 0
     if not args.offline:
-        check_reality(registry, failures, notes)
+        skipped = check_reality(registry, failures, notes, args.require_reality)
     check_retired(registry, root, failures)
     occurrences = check_status_text(registry, root, failures)
 
@@ -201,6 +241,8 @@ def main() -> int:
     print("retired repositories: %d" % len(registry.get("retired_repos", [])))
     print("link occurrences    : %d" % occurrences)
     print("reality check       : %s" % ("skipped" if args.offline else "on (anonymous)"))
+    if not args.offline:
+        print("reality skipped    : %d of %d" % (skipped, len(registry["modules"])))
 
     for note in notes:
         print("  note: %s" % note)

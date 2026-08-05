@@ -19,7 +19,6 @@ REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
 REGISTRY = REPO_ROOT / "registry" / "modules.json"
 
 LANG_SUFFIX = re.compile(r"\.(?P<lang>[a-z]{2}(?:-[A-Z]{2})?)\.md$")
-MARKER_PREFIX = "<!-- family:generated:"
 MARKER = re.compile(
     r"^<!-- family:generated:(?P<block>[a-z0-9][a-z0-9-]*):"
     r"(?P<edge>start|end) -->$"
@@ -55,12 +54,22 @@ def markdown_files(root: pathlib.Path):
 
 def marker_line(line: str):
     content = line.rstrip("\r\n")
-    if MARKER_PREFIX not in content:
+    if "family:generated" not in content.lower():
         return None
     match = MARKER.fullmatch(content)
     if not match:
         raise RenderError("malformed generated marker: %s" % content)
     return match.group("block"), match.group("edge")
+
+
+def table_cell(module: dict, field: str, value: str) -> str:
+    """Reject registry data that would change the generated table structure."""
+    if "|" in value or "\n" in value or "\r" in value:
+        raise RenderError(
+            "module '%s' field '%s' contains a table delimiter or newline"
+            % (module.get("id", "<unknown>"), field)
+        )
+    return value
 
 
 def find_regions(path: pathlib.Path, text: str):
@@ -118,15 +127,20 @@ def find_regions(path: pathlib.Path, text: str):
 
 
 def state_text(registry: dict, module: dict, lang: str) -> str:
-    state = registry["status_labels"][module["status"]][lang]
+    state = table_cell(
+        module,
+        "state.%s" % lang,
+        registry["status_labels"][module["status"]][lang],
+    )
     note = module.get("note", {}).get(lang)
     if note:
+        note = table_cell(module, "note.%s" % lang, note)
         try:
             separator = registry["note_separator"][lang]
         except KeyError:
             raise RenderError("note_separator is missing language '%s'" % lang)
         state += separator + note
-    return state
+    return table_cell(module, "state.%s" % lang, state)
 
 
 def render_inventory(registry: dict, lang: str) -> str:
@@ -140,10 +154,10 @@ def render_inventory(registry: dict, lang: str) -> str:
         rows.append(
             "| [%s](https://github.com/%s) | %s | %s | %s |"
             % (
-                module["name"],
-                module["repo"],
-                module["class"][lang],
-                module["owns"][lang],
+                table_cell(module, "name", module["name"]),
+                table_cell(module, "repo", module["repo"]),
+                table_cell(module, "class.%s" % lang, module["class"][lang]),
+                table_cell(module, "owns.%s" % lang, module["owns"][lang]),
                 state_text(registry, module, lang),
             )
         )
@@ -155,7 +169,11 @@ def render_repository_links(registry: dict) -> str:
     for module in registry["modules"]:
         rows.append(
             "| %s | `%s` | %s |"
-            % (module["name"], module["repo"], state_text(registry, module, "en"))
+            % (
+                table_cell(module, "name", module["name"]),
+                table_cell(module, "repo", module["repo"]),
+                state_text(registry, module, "en"),
+            )
         )
     return "\n".join(rows)
 

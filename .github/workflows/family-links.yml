@@ -28,8 +28,12 @@ jobs:
 
       # Deliberately unauthenticated. A token can see private repositories and
       # would report the exact drift this check exists to catch as healthy.
+      # The weekly run is the primary guard and requires a complete reality
+      # check; push/PR runs stay tolerant of flaky networks.
       - name: check registry against GitHub
-        run: python3 -B tools/check_registry.py
+        run: >-
+          python3 -B tools/check_registry.py
+          ${{ github.event_name == 'schedule' && '--require-reality' || '' }}
 
       - name: check generated blocks are up to date
         run: python3 -B tools/render.py --check
@@ -63,11 +67,27 @@ jobs:
     needs: [registry, links]
     if: failure() && github.event_name == 'schedule'
     steps:
+      # Both labels (stale-pointer and severity:high) are assumed to exist;
+      # do not delete them from the repository.
       - name: file a stale-pointer issue
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
+          existing_issue="$(gh issue list \
+            --repo "${{ github.repository }}" \
+            --state open \
+            --label stale-pointer \
+            --json number,title \
+            --jq '[.[] | select(.title | startswith("Weekly check failed"))][0].number // empty')"
+
+          if [ -n "$existing_issue" ]; then
+            gh issue comment "$existing_issue" \
+              --repo "${{ github.repository }}" \
+              --body "Another weekly family-links run failed: $RUN_URL"
+            exit 0
+          fi
+
           gh issue create \
             --repo "${{ github.repository }}" \
             --title "Weekly check failed: the map no longer matches reality" \
