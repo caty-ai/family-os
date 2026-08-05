@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "note": "Canonical list of Family OS modules. Everything the documentation says about where a module lives and whether it is open comes from here. Edit this file, run tools/render.py, and every generated block in every language follows. tools/check_registry.py verifies these claims against GitHub itself.",
+  "note": "Canonical list of Family OS modules. Generated tables in the engineering and visual-system docs come from here; README status wording in all four languages is maintained by hand and checked by tools/check_registry.py. Edit this file, run tools/render.py, and keep those README labels in sync; the checker verifies the claims against GitHub itself.",
   "languages": ["en", "ja", "zh", "th"],
   "note_separator": {
     "en": "; ",
@@ -19,7 +19,7 @@
       "en": "publication in preparation",
       "ja": "公開準備中",
       "zh": "准备公开中",
-      "th": "กำลังเตรียมเปิดสู่สาธารณะ"
+      "th": "กำลังเตรียมเปิด"
     }
   },
   "modules": [
