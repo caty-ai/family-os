@@ -1,0 +1,86 @@
+name: family links
+
+# Why this runs on a schedule and not only on push:
+# this map breaks without anyone committing to it. Another repository in the
+# family gets published, moves organisation, or goes private, and every claim
+# here about where it lives is silently wrong from that moment. A pull-request
+# trigger can never catch that. The weekly run is the one that does.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Mondays, 08:00 JST (23:00 UTC Sunday)
+    - cron: "0 23 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  registry:
+    name: registry matches reality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Deliberately unauthenticated. A token can see private repositories and
+      # would report the exact drift this check exists to catch as healthy.
+      - name: check registry against GitHub
+        run: python3 -B tools/check_registry.py
+
+      - name: check generated blocks are up to date
+        run: python3 -B tools/render.py --check
+
+  links:
+    name: links resolve
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: check links
+        uses: lycheeverse/lychee-action@v2
+        with:
+          # No token on purpose: lychee should see what an anonymous visitor
+          # sees. With a token, a private repository looks reachable.
+          token: ""
+          fail: true
+          args: >-
+            --no-progress
+            --include-fragments
+            --max-concurrency 8
+            --exclude 'github\.com/shojikumaru/family-memory-architecture'
+            --exclude 'github\.com/shojikumaru/self-growth-loop'
+            --exclude 'github\.com/shojikumaru/persona-growth-loop'
+            --exclude 'img\.shields\.io'
+            './**/*.md'
+
+  report:
+    name: open an issue if the scheduled run failed
+    runs-on: ubuntu-latest
+    needs: [registry, links]
+    if: failure() && github.event_name == 'schedule'
+    steps:
+      - name: file a stale-pointer issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh issue create \
+            --repo "${{ github.repository }}" \
+            --title "Weekly check failed: the map no longer matches reality" \
+            --label stale-pointer \
+            --label severity:high \
+            --body "The weekly family-links run failed. Nothing was committed here — something outside this repository moved.
+
+          Most likely one of:
+
+          - a module was published or unpublished, and \`registry/modules.json\` still says otherwise
+          - a repository moved to a fresh home, so the old URL now 404s
+          - an external link died
+
+          Run: $RUN_URL
+
+          To fix: update \`registry/modules.json\`, run \`python3 -B tools/render.py\`, and commit."

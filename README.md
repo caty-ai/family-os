@@ -106,7 +106,7 @@ Family OS is not a product and not a platform. It is a single map of **where** t
 
 - 🗺 **There is nothing to install**
 
-  Family OS holds no code and starts nothing. It is a place to read and choose from.
+  There is nothing here for you to install and nothing that runs on your machine. It is a place to read and choose from.
 
 - 🧩 **Every part works on its own**
 

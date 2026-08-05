@@ -2,6 +2,12 @@
   "version": 1,
   "note": "Canonical list of Family OS modules. Everything the documentation says about where a module lives and whether it is open comes from here. Edit this file, run tools/render.py, and every generated block in every language follows. tools/check_registry.py verifies these claims against GitHub itself.",
   "languages": ["en", "ja", "zh", "th"],
+  "note_separator": {
+    "en": "; ",
+    "ja": "・",
+    "zh": "・",
+    "th": " · "
+  },
   "status_labels": {
     "published": {
       "en": "published, MIT",
@@ -161,11 +167,6 @@
       "repo": "shojikumaru/family-os",
       "superseded_by": "caty-ai/family-os",
       "reason": "republished under caty-ai as a fresh repository, so GitHub does not redirect"
-    },
-    {
-      "repo": "shojikumaru/family-os-public",
-      "superseded_by": "caty-ai/family-os",
-      "reason": "staging repository used to prepare the public release"
     }
   ]
 }

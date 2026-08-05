@@ -1,0 +1,219 @@
+#!/usr/bin/env python3
+"""Check that what the documentation says about each module is still true.
+
+Three checks, in order of how badly each one bites:
+
+1. reality      — every module's declared status matches what GitHub actually
+                  serves to an anonymous visitor. Catches the case where a repo
+                  is published (or unpublished) and the map has not noticed.
+2. retired      — no document links to a repository we have moved away from.
+                  Publishing under a fresh repository forfeits GitHub's
+                  automatic redirect, so an old URL is a hard 404.
+3. status-text  — wherever a module link appears, the status wording next to it
+                  matches the registry, in that file's language. Catches the
+                  reverse of (1): a live link with a stale label beside it.
+
+Run with --offline to skip the network check.
+
+Python 3.9+, standard library only.
+"""
+
+import argparse
+import json
+import pathlib
+import re
+import sys
+import urllib.error
+import urllib.request
+
+REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
+
+# README.ja.md -> ja, docs/engineering.ja.md -> ja, README.md -> en
+LANG_SUFFIX = re.compile(r"\.(?P<lang>[a-z]{2}(?:-[A-Z]{2})?)\.md$")
+
+# Never attribute status wording beyond the link's own local claim.
+MAX_STATUS_SPAN = 200
+
+
+def language_of(path: pathlib.Path) -> str:
+    match = LANG_SUFFIX.search(path.name)
+    return match.group("lang") if match else "en"
+
+
+def markdown_files(root: pathlib.Path):
+    for path in sorted(root.rglob("*.md")):
+        if ".git" in path.parts:
+            continue
+        yield path
+
+
+def status_span(text: str, start: int) -> str:
+    """Return the text that can describe the link ending at ``start``."""
+    end = min(len(text), start + MAX_STATUS_SPAN)
+    for boundary in ("\n", "]("):
+        boundary_index = text.find(boundary, start, end)
+        if boundary_index != -1:
+            end = min(end, boundary_index)
+    return text[start:end]
+
+
+def github_is_public(repo: str, timeout: float = 20.0) -> "bool | None":
+    """Anonymous check, deliberately unauthenticated.
+
+    A token would see private repositories and report them as fine — which is
+    exactly the blindness this check exists to remove. Returns None when GitHub
+    could not be reached, so a flaky network never reads as a failure.
+    """
+    request = urllib.request.Request(
+        "https://api.github.com/repos/%s" % repo,
+        headers={
+            "Accept": "application/vnd.github+json",
+            "User-Agent": "family-os-registry-check",
+        },
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            json.load(response)
+            return True
+    except urllib.error.HTTPError as exc:
+        if exc.code == 404:
+            return False
+        if exc.code in (403, 429):
+            return None
+        raise
+    except (urllib.error.URLError, TimeoutError):
+        return None
+
+
+def check_reality(registry: dict, failures: list, notes: list) -> None:
+    for module in registry["modules"]:
+        repo = module["repo"]
+        public = github_is_public(repo)
+        if public is None:
+            notes.append("%s: could not reach GitHub, reality check skipped" % repo)
+            continue
+        expected_public = module["status"] == "published"
+        if public != expected_public:
+            failures.append(
+                "reality: %s is declared '%s' but GitHub serves it as %s to an "
+                "anonymous visitor. Update registry/modules.json and re-run "
+                "tools/render.py."
+                % (repo, module["status"], "PUBLIC" if public else "PRIVATE/absent")
+            )
+
+
+def check_retired(registry: dict, root: pathlib.Path, failures: list) -> None:
+    retired = {entry["repo"]: entry for entry in registry.get("retired_repos", [])}
+    if not retired:
+        return
+    for path in markdown_files(root):
+        text = path.read_text(encoding="utf-8")
+        for repo, entry in retired.items():
+            needle = "github.com/%s" % repo
+            if needle in text:
+                line = text[: text.index(needle)].count("\n") + 1
+                failures.append(
+                    "retired: %s:%d links to %s, which has moved to %s (%s)"
+                    % (
+                        path.relative_to(root),
+                        line,
+                        repo,
+                        entry["superseded_by"],
+                        entry["reason"],
+                    )
+                )
+
+
+def check_status_text(registry: dict, root: pathlib.Path, failures: list) -> int:
+    labels = registry["status_labels"]
+    statuses = list(labels)
+    checked = 0
+
+    for path in markdown_files(root):
+        lang = language_of(path)
+        text = path.read_text(encoding="utf-8")
+
+        for module in registry["modules"]:
+            url = "https://github.com/%s" % module["repo"]
+            correct = module["status"]
+            wrong = [s for s in statuses if s != correct]
+
+            start = 0
+            while True:
+                index = text.find(url, start)
+                if index == -1:
+                    break
+                start = index + len(url)
+                window = status_span(text, start)
+
+                for status in wrong:
+                    label = labels[status].get(lang)
+                    if label and label in window:
+                        line = text[:index].count("\n") + 1
+                        failures.append(
+                            "status-text: %s:%d says '%s' next to %s, but the "
+                            "registry declares it '%s'"
+                            % (
+                                path.relative_to(root),
+                                line,
+                                label,
+                                module["name"],
+                                correct,
+                            )
+                        )
+                checked += 1
+
+    return checked
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--offline",
+        action="store_true",
+        help="skip the GitHub reality check",
+    )
+    parser.add_argument(
+        "--root",
+        type=pathlib.Path,
+        default=REPO_ROOT,
+        help="repository checkout to inspect (default: the checkout containing this script)",
+    )
+    args = parser.parse_args()
+
+    root = args.root.expanduser().resolve()
+    registry_path = root / "registry" / "modules.json"
+    try:
+        registry = json.loads(registry_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        print("ERROR: could not read %s: %s" % (registry_path, exc), file=sys.stderr)
+        return 1
+
+    failures: list = []
+    notes: list = []
+
+    if not args.offline:
+        check_reality(registry, failures, notes)
+    check_retired(registry, root, failures)
+    occurrences = check_status_text(registry, root, failures)
+
+    print("modules in registry : %d" % len(registry["modules"]))
+    print("retired repositories: %d" % len(registry.get("retired_repos", [])))
+    print("link occurrences    : %d" % occurrences)
+    print("reality check       : %s" % ("skipped" if args.offline else "on (anonymous)"))
+
+    for note in notes:
+        print("  note: %s" % note)
+
+    if failures:
+        print("\nFAILED (%d):" % len(failures))
+        for failure in failures:
+            print("  - %s" % failure)
+        return 1
+
+    print("\nOK — every module claim matches the registry.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

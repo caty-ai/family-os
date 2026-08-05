@@ -12,7 +12,7 @@ The exact contract — every authority, every edge, every failure posture — li
 
 ## What this repository is
 
-Family OS is a **non-runtime plane**: policy, map, pointers, and rendered observation. It holds no code, starts no process, opens no port, and stores no credential.
+Family OS is a **non-runtime plane**: policy, map, pointers, and rendered observation. It ships nothing you install, starts no process on your machine, opens no port, and stores no credential. The only code in the repository is `tools/`, which regenerates these pages from `registry/modules.json` and checks that what they claim is still true.
 
 The practical consequence is the part worth internalising:
 
