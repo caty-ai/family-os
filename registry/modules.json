@@ -1,0 +1,171 @@
+{
+  "version": 1,
+  "note": "Canonical list of Family OS modules. Everything the documentation says about where a module lives and whether it is open comes from here. Edit this file, run tools/render.py, and every generated block in every language follows. tools/check_registry.py verifies these claims against GitHub itself.",
+  "languages": ["en", "ja", "zh", "th"],
+  "status_labels": {
+    "published": {
+      "en": "published, MIT",
+      "ja": "公開・MIT",
+      "zh": "已公开・MIT",
+      "th": "เปิดแล้ว・MIT"
+    },
+    "preparing": {
+      "en": "publication in preparation",
+      "ja": "公開準備中",
+      "zh": "准备公开中",
+      "th": "กำลังเตรียมเปิดสู่สาธารณะ"
+    }
+  },
+  "modules": [
+    {
+      "id": "caty-agent-harness",
+      "name": "Caty Agent Harness",
+      "repo": "caty-ai/caty-agent-harness",
+      "status": "published",
+      "license": "MIT",
+      "class": {
+        "en": "runtime, vertical foundation",
+        "ja": "runtime・縦軸の基盤"
+      },
+      "owns": {
+        "en": "task meaning, attempt, retry, checkpoint, done-check, completion, dead-letter",
+        "ja": "タスクの意味・試行・リトライ・チェックポイント・完了判定・完了・DLQ"
+      }
+    },
+    {
+      "id": "persona-engine",
+      "name": "Persona Engine",
+      "repo": "caty-ai/persona-engine",
+      "status": "published",
+      "license": "MIT",
+      "class": {
+        "en": "runtime, standalone",
+        "ja": "runtime・単独利用可能"
+      },
+      "owns": {
+        "en": "persona layers and emotion gradation",
+        "ja": "人格のレイヤーと感情のグラデーション"
+      }
+    },
+    {
+      "id": "sitter",
+      "name": "Sitter",
+      "repo": "caty-ai/sitter",
+      "status": "published",
+      "license": "MIT",
+      "class": {
+        "en": "runtime, observation",
+        "ja": "runtime・観測"
+      },
+      "owns": {
+        "en": "local process and reply facts, dispatch-attempt evidence, delegated same-attempt restart",
+        "ja": "ローカルのプロセスと返信の事実・発注試行の証拠・委譲された同一試行の再起動"
+      }
+    },
+    {
+      "id": "x-collector",
+      "name": "X Collector",
+      "repo": "caty-ai/x-collector",
+      "status": "published",
+      "license": "MIT",
+      "class": {
+        "en": "runtime, optional input",
+        "ja": "runtime・任意の入力"
+      },
+      "owns": {
+        "en": "collecting external material for the ability loop",
+        "ja": "能力ループ向けの外部素材の収集"
+      }
+    },
+    {
+      "id": "family-dev-handbook",
+      "name": "Family Dev Handbook",
+      "repo": "caty-ai/family-dev-handbook",
+      "status": "published",
+      "license": "MIT",
+      "class": {
+        "en": "non-runtime governance",
+        "ja": "non-runtime・ガバナンス"
+      },
+      "owns": {
+        "en": "issue, PR, worktree, handoff, and parallel-development rules",
+        "ja": "Issue・PR・worktree・受け渡し・並行開発のルール"
+      }
+    },
+    {
+      "id": "family-memory-architecture",
+      "name": "Family Memory Architecture",
+      "repo": "shojikumaru/family-memory-architecture",
+      "status": "preparing",
+      "license": null,
+      "class": {
+        "en": "runtime, horizontal infrastructure",
+        "ja": "runtime・横方向の基盤"
+      },
+      "owns": {
+        "en": "the memory bus; registered schedule expectation, check-in, provenance",
+        "ja": "記憶バス・登録されたスケジュールの期待・check-in・来歴"
+      }
+    },
+    {
+      "id": "self-growth-loop",
+      "name": "Self Growth Loop",
+      "repo": "shojikumaru/self-growth-loop",
+      "status": "preparing",
+      "license": null,
+      "class": {
+        "en": "runtime, application",
+        "ja": "runtime・アプリケーション"
+      },
+      "owns": {
+        "en": "proposal, governance, adoption records, growth interpretation",
+        "ja": "提案・ガバナンス・採用記録・成長の解釈"
+      },
+      "note": {
+        "en": "harness link implemented",
+        "ja": "基盤との接続は実装済み"
+      }
+    },
+    {
+      "id": "persona-growth-loop",
+      "name": "Persona Growth Loop",
+      "repo": "shojikumaru/persona-growth-loop",
+      "status": "preparing",
+      "license": null,
+      "class": {
+        "en": "planned frontend",
+        "ja": "計画中のフロントエンド"
+      },
+      "owns": {
+        "en": "minimised, idempotent proposal production",
+        "ja": "最小化された冪等な提案の生成"
+      },
+      "note": {
+        "en": "planned",
+        "ja": "計画中"
+      }
+    }
+  ],
+  "retired_repos": [
+    {
+      "repo": "shojikumaru/x-collector-wip",
+      "superseded_by": "caty-ai/x-collector",
+      "reason": "republished under caty-ai as a fresh repository, so GitHub does not redirect"
+    },
+    {
+      "repo": "shojikumaru/family-dev-handbook",
+      "superseded_by": "caty-ai/family-dev-handbook",
+      "reason": "republished under caty-ai as a fresh repository, so GitHub does not redirect"
+    },
+    {
+      "repo": "shojikumaru/family-os",
+      "superseded_by": "caty-ai/family-os",
+      "reason": "republished under caty-ai as a fresh repository, so GitHub does not redirect"
+    },
+    {
+      "repo": "shojikumaru/family-os-public",
+      "superseded_by": "caty-ai/family-os",
+      "reason": "staging repository used to prepare the public release"
+    }
+  ]
+}

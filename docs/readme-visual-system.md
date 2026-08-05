@@ -112,21 +112,27 @@ The maps must preserve these facts:
 ### Repository links
 
 Every module named in the README must link to its repository, including the
-ones not yet published. Unpublished links carry an explicit `公開準備中`
-marker in the adjacent text or table cell, and the README states once that
-those links cannot be opened yet. Do not invent future organisation URLs for
-repositories that have not moved.
+ones not yet published. Unpublished links carry an explicit status marker in
+the adjacent text or table cell, and the README states once that those links
+cannot be opened yet. Do not invent future organisation URLs for repositories
+that have not moved.
 
+The table below is generated from [`registry/modules.json`](../registry/modules.json),
+which is the single place a module's home and status are recorded. Publishing a
+module means editing that file; every generated block in every language follows.
+
+<!-- family:generated:repository-links:start -->
 | Module | Link target | State |
 | --- | --- | --- |
 | Caty Agent Harness | `caty-ai/caty-agent-harness` | published, MIT |
 | Persona Engine | `caty-ai/persona-engine` | published, MIT |
 | Sitter | `caty-ai/sitter` | published, MIT |
-| Persona Growth Loop | `shojikumaru/persona-growth-loop` | 公開準備中 |
-| Self Growth Loop | `shojikumaru/self-growth-loop` | 公開準備中 |
 | X Collector | `caty-ai/x-collector` | published, MIT |
-| Family Memory Architecture | `shojikumaru/family-memory-architecture` | 公開準備中 |
 | Family Dev Handbook | `caty-ai/family-dev-handbook` | published, MIT |
+| Family Memory Architecture | `shojikumaru/family-memory-architecture` | publication in preparation |
+| Self Growth Loop | `shojikumaru/self-growth-loop` | publication in preparation; harness link implemented |
+| Persona Growth Loop | `shojikumaru/persona-growth-loop` | publication in preparation; planned |
+<!-- family:generated:repository-links:end -->
 
 ### Superseded v3 map rules
 
