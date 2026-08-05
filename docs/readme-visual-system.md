@@ -62,8 +62,8 @@ node and never with an arrow into them.
 
 ### Second map — one agent's vertical axis
 
-- every agent has its own Caty Agent Harness / fable execution boundary, and
-  that boundary is the **foundation of the vertical axis**: on its own it adds
+- every agent has its own Caty Agent Harness execution boundary, and that
+  boundary is the **foundation of the vertical axis**: on its own it adds
   and accelerates a work-driven self-growth loop, which is why it is worth
   attaching to an existing runtime such as Hermes Agent or OpenClaw;
 - two kinds of growth attach on top of that foundation and must stay visually
@@ -102,12 +102,12 @@ The maps must preserve these facts:
 | Per-agent vertical axis | Caty Agent Harness is not one central family runtime. Each agent can have its own independent vertical execution/growth flow. |
 | Family horizontal axis | FMA connects the independent agent flows through memory and information sharing; it does not own their mutable state or completion. |
 | Standalone foundations | Caty Agent Harness, Family Memory Architecture, Sitter, Family Dev Handbook, X Collector, and Persona Engine each have an independently usable role. |
-| X Collector | It is currently a standalone private app undergoing generalization/public-release preparation. It is the current/default Self Growth sense input through `family-feed` / morning agents, but is replaceable. |
+| X Collector | It is standalone public MIT OSS. It is the current/default Self Growth sense input through `family-feed` / morning agents, but is replaceable. |
 | Persona Engine | It is standalone public MIT OSS. |
-| Self Growth | The full trial loop has an implemented required dependency on Caty / fable execution core for trial execution. Attributable human/evaluator input is also possible. |
+| Self Growth | The full trial loop has an implemented required dependency on Caty Agent Harness for trial execution. Attributable human/evaluator input is also possible. |
 | Persona Growth | It is planned. The current sensor-only stage has no Caty engine seam. A future full loop depends on Self Growth governance and Persona Engine as persona source/target; Caty is transitive through Self Growth, not a current direct dependency. |
 | Family Dev Handbook | It is the shared development-governance contract and the containing layer above both axes. Only mechanized rules may be described as enforced; the document is not a runtime. |
-| Sitter | It independently supervises delegated sub-agent work and expected family nudges. A direct fable supervision contract remains proposed, so the README must not draw it as an implemented Caty dependency. |
+| Sitter | It independently supervises delegated sub-agent work and expected family nudges. A direct supervision contract with the Harness remains proposed, so the README must not draw it as an implemented dependency. |
 
 ### Repository links
 
@@ -126,7 +126,7 @@ repositories that have not moved.
 | Self Growth Loop | `shojikumaru/self-growth-loop` | 公開準備中 |
 | X Collector | `caty-ai/x-collector` | published, MIT |
 | Family Memory Architecture | `shojikumaru/family-memory-architecture` | 公開準備中 |
-| Family Dev Handbook | `shojikumaru/family-dev-handbook` | 公開準備中 |
+| Family Dev Handbook | `caty-ai/family-dev-handbook` | published, MIT |
 
 ### Superseded v3 map rules
 

@@ -141,7 +141,7 @@ flowchart TB
 
 | 層 | 効く困りごと | 中身 |
 | --- | --- | --- |
-| **掟** | 複数のセッションが同じファイルを取り合って壊れる | [Family Dev Handbook](https://github.com/shojikumaru/family-dev-handbook)（公開準備中） |
+| **掟** | 複数のセッションが同じファイルを取り合って壊れる | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook)（公開・MIT） |
 | **縦軸** | 忘れる。途中で止まる。「できました」が確かめられない | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（公開・MIT）を基盤に、成長ループを足す |
 | **横軸** | AIごとに記憶がばらばら。任せた仕事が行方不明になる | [FMA](https://github.com/shojikumaru/family-memory-architecture)（公開準備中）と [Sitter](https://github.com/caty-ai/sitter)（公開・MIT） |
 
@@ -280,7 +280,7 @@ Family OS 側でやることはありません。インストールも、アカ�
 
 迷ったら、縦軸の [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) から始めてください。1体のAIが失敗から学び、長い作業を証拠つきで最後まで進められるようになります。無料の MIT で、導入手順はそのリポジトリの README にあります。いちばん困っているのが「黙って止まる作業」なら、[Sitter](https://github.com/caty-ai/sitter) へ直接どうぞ — こちらも公開済み・MIT です。
 
-横軸の FMA と掟は公開準備中です。公開したときに知りたい場合は、このリポジトリを Watch してください。
+横軸の FMA は公開準備中です。公開したときに知りたい場合は、このリポジトリを Watch してください。
 
 進む前に、この地図が絶対にしないことを先にお伝えします。
 

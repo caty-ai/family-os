@@ -43,7 +43,7 @@ flowchart TB
 
 | Layer | Answers | Canonical home |
 | --- | --- | --- |
-| Rules | how parallel work stays safe — issues, branches, worktrees, handoffs | [Family Dev Handbook](https://github.com/shojikumaru/family-dev-handbook) |
+| Rules | how parallel work stays safe — issues, branches, worktrees, handoffs | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook) |
 | Vertical | how one agent remembers, finishes, and grows | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) plus growth loops |
 | Horizontal | how several agents share memory and hand work over | [Family Memory Architecture](https://github.com/shojikumaru/family-memory-architecture) and [Sitter](https://github.com/caty-ai/sitter) |
 
@@ -64,7 +64,7 @@ The rules layer sits **above** both axes rather than inside either one. It is a 
 | [Self Growth Loop](https://github.com/shojikumaru/self-growth-loop) | runtime, application | proposal, governance, adoption records, growth interpretation | not yet published; harness link implemented |
 | [X Collector](https://github.com/caty-ai/x-collector) | runtime, optional input | collecting external material for the ability loop | published, MIT |
 | [Persona Growth Loop](https://github.com/shojikumaru/persona-growth-loop) | planned frontend | minimised, idempotent proposal production | not yet published; planned |
-| [Family Dev Handbook](https://github.com/shojikumaru/family-dev-handbook) | non-runtime governance | issue, PR, worktree, handoff, and parallel-development rules | not yet published |
+| [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook) | non-runtime governance | issue, PR, worktree, handoff, and parallel-development rules | published, MIT |
 
 Links marked *not yet published* cannot be opened yet. They are listed so the map stays honest about what exists and where it will live.
 

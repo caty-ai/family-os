@@ -141,7 +141,7 @@ flowchart TB
 
 | Layer | The problem it solves | What is in it |
 | --- | --- | --- |
-| **Rules** | parallel sessions fight over the same file and break it | [Family Dev Handbook](https://github.com/shojikumaru/family-dev-handbook) (publication in preparation) |
+| **Rules** | parallel sessions fight over the same file and break it | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook) (published, MIT) |
 | **Vertical** | forgetting; stopping halfway; "it's done" that cannot be checked | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) (published, MIT) as the foundation, with growth loops on top |
 | **Horizontal** | memory scattered per agent; delegated work that goes missing | [FMA](https://github.com/shojikumaru/family-memory-architecture) (publication in preparation) and [Sitter](https://github.com/caty-ai/sitter) (published, MIT) |
 
@@ -280,7 +280,7 @@ There is nothing to do on the Family OS side. No install, no account, no config 
 
 If you are unsure, start with [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) on the vertical axis. It lets one agent learn from failure and carry long work through to the end with evidence behind it. It is free under MIT, and the setup steps are in that repository's README. If the thing that hurts most is work that stops without telling you, go straight to [Sitter](https://github.com/caty-ai/sitter) instead — it is also open and also MIT.
 
-FMA and the rules layer on the horizontal axis are still in preparation. If you want to know when they open, watch this repository.
+FMA on the horizontal axis is still in preparation. If you want to know when it opens, watch this repository.
 
 Before you go, here is what this map will never do.
 
