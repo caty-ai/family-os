@@ -2,6 +2,8 @@
 
 The family footer is one generated region per declared root `README*.md` in sibling repositories. Literal generated marker lines may appear in documentation only inside fenced code blocks.
 
+The v3.1 content amendment replaces v3's sibling list with a full-module table. Marker parsing, declared files, byte-exact comparison, and all four enforcement rules are unchanged.
+
 ## Markers
 
 ```html
@@ -11,7 +13,11 @@ The family footer is one generated region per declared root `README*.md` in sibl
 
 {intro with {map} replaced by [Family OS](https://github.com/<map_repo>)}
 
-{siblings_label}: [Name](https://github.com/<repo>) · [Name](https://github.com/<repo>)
+| Module | What it does | State |
+| --- | --- | --- |
+| **Host Module** | {tagline for this language} | {status label for this language} |
+| [Published Module](https://github.com/<repo>) | {tagline for this language} | {status label for this language} |
+| **Preparing Module** | {tagline for this language} | {status label for this language} |
 
 <!-- family:generated:family-footer:end -->
 ```
@@ -19,6 +25,15 @@ The family footer is one generated region per declared root `README*.md` in sibl
 - The block id is `family-footer`.
 - The content inside the region always has a leading blank line and a trailing blank line.
 - The renderer preserves the start marker's newline bytes and compares only the bytes between the markers.
+
+## Content
+
+- The table contains every registry module in registry order, including modules still being prepared and the repository hosting the footer.
+- A published module name links to its repository, except that the host row is bold and unlinked. A preparing module name is also bold and unlinked, so the footer shows the full map without shipping an intentional `404` link.
+- The localized description comes from the module's required `tagline` registry field. Every tagline must define every registry language.
+- The localized state comes directly from `status_labels`; module `note` fields are not rendered.
+- The three localized headers come from `footer_text.table_module`, `footer_text.table_what`, and `footer_text.table_state`.
+- Header, module-name, tagline, and status-label cells fail validation if they contain a pipe or newline, rather than emitting a malformed Markdown table.
 
 ## Declared Files
 

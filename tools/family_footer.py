@@ -80,12 +80,20 @@ def validate_footer_text_value(label: str, value: str) -> None:
         raise FooterError("%s may not contain generated-marker text" % label)
 
 
+def validate_table_cell_value(label: str, value: str) -> None:
+    validate_footer_text_value(label, value)
+    if "|" in value:
+        raise FooterError("%s may not contain '|'" % label)
+
+
 def validate_module_name(module: dict) -> None:
     name = module.get("name")
     if not isinstance(name, str):
         raise FooterError("name must be a string")
     if "\n" in name or "\r" in name:
         raise FooterError("name may not contain a newline")
+    if "|" in name:
+        raise FooterError("name may not contain '|'")
     if "]" in name:
         raise FooterError("name may not contain ']'")
     if MARKER_TOKEN in name.lower():
@@ -187,7 +195,7 @@ def lint_registry(registry: dict) -> List[str]:
     if not isinstance(footer_text, dict):
         failures.append("registry/modules.json: footer_text must be an object")
     else:
-        for key in ("intro", "siblings_label"):
+        for key in ("intro", "table_module", "table_what", "table_state"):
             section = footer_text.get(key)
             if not isinstance(section, dict):
                 failures.append("registry/modules.json: footer_text.%s must be an object" % key)
@@ -196,12 +204,33 @@ def lint_registry(registry: dict) -> List[str]:
                 value = section.get(lang)
                 label = "registry/modules.json: footer_text.%s.%s" % (key, lang)
                 try:
-                    validate_footer_text_value(label, value)
+                    if key == "intro":
+                        validate_footer_text_value(label, value)
+                    else:
+                        validate_table_cell_value(label, value)
                 except FooterError as exc:
                     failures.append(str(exc))
                     continue
                 if key == "intro" and value.count("{map}") != 1:
                     failures.append("%s must contain exactly one {map} placeholder" % label)
+
+    status_labels = registry.get("status_labels")
+    if not isinstance(status_labels, dict):
+        failures.append("registry/modules.json: status_labels must be an object")
+        status_labels = {}
+    else:
+        for status, section in status_labels.items():
+            if not isinstance(section, dict):
+                failures.append(
+                    "registry/modules.json: status_labels.%s must be an object" % status
+                )
+                continue
+            for lang in languages:
+                label = "registry/modules.json: status_labels.%s.%s" % (status, lang)
+                try:
+                    validate_table_cell_value(label, section.get(lang))
+                except FooterError as exc:
+                    failures.append(str(exc))
 
     modules = registry.get("modules")
     if not isinstance(modules, list):
@@ -218,6 +247,19 @@ def lint_registry(registry: dict) -> List[str]:
             validate_module_name(module)
         except FooterError as exc:
             failures.append("%s: %s" % (label, exc))
+        tagline = module.get("tagline")
+        if not isinstance(tagline, dict):
+            failures.append("%s: tagline must be an object" % label)
+        else:
+            for lang in languages:
+                tagline_label = "%s: tagline.%s" % (label, lang)
+                try:
+                    validate_table_cell_value(tagline_label, tagline.get(lang))
+                except FooterError as exc:
+                    failures.append(str(exc))
+        status = module.get("status")
+        if status not in status_labels:
+            failures.append("%s: status must name an entry in status_labels" % label)
         if "footer" in module and not isinstance(module["footer"], bool):
             failures.append("%s: footer must be a boolean when present" % label)
         if footer_enabled(module) and module.get("status") != "published":
@@ -234,25 +276,48 @@ def map_link(registry: dict) -> str:
     return "[Family OS](https://github.com/%s)" % registry["map_repo"]
 
 
-def siblings_line(registry: dict, module: dict, lang: str) -> str:
-    links = []
-    for sibling in published_modules(registry):
-        if sibling["repo"] == module["repo"]:
-            continue
-        links.append("[%s](https://github.com/%s)" % (sibling["name"], sibling["repo"]))
-    return "%s: %s" % (registry["footer_text"]["siblings_label"][lang], " · ".join(links))
+def module_table(registry: dict, host_module: dict, lang: str, newline: str) -> str:
+    footer_text = registry["footer_text"]
+    headers = [
+        ("table_module", footer_text["table_module"][lang]),
+        ("table_what", footer_text["table_what"][lang]),
+        ("table_state", footer_text["table_state"][lang]),
+    ]
+    for key, value in headers:
+        validate_table_cell_value("footer_text.%s.%s" % (key, lang), value)
+
+    rows = [
+        "| %s | %s | %s |" % tuple(value for _key, value in headers),
+        "| --- | --- | --- |",
+    ]
+    for module in registry["modules"]:
+        name = module["name"]
+        tagline = module["tagline"][lang]
+        status = registry["status_labels"][module["status"]][lang]
+        validate_table_cell_value("%s name" % module_label(module), name)
+        validate_table_cell_value("%s tagline.%s" % (module_label(module), lang), tagline)
+        validate_table_cell_value(
+            "status_labels.%s.%s" % (module["status"], lang), status
+        )
+
+        if module["repo"] == host_module["repo"] or module["status"] != "published":
+            rendered_name = "**%s**" % name
+        else:
+            rendered_name = "[%s](https://github.com/%s)" % (name, module["repo"])
+        rows.append("| %s | %s | %s |" % (rendered_name, tagline, status))
+    return newline.join(rows)
 
 
 def render_region(registry: dict, module: dict, lang: str, newline: str) -> str:
     intro = registry["footer_text"]["intro"][lang].replace("{map}", map_link(registry))
-    sibling_text = siblings_line(registry, module, lang)
+    table = module_table(registry, module, lang, newline)
     return (
         newline
         + "---"
         + newline * 2
         + intro
         + newline * 2
-        + sibling_text
+        + table
         + newline * 2
     )
 
