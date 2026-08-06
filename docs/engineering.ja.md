@@ -58,14 +58,14 @@ flowchart TB
 <!-- family:generated:module-inventory:start -->
 | モジュール | 種別 | 所有するもの | 状態 |
 | --- | --- | --- | --- |
+| [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook) | non-runtime・ガバナンス | Issue・PR・worktree・受け渡し・並行開発のルール | 公開・MIT |
 | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) | runtime・縦軸の基盤 | タスクの意味・試行・リトライ・チェックポイント・完了判定・完了・DLQ | 公開・MIT |
 | [Persona Engine](https://github.com/caty-ai/persona-engine) | runtime・単独利用可能 | 人格のレイヤーと感情のグラデーション | 公開・MIT |
-| [Sitter](https://github.com/caty-ai/sitter) | runtime・観測 | ローカルのプロセスと返信の事実・発注試行の証拠・委譲された同一試行の再起動 | 公開・MIT |
-| [X Collector](https://github.com/caty-ai/x-collector) | runtime・任意の入力 | 能力ループ向けの外部素材の収集 | 公開・MIT |
-| [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook) | non-runtime・ガバナンス | Issue・PR・worktree・受け渡し・並行開発のルール | 公開・MIT |
-| [Family Memory Architecture](https://github.com/shojikumaru/family-memory-architecture) | runtime・横方向の基盤 | 記憶バス・登録されたスケジュールの期待・check-in・来歴 | 公開準備中 |
-| [Self Growth Loop](https://github.com/shojikumaru/self-growth-loop) | runtime・アプリケーション | 提案・ガバナンス・採用記録・成長の解釈 | 公開準備中・基盤との接続は実装済み |
 | [Persona Growth Loop](https://github.com/shojikumaru/persona-growth-loop) | 計画中のフロントエンド | 最小化された冪等な提案の生成 | 公開準備中・計画中 |
+| [X Collector](https://github.com/caty-ai/x-collector) | runtime・任意の入力 | 能力ループ向けの外部素材の収集 | 公開・MIT |
+| [Self Growth Loop](https://github.com/shojikumaru/self-growth-loop) | runtime・アプリケーション | 提案・ガバナンス・採用記録・成長の解釈 | 公開準備中・基盤との接続は実装済み |
+| [Family Memory Architecture](https://github.com/shojikumaru/family-memory-architecture) | runtime・横方向の基盤 | 記憶バス・登録されたスケジュールの期待・check-in・来歴 | 公開準備中 |
+| [Sitter](https://github.com/caty-ai/sitter) | runtime・観測 | ローカルのプロセスと返信の事実・発注試行の証拠・委譲された同一試行の再起動 | 公開・MIT |
 <!-- family:generated:module-inventory:end -->
 
 この表は [`registry/modules.json`](../registry/modules.json) から生成しています。「公開準備中」のリンクは、いまはまだ開けません。何が存在し、どこに置かれるのかを地図として正直に保つために載せています。

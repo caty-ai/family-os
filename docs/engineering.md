@@ -58,14 +58,14 @@ The rules layer sits **above** both axes rather than inside either one. It is a 
 <!-- family:generated:module-inventory:start -->
 | Module | Class | Owns | State |
 | --- | --- | --- | --- |
+| [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook) | non-runtime governance | issue, PR, worktree, handoff, and parallel-development rules | published, MIT |
 | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) | runtime, vertical foundation | task meaning, attempt, retry, checkpoint, done-check, completion, dead-letter | published, MIT |
 | [Persona Engine](https://github.com/caty-ai/persona-engine) | runtime, standalone | persona layers and emotion gradation | published, MIT |
-| [Sitter](https://github.com/caty-ai/sitter) | runtime, observation | local process and reply facts, dispatch-attempt evidence, delegated same-attempt restart | published, MIT |
-| [X Collector](https://github.com/caty-ai/x-collector) | runtime, optional input | collecting external material for the ability loop | published, MIT |
-| [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook) | non-runtime governance | issue, PR, worktree, handoff, and parallel-development rules | published, MIT |
-| [Family Memory Architecture](https://github.com/shojikumaru/family-memory-architecture) | runtime, horizontal infrastructure | the memory bus; registered schedule expectation, check-in, provenance | publication in preparation |
-| [Self Growth Loop](https://github.com/shojikumaru/self-growth-loop) | runtime, application | proposal, governance, adoption records, growth interpretation | publication in preparation; harness link implemented |
 | [Persona Growth Loop](https://github.com/shojikumaru/persona-growth-loop) | planned frontend | minimised, idempotent proposal production | publication in preparation; planned |
+| [X Collector](https://github.com/caty-ai/x-collector) | runtime, optional input | collecting external material for the ability loop | published, MIT |
+| [Self Growth Loop](https://github.com/shojikumaru/self-growth-loop) | runtime, application | proposal, governance, adoption records, growth interpretation | publication in preparation; harness link implemented |
+| [Family Memory Architecture](https://github.com/shojikumaru/family-memory-architecture) | runtime, horizontal infrastructure | the memory bus; registered schedule expectation, check-in, provenance | publication in preparation |
+| [Sitter](https://github.com/caty-ai/sitter) | runtime, observation | local process and reply facts, dispatch-attempt evidence, delegated same-attempt restart | published, MIT |
 <!-- family:generated:module-inventory:end -->
 
 This table is generated from [`registry/modules.json`](../registry/modules.json). Links marked *publication in preparation* cannot be opened yet. They are listed so the map stays honest about what exists and where it will live.

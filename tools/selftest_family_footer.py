@@ -33,6 +33,12 @@ def base_registry():
                 "zh": "Intro {map}.",
                 "th": "Intro {map}.",
             },
+            "table_axis": {
+                "en": "Axis",
+                "ja": "軸",
+                "zh": "轴",
+                "th": "แกน",
+            },
             "table_module": {
                 "en": "Module",
                 "ja": "モジュール",
@@ -50,6 +56,48 @@ def base_registry():
                 "ja": "状態",
                 "zh": "状态",
                 "th": "สถานะ",
+            },
+            "map_name": {
+                "en": "Family OS",
+                "ja": "Family OS",
+                "zh": "Family OS",
+                "th": "Family OS",
+            },
+            "axis_map": {
+                "en": "Map",
+                "ja": "地図",
+                "zh": "地图",
+                "th": "แผนที่",
+            },
+            "axis_rules": {
+                "en": "Rules",
+                "ja": "掟",
+                "zh": "规则",
+                "th": "กติกา",
+            },
+            "axis_vertical": {
+                "en": "Vertical",
+                "ja": "縦軸",
+                "zh": "纵轴",
+                "th": "แกนตั้ง",
+            },
+            "axis_horizontal": {
+                "en": "Horizontal",
+                "ja": "横軸",
+                "zh": "横轴",
+                "th": "แกนนอน",
+            },
+            "axis_foundation_suffix": {
+                "en": " · foundation",
+                "ja": "・基盤",
+                "zh": "・基座",
+                "th": " · รากฐาน",
+            },
+            "map_tagline": {
+                "en": "The family map",
+                "ja": "ファミリーの地図",
+                "zh": "家族地图",
+                "th": "แผนที่ครอบครัว",
             },
         },
         "status_labels": {
@@ -78,6 +126,7 @@ def base_registry():
                     "zh": "Alpha 的工作",
                     "th": "งานของ Alpha",
                 },
+                "axis": {"group": "rules", "foundation": False},
             },
             {
                 "id": "beta",
@@ -90,6 +139,7 @@ def base_registry():
                     "zh": "Beta 的工作",
                     "th": "งานของ Beta",
                 },
+                "axis": {"group": "vertical", "foundation": True},
                 "readme_overrides": {"README.zh-CN.md": "zh"},
             },
             {
@@ -103,6 +153,7 @@ def base_registry():
                     "zh": "Gamma 的工作",
                     "th": "งานของ Gamma",
                 },
+                "axis": {"group": "horizontal", "foundation": False},
             },
         ],
         "retired_repos": [],
@@ -235,19 +286,46 @@ def test_table_rendering():
     region = render_region(registry, registry["modules"][0], "en", "\n")
     table_lines = [line for line in region.splitlines() if line.startswith("|")]
     assert table_lines == [
-        "| Module | What it does | State |",
-        "| --- | --- | --- |",
-        "| **Alpha** | Alpha work | published |",
-        "| [Beta](https://github.com/caty-ai/beta) | Beta work | published |",
-        "| **Gamma** | Gamma work | preparing |",
+        "| Axis | Module | What it does | State |",
+        "| --- | --- | --- | --- |",
+        "| Map | [Family OS](https://github.com/caty-ai/family-os) | The family map | published |",
+        "| Rules | **Alpha** | Alpha work | published |",
+        "| Vertical · foundation | [Beta](https://github.com/caty-ai/beta) | Beta work | published |",
+        "| Horizontal | **Gamma** | Gamma work | preparing |",
     ]
     assert "https://github.com/caty-ai/alpha" not in region
     assert "https://github.com/caty-ai/gamma" not in region
 
     ja_region = render_region(registry, registry["modules"][0], "ja", "\n")
-    assert "| モジュール | 何をするもの | 状態 |" in ja_region
-    assert "| **Alpha** | Alpha の仕事 | 公開 |" in ja_region
-    assert "| **Gamma** | Gamma の仕事 | 準備中 |" in ja_region
+    assert "| 軸 | モジュール | 何をするもの | 状態 |" in ja_region
+    assert "| 地図 | [Family OS](https://github.com/caty-ai/family-os) | ファミリーの地図 | 公開 |" in ja_region
+    assert "| 掟 | **Alpha** | Alpha の仕事 | 公開 |" in ja_region
+    assert "| 縦軸・基盤 | [Beta](https://github.com/caty-ai/beta) | Beta の仕事 | 公開 |" in ja_region
+    assert "| 横軸 | **Gamma** | Gamma の仕事 | 準備中 |" in ja_region
+
+
+def test_map_row_and_registry_ordering():
+    registry = base_registry()
+    for host in registry["modules"] + [None]:
+        region = render_region(registry, host, "en", "\n")
+        data_rows = [
+            line
+            for line in region.splitlines()
+            if line.startswith("|") and not line.startswith("| ---")
+        ][1:]
+        assert data_rows[0].startswith(
+            "| Map | [Family OS](https://github.com/caty-ai/family-os) |"
+        )
+
+    reordered = copy.deepcopy(registry)
+    reordered["modules"] = [
+        reordered["modules"][2],
+        reordered["modules"][0],
+        reordered["modules"][1],
+    ]
+    region = render_region(reordered, reordered["modules"][0], "en", "\n")
+    assert region.index("| Horizontal | **Gamma**") < region.index("| Rules | [Alpha]")
+    assert region.index("| Rules | [Alpha]") < region.index("| Vertical · foundation | [Beta]")
 
 
 def test_table_lint_failures():
@@ -273,6 +351,26 @@ def test_table_lint_failures():
         assert "tagline.en may not contain '|'" in str(exc)
     else:
         raise AssertionError("a pipe in a rendered tagline must fail closed")
+
+    missing_axis = base_registry()
+    del missing_axis["modules"][0]["axis"]
+    failures = lint_registry(missing_axis)
+    assert "registry/modules.json: module 'alpha': axis must be an object" in failures
+
+    bad_axis_group = base_registry()
+    bad_axis_group["modules"][0]["axis"]["group"] = "diagonal"
+    failures = lint_registry(bad_axis_group)
+    assert any("axis.group must be one of" in failure for failure in failures)
+
+    missing_axis_language = base_registry()
+    del missing_axis_language["footer_text"]["axis_vertical"]["ja"]
+    failures = lint_registry(missing_axis_language)
+    assert "registry/modules.json: footer_text.axis_vertical.ja must be a string" in failures
+
+    invalid_axis_label = base_registry()
+    invalid_axis_label["footer_text"]["axis_rules"]["en"] = "Rules | policy"
+    failures = lint_registry(invalid_axis_label)
+    assert "registry/modules.json: footer_text.axis_rules.en may not contain '|'" in failures
 
 
 def test_check_rules():
@@ -330,14 +428,16 @@ def test_render_idempotency_and_listing():
         assert "\r\n" in readme
         assert "[Beta](https://github.com/caty-ai/beta)" in readme
         assert "[Alpha](https://github.com/caty-ai/alpha)" not in readme
-        assert "| **Alpha** | Alpha work | published |" in readme
-        assert "| **Gamma** | Gamma work | preparing |" in readme
+        assert "| Map | [Family OS](https://github.com/caty-ai/family-os) |" in readme
+        assert "| Rules | **Alpha** | Alpha work | published |" in readme
+        assert "| Horizontal | **Gamma** | Gamma work | preparing |" in readme
         assert "https://github.com/caty-ai/gamma" not in readme
 
         ja_readme = (root / "README.ja.md").read_bytes().decode("utf-8")
-        assert "| モジュール | 何をするもの | 状態 |" in ja_readme
-        assert "| **Alpha** | Alpha の仕事 | 公開 |" in ja_readme
-        assert "| **Gamma** | Gamma の仕事 | 準備中 |" in ja_readme
+        assert "| 軸 | モジュール | 何をするもの | 状態 |" in ja_readme
+        assert "| 地図 | [Family OS](https://github.com/caty-ai/family-os) |" in ja_readme
+        assert "| 掟 | **Alpha** | Alpha の仕事 | 公開 |" in ja_readme
+        assert "| 横軸 | **Gamma** | Gamma の仕事 | 準備中 |" in ja_readme
 
         changed_again, changed_files_again = render_repo_to_target(
             registry, root, target_module["repo"]
@@ -353,6 +453,7 @@ def main() -> int:
         test_language_resolution,
         test_declared_set_resolution,
         test_table_rendering,
+        test_map_row_and_registry_ordering,
         test_table_lint_failures,
         test_check_rules,
         test_render_idempotency_and_listing,
