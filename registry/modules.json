@@ -15,11 +15,23 @@
       "zh": "本仓库属于 **Caty AI 家族** — 用于运营 AI 智能体家族的开源工具集。完整地图（包括仍在准备公开的模块）见 {map}。",
       "th": "รีโพนี้เป็นส่วนหนึ่งของ **ครอบครัว Caty AI** — ชุดเครื่องมือโอเพนซอร์สสำหรับดูแลครอบครัวเอเจนต์ AI แผนที่ฉบับเต็ม (รวมโมดูลที่กำลังเตรียมเปิด) อยู่ที่ {map}"
     },
-    "siblings_label": {
-      "en": "Siblings",
-      "ja": "兄弟モジュール",
-      "zh": "同家族模块",
-      "th": "โมดูลพี่น้อง"
+    "table_module": {
+      "en": "Module",
+      "ja": "モジュール",
+      "zh": "模块",
+      "th": "โมดูล"
+    },
+    "table_what": {
+      "en": "What it does",
+      "ja": "何をするもの",
+      "zh": "做什么",
+      "th": "ทำอะไร"
+    },
+    "table_state": {
+      "en": "State",
+      "ja": "状態",
+      "zh": "状态",
+      "th": "สถานะ"
     }
   },
   "note_separator": {
@@ -48,6 +60,12 @@
       "name": "Caty Agent Harness",
       "repo": "caty-ai/caty-agent-harness",
       "status": "published",
+      "tagline": {
+        "en": "Task backbone for AI agents — retries, checkpoints, and honest completion",
+        "ja": "AIエージェントのタスク基盤 — 試行・リトライ・チェックポイント・完了判定",
+        "zh": "AI 智能体的任务基座 — 重试、检查点与完成判定",
+        "th": "แกนงานของเอเจนต์ AI — การลองใหม่ เช็คพอยต์ และการตัดสินว่าเสร็จจริง"
+      },
       "license": "MIT",
       "class": {
         "en": "runtime, vertical foundation",
@@ -64,6 +82,12 @@
       "name": "Persona Engine",
       "repo": "caty-ai/persona-engine",
       "status": "published",
+      "tagline": {
+        "en": "Gives an agent a persona — layered personality and graded emotion",
+        "ja": "エージェントに人格を与える — 人格レイヤーと感情のグラデーション",
+        "zh": "为智能体赋予人格 — 分层人格与情感渐变",
+        "th": "มอบบุคลิกให้เอเจนต์ — เลเยอร์บุคลิกและอารมณ์แบบไล่ระดับ"
+      },
       "readme_overrides": {
         "README.zh-CN.md": "zh"
       },
@@ -83,6 +107,12 @@
       "name": "Sitter",
       "repo": "caty-ai/sitter",
       "status": "published",
+      "tagline": {
+        "en": "Babysits delegated agent runs — watches, keeps evidence, restarts",
+        "ja": "委譲したエージェント実行の見張り番 — 監視・証拠の記録・再起動",
+        "zh": "替你盯着委派出去的智能体 — 监视、留证、重启",
+        "th": "พี่เลี้ยงของงานที่มอบหมายให้เอเจนต์ — เฝ้าดู เก็บหลักฐาน และรีสตาร์ต"
+      },
       "license": "MIT",
       "class": {
         "en": "runtime, observation",
@@ -99,6 +129,12 @@
       "name": "X Collector",
       "repo": "caty-ai/x-collector",
       "status": "published",
+      "tagline": {
+        "en": "Turns X and the web into one daily digest — for people and agents",
+        "ja": "Xやウェブの素材を1日1回のダイジェストに — 人にもエージェントにも",
+        "zh": "把 X 与网络素材汇成每日一份摘要 — 给人也给智能体",
+        "th": "รวบรวมข้อมูลจาก X และเว็บเป็นสรุปวันละฉบับ — สำหรับคนและเอเจนต์"
+      },
       "license": "MIT",
       "class": {
         "en": "runtime, optional input",
@@ -115,6 +151,12 @@
       "name": "Family Dev Handbook",
       "repo": "caty-ai/family-dev-handbook",
       "status": "published",
+      "tagline": {
+        "en": "The rules of the road — issues, PRs, worktrees, handoffs, parallel development",
+        "ja": "開発の交通ルール — Issue・PR・worktree・受け渡し・並行開発",
+        "zh": "开发的交通规则 — Issue、PR、worktree、交接与并行开发",
+        "th": "กติกากลางของการพัฒนา — Issue, PR, worktree, การส่งงานต่อ และการทำงานคู่ขนาน"
+      },
       "license": "MIT",
       "class": {
         "en": "non-runtime governance",
@@ -131,6 +173,12 @@
       "name": "Family Memory Architecture",
       "repo": "shojikumaru/family-memory-architecture",
       "status": "preparing",
+      "tagline": {
+        "en": "The memory bus — how the family shares what it knows",
+        "ja": "記憶バス — 家族が知っていることを共有する層",
+        "zh": "记忆总线 — 家族共享所知的一层",
+        "th": "บัสความทรงจำ — ชั้นที่ครอบครัวใช้แบ่งปันสิ่งที่รู้"
+      },
       "license": null,
       "class": {
         "en": "runtime, horizontal infrastructure",
@@ -146,6 +194,12 @@
       "name": "Self Growth Loop",
       "repo": "shojikumaru/self-growth-loop",
       "status": "preparing",
+      "tagline": {
+        "en": "Lets an agent grow its own abilities — proposals, governance, adoption records",
+        "ja": "エージェントが自分の能力を育てるループ — 提案・ガバナンス・採用記録",
+        "zh": "让智能体自我成长的循环 — 提案、治理与采用记录",
+        "th": "วงจรให้เอเจนต์พัฒนาความสามารถของตัวเอง — ข้อเสนอ ธรรมาภิบาล และบันทึกการนำไปใช้"
+      },
       "license": null,
       "class": {
         "en": "runtime, application",
@@ -165,6 +219,12 @@
       "name": "Persona Growth Loop",
       "repo": "shojikumaru/persona-growth-loop",
       "status": "preparing",
+      "tagline": {
+        "en": "Grows the persona itself — minimal, idempotent proposals",
+        "ja": "人格そのものを育てる — 最小・冪等な提案づくり",
+        "zh": "让人格本身成长 — 以最小且幂等的提案",
+        "th": "พัฒนาบุคลิกของเอเจนต์ — สร้างข้อเสนอแบบน้อยที่สุดและทำซ้ำได้"
+      },
       "license": null,
       "class": {
         "en": "planned frontend",

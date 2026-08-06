@@ -13,7 +13,9 @@ from family_footer import (
     END_MARKER,
     START_MARKER,
     FetchResult,
+    FooterError,
     check_registry_footers,
+    lint_registry,
     render_region,
     render_repo_to_target,
     resolve_declared_readmes,
@@ -31,11 +33,37 @@ def base_registry():
                 "zh": "Intro {map}.",
                 "th": "Intro {map}.",
             },
-            "siblings_label": {
-                "en": "Siblings",
-                "ja": "Siblings",
-                "zh": "Siblings",
-                "th": "Siblings",
+            "table_module": {
+                "en": "Module",
+                "ja": "モジュール",
+                "zh": "模块",
+                "th": "โมดูล",
+            },
+            "table_what": {
+                "en": "What it does",
+                "ja": "何をするもの",
+                "zh": "做什么",
+                "th": "ทำอะไร",
+            },
+            "table_state": {
+                "en": "State",
+                "ja": "状態",
+                "zh": "状态",
+                "th": "สถานะ",
+            },
+        },
+        "status_labels": {
+            "published": {
+                "en": "published",
+                "ja": "公開",
+                "zh": "已公开",
+                "th": "เปิดแล้ว",
+            },
+            "preparing": {
+                "en": "preparing",
+                "ja": "準備中",
+                "zh": "准备中",
+                "th": "กำลังเตรียม",
             },
         },
         "modules": [
@@ -44,12 +72,24 @@ def base_registry():
                 "name": "Alpha",
                 "repo": "caty-ai/alpha",
                 "status": "published",
+                "tagline": {
+                    "en": "Alpha work",
+                    "ja": "Alpha の仕事",
+                    "zh": "Alpha 的工作",
+                    "th": "งานของ Alpha",
+                },
             },
             {
                 "id": "beta",
                 "name": "Beta",
                 "repo": "caty-ai/beta",
                 "status": "published",
+                "tagline": {
+                    "en": "Beta work",
+                    "ja": "Beta の仕事",
+                    "zh": "Beta 的工作",
+                    "th": "งานของ Beta",
+                },
                 "readme_overrides": {"README.zh-CN.md": "zh"},
             },
             {
@@ -57,6 +97,12 @@ def base_registry():
                 "name": "Gamma",
                 "repo": "caty-ai/gamma",
                 "status": "preparing",
+                "tagline": {
+                    "en": "Gamma work",
+                    "ja": "Gamma の仕事",
+                    "zh": "Gamma 的工作",
+                    "th": "งานของ Gamma",
+                },
             },
         ],
         "retired_repos": [],
@@ -184,13 +230,58 @@ def test_declared_set_resolution():
     assert reduced_files == [("README.md", "en"), ("README.zh.md", "zh")]
 
 
+def test_table_rendering():
+    registry = base_registry()
+    region = render_region(registry, registry["modules"][0], "en", "\n")
+    table_lines = [line for line in region.splitlines() if line.startswith("|")]
+    assert table_lines == [
+        "| Module | What it does | State |",
+        "| --- | --- | --- |",
+        "| **Alpha** | Alpha work | published |",
+        "| [Beta](https://github.com/caty-ai/beta) | Beta work | published |",
+        "| **Gamma** | Gamma work | preparing |",
+    ]
+    assert "https://github.com/caty-ai/alpha" not in region
+    assert "https://github.com/caty-ai/gamma" not in region
+
+    ja_region = render_region(registry, registry["modules"][0], "ja", "\n")
+    assert "| モジュール | 何をするもの | 状態 |" in ja_region
+    assert "| **Alpha** | Alpha の仕事 | 公開 |" in ja_region
+    assert "| **Gamma** | Gamma の仕事 | 準備中 |" in ja_region
+
+
+def test_table_lint_failures():
+    missing_tagline = base_registry()
+    del missing_tagline["modules"][0]["tagline"]["th"]
+    failures = lint_registry(missing_tagline)
+    assert any(
+        "module 'alpha': tagline.th must be a string" in failure for failure in failures
+    )
+
+    missing_headers = base_registry()
+    del missing_headers["footer_text"]["table_what"]
+    del missing_headers["footer_text"]["table_state"]["zh"]
+    failures = lint_registry(missing_headers)
+    assert "registry/modules.json: footer_text.table_what must be an object" in failures
+    assert "registry/modules.json: footer_text.table_state.zh must be a string" in failures
+
+    invalid_tagline = base_registry()
+    invalid_tagline["modules"][0]["tagline"]["en"] = "Alpha | work"
+    try:
+        render_region(invalid_tagline, invalid_tagline["modules"][0], "en", "\n")
+    except FooterError as exc:
+        assert "tagline.en may not contain '|'" in str(exc)
+    else:
+        raise AssertionError("a pipe in a rendered tagline must fail closed")
+
+
 def test_check_rules():
     registry = base_registry()
 
     mismatch_registry = copy.deepcopy(registry)
     mismatch_registry["modules"][0]["footer"] = True
     good_region = render_region(mismatch_registry, mismatch_registry["modules"][0], "en", "\n")
-    bad_doc = document_with_region(good_region.replace("Siblings", "Siblingz", 1), "\n")
+    bad_doc = document_with_region(good_region.replace("Alpha work", "Alpha drift", 1), "\n")
     mismatch_fetch = lambda repo, filename: FetchResult("ok", bad_doc)
     failures, notes = check_registry_footers(mismatch_registry, fetcher=mismatch_fetch)
     assert any("footer content does not match the registry" in failure for failure in failures)
@@ -239,7 +330,14 @@ def test_render_idempotency_and_listing():
         assert "\r\n" in readme
         assert "[Beta](https://github.com/caty-ai/beta)" in readme
         assert "[Alpha](https://github.com/caty-ai/alpha)" not in readme
-        assert "Gamma" not in readme
+        assert "| **Alpha** | Alpha work | published |" in readme
+        assert "| **Gamma** | Gamma work | preparing |" in readme
+        assert "https://github.com/caty-ai/gamma" not in readme
+
+        ja_readme = (root / "README.ja.md").read_bytes().decode("utf-8")
+        assert "| モジュール | 何をするもの | 状態 |" in ja_readme
+        assert "| **Alpha** | Alpha の仕事 | 公開 |" in ja_readme
+        assert "| **Gamma** | Gamma の仕事 | 準備中 |" in ja_readme
 
         changed_again, changed_files_again = render_repo_to_target(
             registry, root, target_module["repo"]
@@ -254,6 +352,8 @@ def main() -> int:
         test_fence_tracker_edges,
         test_language_resolution,
         test_declared_set_resolution,
+        test_table_rendering,
+        test_table_lint_failures,
         test_check_rules,
         test_render_idempotency_and_listing,
     ]
