@@ -2,7 +2,7 @@
 
 The family footer is one generated region per declared root `README*.md` in sibling repositories. Literal generated marker lines may appear in documentation only inside fenced code blocks.
 
-The v3.1 content amendment replaces v3's sibling list with a full-module table. Marker parsing, declared files, byte-exact comparison, and all four enforcement rules are unchanged.
+The v3.2 content amendment adds the Family OS map row and a leading axis column to the full-module table. Marker parsing, declared files, byte-exact comparison, and all four enforcement rules are unchanged.
 
 ## Markers
 
@@ -13,11 +13,12 @@ The v3.1 content amendment replaces v3's sibling list with a full-module table. 
 
 {intro with {map} replaced by [Family OS](https://github.com/<map_repo>)}
 
-| Module | What it does | State |
-| --- | --- | --- |
-| **Host Module** | {tagline for this language} | {status label for this language} |
-| [Published Module](https://github.com/<repo>) | {tagline for this language} | {status label for this language} |
-| **Preparing Module** | {tagline for this language} | {status label for this language} |
+| Axis | Module | What it does | State |
+| --- | --- | --- | --- |
+| Map | [Family OS](https://github.com/<map_repo>) | {map tagline for this language} | {published status label for this language} |
+| Rules | **Host Module** | {tagline for this language} | {status label for this language} |
+| Vertical · foundation | [Published Foundation](https://github.com/<repo>) | {tagline for this language} | {status label for this language} |
+| Horizontal | **Preparing Module** | {tagline for this language} | {status label for this language} |
 
 <!-- family:generated:family-footer:end -->
 ```
@@ -28,12 +29,16 @@ The v3.1 content amendment replaces v3's sibling list with a full-module table. 
 
 ## Content
 
-- The table contains every registry module in registry order, including modules still being prepared and the repository hosting the footer.
+- The first data row is always the Family OS map. Its name is always linked to `https://github.com/<map_repo>`, including when there is no host module to exclude. Its axis label, localized tagline, and published state come from `footer_text.axis_map`, `footer_text.map_tagline`, and `status_labels.published`; its uniform display name comes from `footer_text.map_name`.
+- The remaining rows contain every registry module in registry order, including modules still being prepared and the repository hosting the footer. Registry order is the display order: it encodes rules first, then the vertical axis with its foundation first, then the horizontal axis with its foundation first.
+- Each module declares `axis.group` as `rules`, `vertical`, or `horizontal`, and `axis.foundation` as a boolean. The localized axis cell comes from `footer_text.axis_rules`, `footer_text.axis_vertical`, or `footer_text.axis_horizontal`; a true foundation flag appends `footer_text.axis_foundation_suffix`.
+- The axis column mirrors the Family OS three-layer structure: rules sit above the vertical and horizontal axes beneath them. The map row represents the whole structure rather than one of those module layers.
 - A published module name links to its repository, except that the host row is bold and unlinked. A preparing module name is also bold and unlinked, so the footer shows the full map without shipping an intentional `404` link.
 - The localized description comes from the module's required `tagline` registry field. Every tagline must define every registry language.
 - The localized state comes directly from `status_labels`; module `note` fields are not rendered.
-- The three localized headers come from `footer_text.table_module`, `footer_text.table_what`, and `footer_text.table_state`.
-- Header, module-name, tagline, and status-label cells fail validation if they contain a pipe or newline, rather than emitting a malformed Markdown table.
+- The four localized headers come from `footer_text.table_axis`, `footer_text.table_module`, `footer_text.table_what`, and `footer_text.table_state`.
+- Every new `footer_text` section (`table_axis`, `map_name`, `axis_map`, `axis_rules`, `axis_vertical`, `axis_horizontal`, `axis_foundation_suffix`, and `map_tagline`) must define every registry language.
+- Header, axis, map-name, module-name, tagline, and status-label cells fail validation if they contain a pipe or newline, rather than emitting a malformed Markdown table.
 
 ## Declared Files
 

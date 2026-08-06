@@ -124,14 +124,14 @@ module means editing that file; every generated block in every language follows.
 <!-- family:generated:repository-links:start -->
 | Module | Link target | State |
 | --- | --- | --- |
+| Family Dev Handbook | `caty-ai/family-dev-handbook` | published, MIT |
 | Caty Agent Harness | `caty-ai/caty-agent-harness` | published, MIT |
 | Persona Engine | `caty-ai/persona-engine` | published, MIT |
-| Sitter | `caty-ai/sitter` | published, MIT |
-| X Collector | `caty-ai/x-collector` | published, MIT |
-| Family Dev Handbook | `caty-ai/family-dev-handbook` | published, MIT |
-| Family Memory Architecture | `shojikumaru/family-memory-architecture` | publication in preparation |
-| Self Growth Loop | `shojikumaru/self-growth-loop` | publication in preparation; harness link implemented |
 | Persona Growth Loop | `shojikumaru/persona-growth-loop` | publication in preparation; planned |
+| X Collector | `caty-ai/x-collector` | published, MIT |
+| Self Growth Loop | `shojikumaru/self-growth-loop` | publication in preparation; harness link implemented |
+| Family Memory Architecture | `shojikumaru/family-memory-architecture` | publication in preparation |
+| Sitter | `caty-ai/sitter` | published, MIT |
 <!-- family:generated:repository-links:end -->
 
 ### Superseded v3 map rules

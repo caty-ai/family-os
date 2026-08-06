@@ -195,7 +195,20 @@ def lint_registry(registry: dict) -> List[str]:
     if not isinstance(footer_text, dict):
         failures.append("registry/modules.json: footer_text must be an object")
     else:
-        for key in ("intro", "table_module", "table_what", "table_state"):
+        for key in (
+            "intro",
+            "table_axis",
+            "table_module",
+            "table_what",
+            "table_state",
+            "map_name",
+            "axis_map",
+            "axis_rules",
+            "axis_vertical",
+            "axis_horizontal",
+            "axis_foundation_suffix",
+            "map_tagline",
+        ):
             section = footer_text.get(key)
             if not isinstance(section, dict):
                 failures.append("registry/modules.json: footer_text.%s must be an object" % key)
@@ -260,6 +273,16 @@ def lint_registry(registry: dict) -> List[str]:
         status = module.get("status")
         if status not in status_labels:
             failures.append("%s: status must name an entry in status_labels" % label)
+        axis = module.get("axis")
+        if not isinstance(axis, dict):
+            failures.append("%s: axis must be an object" % label)
+        else:
+            if axis.get("group") not in {"rules", "vertical", "horizontal"}:
+                failures.append(
+                    "%s: axis.group must be one of rules, vertical, horizontal" % label
+                )
+            if not isinstance(axis.get("foundation"), bool):
+                failures.append("%s: axis.foundation must be a boolean" % label)
         if "footer" in module and not isinstance(module["footer"], bool):
             failures.append("%s: footer must be a boolean when present" % label)
         if footer_enabled(module) and module.get("status") != "published":
@@ -272,13 +295,28 @@ def lint_registry(registry: dict) -> List[str]:
     return failures
 
 
-def map_link(registry: dict) -> str:
-    return "[Family OS](https://github.com/%s)" % registry["map_repo"]
+def map_link(registry: dict, lang: str) -> str:
+    return "[%s](https://github.com/%s)" % (
+        registry["footer_text"]["map_name"][lang],
+        registry["map_repo"],
+    )
 
 
-def module_table(registry: dict, host_module: dict, lang: str, newline: str) -> str:
+def module_axis(registry: dict, module: dict, lang: str) -> str:
+    axis = module["axis"]
+    value = registry["footer_text"]["axis_%s" % axis["group"]][lang]
+    if axis["foundation"]:
+        value += registry["footer_text"]["axis_foundation_suffix"][lang]
+    validate_table_cell_value("%s axis.%s" % (module_label(module), lang), value)
+    return value
+
+
+def module_table(
+    registry: dict, host_module: Optional[dict], lang: str, newline: str
+) -> str:
     footer_text = registry["footer_text"]
     headers = [
+        ("table_axis", footer_text["table_axis"][lang]),
         ("table_module", footer_text["table_module"][lang]),
         ("table_what", footer_text["table_what"][lang]),
         ("table_state", footer_text["table_state"][lang]),
@@ -287,10 +325,23 @@ def module_table(registry: dict, host_module: dict, lang: str, newline: str) -> 
         validate_table_cell_value("footer_text.%s.%s" % (key, lang), value)
 
     rows = [
-        "| %s | %s | %s |" % tuple(value for _key, value in headers),
-        "| --- | --- | --- |",
+        "| %s | %s | %s | %s |" % tuple(value for _key, value in headers),
+        "| --- | --- | --- | --- |",
     ]
+    map_axis = footer_text["axis_map"][lang]
+    map_name = footer_text["map_name"][lang]
+    map_tagline = footer_text["map_tagline"][lang]
+    map_status = registry["status_labels"]["published"][lang]
+    validate_table_cell_value("footer_text.axis_map.%s" % lang, map_axis)
+    validate_table_cell_value("footer_text.map_name.%s" % lang, map_name)
+    validate_table_cell_value("footer_text.map_tagline.%s" % lang, map_tagline)
+    validate_table_cell_value("status_labels.published.%s" % lang, map_status)
+    rows.append(
+        "| %s | %s | %s | %s |"
+        % (map_axis, map_link(registry, lang), map_tagline, map_status)
+    )
     for module in registry["modules"]:
+        axis = module_axis(registry, module, lang)
         name = module["name"]
         tagline = module["tagline"][lang]
         status = registry["status_labels"][module["status"]][lang]
@@ -300,16 +351,21 @@ def module_table(registry: dict, host_module: dict, lang: str, newline: str) -> 
             "status_labels.%s.%s" % (module["status"], lang), status
         )
 
-        if module["repo"] == host_module["repo"] or module["status"] != "published":
+        is_host = host_module is not None and module["repo"] == host_module["repo"]
+        if is_host or module["status"] != "published":
             rendered_name = "**%s**" % name
         else:
             rendered_name = "[%s](https://github.com/%s)" % (name, module["repo"])
-        rows.append("| %s | %s | %s |" % (rendered_name, tagline, status))
+        rows.append("| %s | %s | %s | %s |" % (axis, rendered_name, tagline, status))
     return newline.join(rows)
 
 
-def render_region(registry: dict, module: dict, lang: str, newline: str) -> str:
-    intro = registry["footer_text"]["intro"][lang].replace("{map}", map_link(registry))
+def render_region(
+    registry: dict, module: Optional[dict], lang: str, newline: str
+) -> str:
+    intro = registry["footer_text"]["intro"][lang].replace(
+        "{map}", map_link(registry, lang)
+    )
     table = module_table(registry, module, lang, newline)
     return (
         newline

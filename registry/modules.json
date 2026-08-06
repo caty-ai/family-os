@@ -15,6 +15,12 @@
       "zh": "本仓库属于 **Caty AI 家族** — 用于运营 AI 智能体家族的开源工具集。完整地图（包括仍在准备公开的模块）见 {map}。",
       "th": "รีโพนี้เป็นส่วนหนึ่งของ **ครอบครัว Caty AI** — ชุดเครื่องมือโอเพนซอร์สสำหรับดูแลครอบครัวเอเจนต์ AI แผนที่ฉบับเต็ม (รวมโมดูลที่กำลังเตรียมเปิด) อยู่ที่ {map}"
     },
+    "table_axis": {
+      "en": "Axis",
+      "ja": "軸",
+      "zh": "轴",
+      "th": "แกน"
+    },
     "table_module": {
       "en": "Module",
       "ja": "モジュール",
@@ -32,6 +38,48 @@
       "ja": "状態",
       "zh": "状态",
       "th": "สถานะ"
+    },
+    "map_name": {
+      "en": "Family OS",
+      "ja": "Family OS",
+      "zh": "Family OS",
+      "th": "Family OS"
+    },
+    "axis_map": {
+      "en": "Map",
+      "ja": "地図",
+      "zh": "地图",
+      "th": "แผนที่"
+    },
+    "axis_rules": {
+      "en": "Rules",
+      "ja": "掟",
+      "zh": "规则",
+      "th": "กติกา"
+    },
+    "axis_vertical": {
+      "en": "Vertical",
+      "ja": "縦軸",
+      "zh": "纵轴",
+      "th": "แกนตั้ง"
+    },
+    "axis_horizontal": {
+      "en": "Horizontal",
+      "ja": "横軸",
+      "zh": "横轴",
+      "th": "แกนนอน"
+    },
+    "axis_foundation_suffix": {
+      "en": " · foundation",
+      "ja": "・基盤",
+      "zh": "・基座",
+      "th": " · รากฐาน"
+    },
+    "map_tagline": {
+      "en": "The map of the whole family — every module, its state, and how they fit",
+      "ja": "AIファミリー全体の地図 — モジュール・状態・つながり",
+      "zh": "整个家族的地图 — 模块、状态与结构",
+      "th": "แผนที่ของทั้งครอบครัว — โมดูล สถานะ และโครงสร้าง"
     }
   },
   "note_separator": {
@@ -56,6 +104,32 @@
   },
   "modules": [
     {
+      "id": "family-dev-handbook",
+      "name": "Family Dev Handbook",
+      "repo": "caty-ai/family-dev-handbook",
+      "status": "published",
+      "tagline": {
+        "en": "The rules of the road — issues, PRs, worktrees, handoffs, parallel development",
+        "ja": "開発の交通ルール — Issue・PR・worktree・受け渡し・並行開発",
+        "zh": "开发的交通规则 — Issue、PR、worktree、交接与并行开发",
+        "th": "กติกากลางของการพัฒนา — Issue, PR, worktree, การส่งงานต่อ และการทำงานคู่ขนาน"
+      },
+      "axis": {
+        "group": "rules",
+        "foundation": false
+      },
+      "license": "MIT",
+      "class": {
+        "en": "non-runtime governance",
+        "ja": "non-runtime・ガバナンス"
+      },
+      "owns": {
+        "en": "issue, PR, worktree, handoff, and parallel-development rules",
+        "ja": "Issue・PR・worktree・受け渡し・並行開発のルール"
+      },
+      "footer": true
+    },
+    {
       "id": "caty-agent-harness",
       "name": "Caty Agent Harness",
       "repo": "caty-ai/caty-agent-harness",
@@ -65,6 +139,10 @@
         "ja": "AIエージェントのタスク基盤 — 試行・リトライ・チェックポイント・完了判定",
         "zh": "AI 智能体的任务基座 — 重试、检查点与完成判定",
         "th": "แกนงานของเอเจนต์ AI — การลองใหม่ เช็คพอยต์ และการตัดสินว่าเสร็จจริง"
+      },
+      "axis": {
+        "group": "vertical",
+        "foundation": true
       },
       "license": "MIT",
       "class": {
@@ -88,6 +166,10 @@
         "zh": "为智能体赋予人格 — 分层人格与情感渐变",
         "th": "มอบบุคลิกให้เอเจนต์ — เลเยอร์บุคลิกและอารมณ์แบบไล่ระดับ"
       },
+      "axis": {
+        "group": "vertical",
+        "foundation": false
+      },
       "readme_overrides": {
         "README.zh-CN.md": "zh"
       },
@@ -103,26 +185,33 @@
       "footer": true
     },
     {
-      "id": "sitter",
-      "name": "Sitter",
-      "repo": "caty-ai/sitter",
-      "status": "published",
+      "id": "persona-growth-loop",
+      "name": "Persona Growth Loop",
+      "repo": "shojikumaru/persona-growth-loop",
+      "status": "preparing",
       "tagline": {
-        "en": "Babysits delegated agent runs — watches, keeps evidence, restarts",
-        "ja": "委譲したエージェント実行の見張り番 — 監視・証拠の記録・再起動",
-        "zh": "替你盯着委派出去的智能体 — 监视、留证、重启",
-        "th": "พี่เลี้ยงของงานที่มอบหมายให้เอเจนต์ — เฝ้าดู เก็บหลักฐาน และรีสตาร์ต"
+        "en": "Grows the persona itself — minimal, idempotent proposals",
+        "ja": "人格そのものを育てる — 最小・冪等な提案づくり",
+        "zh": "让人格本身成长 — 以最小且幂等的提案",
+        "th": "พัฒนาบุคลิกของเอเจนต์ — สร้างข้อเสนอแบบน้อยที่สุดและทำซ้ำได้"
       },
-      "license": "MIT",
+      "axis": {
+        "group": "vertical",
+        "foundation": false
+      },
+      "license": null,
       "class": {
-        "en": "runtime, observation",
-        "ja": "runtime・観測"
+        "en": "planned frontend",
+        "ja": "計画中のフロントエンド"
       },
       "owns": {
-        "en": "local process and reply facts, dispatch-attempt evidence, delegated same-attempt restart",
-        "ja": "ローカルのプロセスと返信の事実・発注試行の証拠・委譲された同一試行の再起動"
+        "en": "minimised, idempotent proposal production",
+        "ja": "最小化された冪等な提案の生成"
       },
-      "footer": true
+      "note": {
+        "en": "planned",
+        "ja": "計画中"
+      }
     },
     {
       "id": "x-collector",
@@ -134,6 +223,10 @@
         "ja": "Xやウェブの素材を1日1回のダイジェストに — 人にもエージェントにも",
         "zh": "把 X 与网络素材汇成每日一份摘要 — 给人也给智能体",
         "th": "รวบรวมข้อมูลจาก X และเว็บเป็นสรุปวันละฉบับ — สำหรับคนและเอเจนต์"
+      },
+      "axis": {
+        "group": "vertical",
+        "foundation": false
       },
       "license": "MIT",
       "class": {
@@ -147,49 +240,6 @@
       "footer": true
     },
     {
-      "id": "family-dev-handbook",
-      "name": "Family Dev Handbook",
-      "repo": "caty-ai/family-dev-handbook",
-      "status": "published",
-      "tagline": {
-        "en": "The rules of the road — issues, PRs, worktrees, handoffs, parallel development",
-        "ja": "開発の交通ルール — Issue・PR・worktree・受け渡し・並行開発",
-        "zh": "开发的交通规则 — Issue、PR、worktree、交接与并行开发",
-        "th": "กติกากลางของการพัฒนา — Issue, PR, worktree, การส่งงานต่อ และการทำงานคู่ขนาน"
-      },
-      "license": "MIT",
-      "class": {
-        "en": "non-runtime governance",
-        "ja": "non-runtime・ガバナンス"
-      },
-      "owns": {
-        "en": "issue, PR, worktree, handoff, and parallel-development rules",
-        "ja": "Issue・PR・worktree・受け渡し・並行開発のルール"
-      },
-      "footer": true
-    },
-    {
-      "id": "family-memory-architecture",
-      "name": "Family Memory Architecture",
-      "repo": "shojikumaru/family-memory-architecture",
-      "status": "preparing",
-      "tagline": {
-        "en": "The memory bus — how the family shares what it knows",
-        "ja": "記憶バス — 家族が知っていることを共有する層",
-        "zh": "记忆总线 — 家族共享所知的一层",
-        "th": "บัสความทรงจำ — ชั้นที่ครอบครัวใช้แบ่งปันสิ่งที่รู้"
-      },
-      "license": null,
-      "class": {
-        "en": "runtime, horizontal infrastructure",
-        "ja": "runtime・横方向の基盤"
-      },
-      "owns": {
-        "en": "the memory bus; registered schedule expectation, check-in, provenance",
-        "ja": "記憶バス・登録されたスケジュールの期待・check-in・来歴"
-      }
-    },
-    {
       "id": "self-growth-loop",
       "name": "Self Growth Loop",
       "repo": "shojikumaru/self-growth-loop",
@@ -199,6 +249,10 @@
         "ja": "エージェントが自分の能力を育てるループ — 提案・ガバナンス・採用記録",
         "zh": "让智能体自我成长的循环 — 提案、治理与采用记录",
         "th": "วงจรให้เอเจนต์พัฒนาความสามารถของตัวเอง — ข้อเสนอ ธรรมาภิบาล และบันทึกการนำไปใช้"
+      },
+      "axis": {
+        "group": "vertical",
+        "foundation": false
       },
       "license": null,
       "class": {
@@ -215,29 +269,55 @@
       }
     },
     {
-      "id": "persona-growth-loop",
-      "name": "Persona Growth Loop",
-      "repo": "shojikumaru/persona-growth-loop",
+      "id": "family-memory-architecture",
+      "name": "Family Memory Architecture",
+      "repo": "shojikumaru/family-memory-architecture",
       "status": "preparing",
       "tagline": {
-        "en": "Grows the persona itself — minimal, idempotent proposals",
-        "ja": "人格そのものを育てる — 最小・冪等な提案づくり",
-        "zh": "让人格本身成长 — 以最小且幂等的提案",
-        "th": "พัฒนาบุคลิกของเอเจนต์ — สร้างข้อเสนอแบบน้อยที่สุดและทำซ้ำได้"
+        "en": "The memory bus — how the family shares what it knows",
+        "ja": "記憶バス — 家族が知っていることを共有する層",
+        "zh": "记忆总线 — 家族共享所知的一层",
+        "th": "บัสความทรงจำ — ชั้นที่ครอบครัวใช้แบ่งปันสิ่งที่รู้"
+      },
+      "axis": {
+        "group": "horizontal",
+        "foundation": true
       },
       "license": null,
       "class": {
-        "en": "planned frontend",
-        "ja": "計画中のフロントエンド"
+        "en": "runtime, horizontal infrastructure",
+        "ja": "runtime・横方向の基盤"
       },
       "owns": {
-        "en": "minimised, idempotent proposal production",
-        "ja": "最小化された冪等な提案の生成"
-      },
-      "note": {
-        "en": "planned",
-        "ja": "計画中"
+        "en": "the memory bus; registered schedule expectation, check-in, provenance",
+        "ja": "記憶バス・登録されたスケジュールの期待・check-in・来歴"
       }
+    },
+    {
+      "id": "sitter",
+      "name": "Sitter",
+      "repo": "caty-ai/sitter",
+      "status": "published",
+      "tagline": {
+        "en": "Babysits delegated agent runs — watches, keeps evidence, restarts",
+        "ja": "委譲したエージェント実行の見張り番 — 監視・証拠の記録・再起動",
+        "zh": "替你盯着委派出去的智能体 — 监视、留证、重启",
+        "th": "พี่เลี้ยงของงานที่มอบหมายให้เอเจนต์ — เฝ้าดู เก็บหลักฐาน และรีสตาร์ต"
+      },
+      "axis": {
+        "group": "horizontal",
+        "foundation": false
+      },
+      "license": "MIT",
+      "class": {
+        "en": "runtime, observation",
+        "ja": "runtime・観測"
+      },
+      "owns": {
+        "en": "local process and reply facts, dispatch-attempt evidence, delegated same-attempt restart",
+        "ja": "ローカルのプロセスと返信の事実・発注試行の証拠・委譲された同一試行の再起動"
+      },
+      "footer": true
     }
   ],
   "retired_repos": [
