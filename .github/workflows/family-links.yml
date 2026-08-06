@@ -38,6 +38,24 @@ jobs:
       - name: check generated blocks are up to date
         run: python3 -B tools/render.py --check
 
+  family-footer:
+    name: family footer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: selftest family footer
+        run: python3 -B tools/selftest_family_footer.py
+
+      # The remote content check stays on schedule/workflow_dispatch only:
+      # running it on every push would create publication-PR deadlock and add
+      # unnecessary fetch load for generated sibling content that changes
+      # across repositories, not only inside this checkout.
+      - name: check family footer contract
+        run: >-
+          python3 -B tools/family_footer.py
+          ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && 'check --require-reality' || 'lint' }}
+
   links:
     name: links resolve
     runs-on: ubuntu-latest
@@ -64,7 +82,7 @@ jobs:
   report:
     name: open an issue if the scheduled run failed
     runs-on: ubuntu-latest
-    needs: [registry, links]
+    needs: [registry, family-footer, links]
     if: failure() && github.event_name == 'schedule'
     steps:
       # Both labels (stale-pointer and severity:high) are assumed to exist;

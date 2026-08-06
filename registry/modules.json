@@ -2,6 +2,21 @@
   "version": 1,
   "note": "Canonical list of Family OS modules. Generated tables in the engineering and visual-system docs come from here; README status wording in all four languages is maintained by hand and checked by tools/check_registry.py. Edit this file, run tools/render.py, and keep those README labels in sync; the checker verifies the claims against GitHub itself.",
   "languages": ["en", "ja", "zh", "th"],
+  "map_repo": "caty-ai/family-os",
+  "footer_text": {
+    "intro": {
+      "en": "Part of the **Caty AI family** — open tools for running a family of AI agents. The full map, including modules still being prepared for release, lives in {map}.",
+      "ja": "このリポジトリは **Caty AI ファミリー** の一員です — AI エージェントの家族を運用するためのオープンなツール群。公開準備中のモジュールを含む全体の地図は {map} にあります。",
+      "zh": "本仓库属于 **Caty AI 家族** — 用于运营 AI 智能体家族的开源工具集。完整地图（包括仍在准备公开的模块）见 {map}。",
+      "th": "รีโพนี้เป็นส่วนหนึ่งของ **ครอบครัว Caty AI** — ชุดเครื่องมือโอเพนซอร์สสำหรับดูแลครอบครัวเอเจนต์ AI แผนที่ฉบับเต็ม (รวมโมดูลที่กำลังเตรียมเปิด) อยู่ที่ {map}"
+    },
+    "siblings_label": {
+      "en": "Siblings",
+      "ja": "兄弟モジュール",
+      "zh": "同家族模块",
+      "th": "โมดูลพี่น้อง"
+    }
+  },
   "note_separator": {
     "en": "; ",
     "ja": "・",
@@ -43,6 +58,9 @@
       "name": "Persona Engine",
       "repo": "caty-ai/persona-engine",
       "status": "published",
+      "readme_overrides": {
+        "README.zh-CN.md": "zh"
+      },
       "license": "MIT",
       "class": {
         "en": "runtime, standalone",

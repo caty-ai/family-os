@@ -11,25 +11,33 @@ import argparse
 import difflib
 import json
 import pathlib
-import re
 import sys
+
+from family_common import (
+    FamilyCommonError,
+    MarkerError,
+    iter_marker_lines,
+    language_of,
+    line_ending,
+)
 
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
 REGISTRY = REPO_ROOT / "registry" / "modules.json"
-
-LANG_SUFFIX = re.compile(r"\.(?P<lang>[a-z]{2}(?:-[A-Z]{2})?)\.md$")
-MARKER = re.compile(
-    r"^<!-- family:generated:(?P<block>[a-z0-9][a-z0-9-]*):"
-    r"(?P<edge>start|end) -->$"
-)
 
 EXPECTED_BLOCKS = {
     pathlib.Path("docs/engineering.md"): ("module-inventory",),
     pathlib.Path("docs/engineering.ja.md"): ("module-inventory",),
     pathlib.Path("docs/readme-visual-system.md"): ("repository-links",),
 }
-KNOWN_BLOCKS = {block for blocks in EXPECTED_BLOCKS.values() for block in blocks}
+FILE_LANG_OVERRIDES = {
+    "engineering.md": "en",
+    "engineering.ja.md": "ja",
+    "readme-visual-system.md": "en",
+}
+RENDERABLE_BLOCKS = {block for blocks in EXPECTED_BLOCKS.values() for block in blocks}
+KNOWN_BLOCKS = set(RENDERABLE_BLOCKS)
+KNOWN_BLOCKS.add("family-footer")
 
 INVENTORY_HEADERS = {
     "en": ("Module", "Class", "Owns", "State"),
@@ -41,25 +49,10 @@ class RenderError(Exception):
     """A registry or generated-region error that should stop rendering."""
 
 
-def language_of(path: pathlib.Path) -> str:
-    match = LANG_SUFFIX.search(path.name)
-    return match.group("lang") if match else "en"
-
-
 def markdown_files(root: pathlib.Path):
     for path in sorted(root.rglob("*.md")):
         if ".git" not in path.parts:
             yield path
-
-
-def marker_line(line: str):
-    content = line.rstrip("\r\n")
-    if "family:generated" not in content.lower():
-        return None
-    match = MARKER.fullmatch(content)
-    if not match:
-        raise RenderError("malformed generated marker: %s" % content)
-    return match.group("block"), match.group("edge")
 
 
 def table_cell(module: dict, field: str, value: str) -> str:
@@ -72,50 +65,46 @@ def table_cell(module: dict, field: str, value: str) -> str:
     return value
 
 
-def find_regions(path: pathlib.Path, text: str):
+def find_regions(path: pathlib.Path, text: str, live_ids):
     """Return block regions as inclusive marker-line indexes."""
     regions = {}
     open_marker = None
-    lines = text.splitlines(keepends=True)
 
-    for index, line in enumerate(lines):
-        try:
-            marker = marker_line(line)
-        except RenderError as exc:
-            raise RenderError("%s:%d: %s" % (path, index + 1, exc))
-        if marker is None:
-            continue
+    try:
+        markers = iter_marker_lines(text, live_ids)
+        for index, block, edge in markers:
+            if block not in KNOWN_BLOCKS:
+                raise RenderError("%s:%d: unknown block-id '%s'" % (path, index + 1, block))
+            if edge == "start":
+                if block in regions:
+                    raise RenderError(
+                        "%s:%d: duplicated marker for block-id '%s'"
+                        % (path, index + 1, block)
+                    )
+                if open_marker is not None:
+                    raise RenderError(
+                        "%s:%d: nested block '%s' inside '%s'"
+                        % (path, index + 1, block, open_marker[0])
+                    )
+                open_marker = (block, index)
+                continue
 
-        block, edge = marker
-        if block not in KNOWN_BLOCKS:
-            raise RenderError("%s:%d: unknown block-id '%s'" % (path, index + 1, block))
-
-        if edge == "start":
-            if block in regions:
+            if open_marker is None:
                 raise RenderError(
-                    "%s:%d: duplicated marker for block-id '%s'"
+                    "%s:%d: end marker for '%s' appears before its start"
                     % (path, index + 1, block)
                 )
-            if open_marker is not None:
+            if open_marker[0] != block:
                 raise RenderError(
-                    "%s:%d: nested block '%s' inside '%s'"
+                    "%s:%d: end marker for '%s' appears inside block '%s'"
                     % (path, index + 1, block, open_marker[0])
                 )
-            open_marker = (block, index)
-            continue
-
-        if open_marker is None:
-            raise RenderError(
-                "%s:%d: end marker for '%s' appears before its start"
-                % (path, index + 1, block)
-            )
-        if open_marker[0] != block:
-            raise RenderError(
-                "%s:%d: end marker for '%s' appears inside block '%s'"
-                % (path, index + 1, block, open_marker[0])
-            )
-        regions[block] = (open_marker[1], index)
-        open_marker = None
+            regions[block] = (open_marker[1], index)
+            open_marker = None
+    except MarkerError as exc:
+        raise RenderError("%s:%d: %s" % (path, exc.line_number, exc))
+    except FamilyCommonError as exc:
+        raise RenderError("%s: %s" % (path, exc))
 
     if open_marker is not None:
         raise RenderError(
@@ -180,18 +169,16 @@ def render_repository_links(registry: dict) -> str:
 
 def render_block(block: str, registry: dict, path: pathlib.Path) -> str:
     if block == "module-inventory":
-        return render_inventory(registry, language_of(path))
+        try:
+            return render_inventory(
+                registry,
+                language_of(path, registry["languages"], FILE_LANG_OVERRIDES),
+            )
+        except FamilyCommonError as exc:
+            raise RenderError(str(exc))
     if block == "repository-links":
         return render_repository_links(registry)
     raise RenderError("unknown block-id '%s'" % block)
-
-
-def line_ending(line: str) -> str:
-    if line.endswith("\r\n"):
-        return "\r\n"
-    if line.endswith("\n"):
-        return "\n"
-    raise RenderError("a start marker must occupy its own line")
 
 
 def expected_text(path: pathlib.Path, text: str, regions: dict, registry: dict) -> str:
@@ -199,7 +186,10 @@ def expected_text(path: pathlib.Path, text: str, regions: dict, registry: dict) 
     for block, (start, end) in sorted(
         regions.items(), key=lambda item: item[1][0], reverse=True
     ):
-        newline = line_ending(lines[start])
+        try:
+            newline = line_ending(lines[start])
+        except FamilyCommonError as exc:
+            raise RenderError("%s:%d: %s" % (path, start + 1, exc))
         rendered = render_block(block, registry, path).replace("\n", newline) + newline
         lines[start + 1 : end] = [rendered]
     return "".join(lines)
@@ -207,7 +197,7 @@ def expected_text(path: pathlib.Path, text: str, regions: dict, registry: dict) 
 
 def collect_files(registry: dict):
     results = []
-    found = {block: 0 for block in KNOWN_BLOCKS}
+    found = {block: 0 for block in RENDERABLE_BLOCKS}
     regions_by_path = {}
 
     for path in markdown_files(REPO_ROOT):
@@ -217,14 +207,20 @@ def collect_files(registry: dict):
             raise RenderError("could not read %s: %s" % (path, exc))
 
         relative = path.relative_to(REPO_ROOT)
-        regions = find_regions(relative, text)
+        live_ids = set(EXPECTED_BLOCKS.get(relative, ()))
+        regions = find_regions(relative, text, live_ids)
         regions_by_path[relative] = regions
         if not regions:
             continue
 
-        allowed = set(EXPECTED_BLOCKS.get(relative, ()))
+        allowed = live_ids
         for block in regions:
             if block not in allowed:
+                if block == "family-footer":
+                    raise RenderError(
+                        "%s: block 'family-footer' is rendered by tools/family_footer.py into sibling repositories"
+                        % relative
+                    )
                 raise RenderError(
                     "%s: block-id '%s' has no renderer for this file" % (relative, block)
                 )
@@ -259,7 +255,7 @@ def main() -> int:
     parser.add_argument(
         "--check",
         action="store_true",
-        help="print diffs for stale blocks without changing files",
+        help="print diffs for stale blocks without changing any files",
     )
     args = parser.parse_args()
 
