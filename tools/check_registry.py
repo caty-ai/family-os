@@ -26,6 +26,9 @@ import sys
 import urllib.error
 import urllib.request
 
+from family_common import DegradedReality
+
+
 REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
 
 # README.ja.md -> ja, docs/engineering.ja.md -> ja, README.md -> en
@@ -101,38 +104,63 @@ def github_is_public(repo: str, timeout: float = 20.0):
         return None
 
 
+def _append_reality_result(
+    repo: str,
+    expected_public: bool,
+    failures: list,
+    degraded: DegradedReality,
+    note_suffix: str,
+) -> None:
+    public = github_is_public(repo)
+    if public is None:
+        degraded.skip(repo, "%s: could not reach GitHub, reality check skipped" % repo)
+        return
+    if isinstance(public, tuple) and public[0] == "moved":
+        failures.append(
+            "moved: %s redirects to %s. Update registry/modules.json with "
+            "the current repository name and re-run tools/render.py."
+            % (repo, public[1] or "an unspecified location")
+        )
+        return
+    if public != expected_public:
+        failures.append(note_suffix % ("PUBLIC" if public else "PRIVATE/absent"))
+
+
 def check_reality(
     registry: dict, failures: list, notes: list, require_reality: bool = False
 ) -> int:
-    skipped = 0
+    degraded = DegradedReality()
     for module in registry["modules"]:
         repo = module["repo"]
-        public = github_is_public(repo)
-        if public is None:
-            notes.append("%s: could not reach GitHub, reality check skipped" % repo)
-            skipped += 1
-            continue
-        if isinstance(public, tuple) and public[0] == "moved":
-            failures.append(
-                "moved: %s redirects to %s. Update registry/modules.json with "
-                "the current repository name and re-run tools/render.py."
-                % (repo, public[1] or "an unspecified location")
-            )
-            continue
-        expected_public = module["status"] == "published"
-        if public != expected_public:
-            failures.append(
-                "reality: %s is declared '%s' but GitHub serves it as %s to an "
+        _append_reality_result(
+            repo,
+            module["status"] == "published",
+            failures,
+            degraded,
+            (
+                "reality: %s is declared '%s' but GitHub serves it as %%s to an "
                 "anonymous visitor. Update registry/modules.json and re-run "
                 "tools/render.py."
-                % (repo, module["status"], "PUBLIC" if public else "PRIVATE/absent")
             )
-    if require_reality and skipped:
-        failures.append(
-            "degraded: could not verify %d modules; --require-reality rejects "
-            "this degraded run, not a confirmed registry mismatch" % skipped
+            % (repo, module["status"]),
         )
-    return skipped
+
+    map_repo = registry.get("map_repo")
+    if map_repo:
+        _append_reality_result(
+            map_repo,
+            True,
+            failures,
+            degraded,
+            (
+                "reality: map_repo %s must be public to an anonymous visitor. "
+                "Update registry/modules.json if the family map moved."
+            )
+            % map_repo,
+        )
+
+    notes.extend(degraded.notes())
+    return degraded.finalize(failures, require_reality)
 
 
 def check_retired(registry: dict, root: pathlib.Path, failures: list) -> None:
@@ -171,7 +199,7 @@ def check_status_text(registry: dict, root: pathlib.Path, failures: list) -> int
             url = "https://github.com/%s" % module["repo"]
             pattern = re.compile(re.escape(url) + r"(?![A-Za-z0-9_-])")
             correct = module["status"]
-            wrong = [s for s in statuses if s != correct]
+            wrong = [status for status in statuses if status != correct]
 
             for match in pattern.finditer(text):
                 index = match.start()
@@ -242,7 +270,8 @@ def main() -> int:
     print("link occurrences    : %d" % occurrences)
     print("reality check       : %s" % ("skipped" if args.offline else "on (anonymous)"))
     if not args.offline:
-        print("reality skipped    : %d of %d" % (skipped, len(registry["modules"])))
+        reality_targets = len(registry["modules"]) + (1 if registry.get("map_repo") else 0)
+        print("reality skipped    : %d of %d" % (skipped, reality_targets))
 
     for note in notes:
         print("  note: %s" % note)
