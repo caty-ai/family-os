@@ -2,7 +2,7 @@
 
 The family footer is one generated region per declared root `README*.md` in sibling repositories. Literal generated marker lines may appear in documentation only inside fenced code blocks.
 
-The v3.2 content amendment adds the Family OS map row and a leading axis column to the full-module table. Marker parsing, declared files, byte-exact comparison, and all four enforcement rules are unchanged.
+The v3.2 content amendment adds the Family OS map row and a leading axis column to the full-module table. The v3.3 amendment fixes the block's placement (below, trialled on sitter and owner-approved). Marker parsing, declared files, byte-exact comparison, and all four enforcement rules are unchanged.
 
 ## Markers
 
@@ -26,6 +26,7 @@ The v3.2 content amendment adds the Family OS map row and a leading axis column 
 - The block id is `family-footer`.
 - The content inside the region always has a leading blank line and a trailing blank line.
 - The renderer preserves the start marker's newline bytes and compares only the bytes between the markers.
+- Placement (v3.3): the block sits directly below the repository's learn-more section — the part that points readers deeper — and above any acknowledgements, hand-written family prose, and the License section. The byte-exact comparison itself is position-independent; this is the layout convention every family README follows, and the position new repositories adopt at publication.
 
 ## Content
 
