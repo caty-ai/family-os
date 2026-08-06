@@ -271,8 +271,8 @@
     {
       "id": "family-memory-architecture",
       "name": "Family Memory Architecture",
-      "repo": "shojikumaru/family-memory-architecture",
-      "status": "preparing",
+      "repo": "caty-ai/family-memory-architecture",
+      "status": "published",
       "tagline": {
         "en": "The memory bus — how the family shares what it knows",
         "ja": "記憶バス — 家族が知っていることを共有する層",
@@ -283,7 +283,7 @@
         "group": "horizontal",
         "foundation": true
       },
-      "license": null,
+      "license": "MIT",
       "class": {
         "en": "runtime, horizontal infrastructure",
         "ja": "runtime・横方向の基盤"

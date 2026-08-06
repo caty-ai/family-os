@@ -143,7 +143,7 @@ flowchart TB
 | --- | --- | --- |
 | **Rules** | parallel sessions fight over the same file and break it | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook) (published, MIT) |
 | **Vertical** | forgetting; stopping halfway; "it's done" that cannot be checked | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) (published, MIT) as the foundation, with growth loops on top |
-| **Horizontal** | memory scattered per agent; delegated work that goes missing | [FMA](https://github.com/shojikumaru/family-memory-architecture) (publication in preparation) and [Sitter](https://github.com/caty-ai/sitter) (published, MIT) |
+| **Horizontal** | memory scattered per agent; delegated work that goes missing | [FMA](https://github.com/caty-ai/family-memory-architecture) (published, MIT) and [Sitter](https://github.com/caty-ai/sitter) (published, MIT) |
 
 > **Note:** Everything marked "published, MIT" is open right now — you can click it today. Links marked "publication in preparation" cannot be opened yet, and will open in order of release.
 
@@ -211,7 +211,7 @@ Once each agent holds one of these vertical axes, the horizontal axis connects t
 
 ## The horizontal axis: connecting the family
 
-Agents that each hold the same vertical axis are connected sideways by [Family Memory Architecture (FMA)](https://github.com/shojikumaru/family-memory-architecture) (publication in preparation). It is the layer responsible for sharing information across the family and for how they work together.
+Agents that each hold the same vertical axis are connected sideways by [Family Memory Architecture (FMA)](https://github.com/caty-ai/family-memory-architecture) (published, MIT). It is the layer responsible for sharing information across the family and for how they work together.
 
 [Sitter](https://github.com/caty-ai/sitter) (published, MIT) watches, from the outside, the work you delegate to sub-agents and the nudges — the messages — that pass between family members. No reply coming back, work frozen partway through: it is the layer that finds those dropped handovers and sees them through to the end.
 
@@ -280,7 +280,7 @@ There is nothing to do on the Family OS side. No install, no account, no config 
 
 If you are unsure, start with [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) on the vertical axis. It lets one agent learn from failure and carry long work through to the end with evidence behind it. It is free under MIT, and the setup steps are in that repository's README. If the thing that hurts most is work that stops without telling you, go straight to [Sitter](https://github.com/caty-ai/sitter) instead — it is also open and also MIT.
 
-FMA on the horizontal axis is still in preparation. If you want to know when it opens, watch this repository.
+FMA on the horizontal axis is published too (MIT). If scattered memory is what hurts most, start with [FMA](https://github.com/caty-ai/family-memory-architecture).
 
 Before you go, here is what this map will never do.
 

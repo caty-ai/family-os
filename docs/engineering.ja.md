@@ -45,7 +45,7 @@ flowchart TB
 | --- | --- | --- |
 | 掟 | 並行作業を壊さない進め方 — Issue・ブランチ・worktree・受け渡し | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook) |
 | 縦軸 | 1体のAIが、覚え・やり切り・育つ方法 | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) と成長ループ |
-| 横軸 | 複数のAIが記憶を共有し、仕事を渡す方法 | [Family Memory Architecture](https://github.com/shojikumaru/family-memory-architecture) と [Sitter](https://github.com/caty-ai/sitter) |
+| 横軸 | 複数のAIが記憶を共有し、仕事を渡す方法 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) と [Sitter](https://github.com/caty-ai/sitter) |
 
 掟の層は、どちらかの軸の内側ではなく**両方の上**にあります。掟はプログラムではなく文書です。人とAIがモジュールをどう開発するかを縛るだけで、runtime では何も強制しません。
 
@@ -64,7 +64,7 @@ flowchart TB
 | [Persona Growth Loop](https://github.com/shojikumaru/persona-growth-loop) | 計画中のフロントエンド | 最小化された冪等な提案の生成 | 公開準備中・計画中 |
 | [X Collector](https://github.com/caty-ai/x-collector) | runtime・任意の入力 | 能力ループ向けの外部素材の収集 | 公開・MIT |
 | [Self Growth Loop](https://github.com/shojikumaru/self-growth-loop) | runtime・アプリケーション | 提案・ガバナンス・採用記録・成長の解釈 | 公開準備中・基盤との接続は実装済み |
-| [Family Memory Architecture](https://github.com/shojikumaru/family-memory-architecture) | runtime・横方向の基盤 | 記憶バス・登録されたスケジュールの期待・check-in・来歴 | 公開準備中 |
+| [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) | runtime・横方向の基盤 | 記憶バス・登録されたスケジュールの期待・check-in・来歴 | 公開・MIT |
 | [Sitter](https://github.com/caty-ai/sitter) | runtime・観測 | ローカルのプロセスと返信の事実・発注試行の証拠・委譲された同一試行の再起動 | 公開・MIT |
 <!-- family:generated:module-inventory:end -->
 

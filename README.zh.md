@@ -143,7 +143,7 @@ flowchart TB
 | --- | --- | --- |
 | **规约** | 多个会话争抢同一个文件并把它弄坏 | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook)（已公开・MIT） |
 | **纵轴** | 会忘记、会中途停下、「做好了」无法核实 | 以 [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（已公开・MIT）为基础，再加上成长循环 |
-| **横轴** | 每个 AI 的记忆各自为政；交出去的工作不知所踪 | [FMA](https://github.com/shojikumaru/family-memory-architecture)（准备公开中）与 [Sitter](https://github.com/caty-ai/sitter)（已公开・MIT） |
+| **横轴** | 每个 AI 的记忆各自为政；交出去的工作不知所踪 | [FMA](https://github.com/caty-ai/family-memory-architecture)（已公开・MIT）与 [Sitter](https://github.com/caty-ai/sitter)（已公开・MIT） |
 
 > **备注:** 标有「已公开・MIT」的现在就能点开。标有「准备公开中」的链接目前还打不开，会按公开顺序陆续开放。
 
@@ -211,7 +211,7 @@ Persona Engine 与 X Collector 可以从这张图中拆出来单独使用。X Co
 
 ## 连接家族的横轴
 
-持有同样纵轴的智能体之间，由 [Family Memory Architecture（FMA）](https://github.com/shojikumaru/family-memory-architecture)（准备公开中）横向连接。它是负责家族内部信息共享与协作方式的一层。
+持有同样纵轴的智能体之间，由 [Family Memory Architecture（FMA）](https://github.com/caty-ai/family-memory-architecture)（已公开・MIT）横向连接。它是负责家族内部信息共享与协作方式的一层。
 
 [Sitter](https://github.com/caty-ai/sitter)（已公开・MIT）从外部盯着两件事：交给子智能体的工作，以及家族成员之间的 nudge（相互传递的消息）。回复迟迟不来、工作卡在半路 —— 它就是负责发现这类交接遗漏、并推动它们走到最后的一层。
 
@@ -280,7 +280,7 @@ Family OS 这边没有要做的事。不用安装，不用注册账号，也没�
 
 如果不知从何入手，就从纵轴的 [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) 开始。它能让一个 AI 从失败中学习，并带着证据把长时间的工作做到最后。它是免费的 MIT，安装步骤在那个仓库的 README 里。如果最让你头疼的是「悄无声息就停住的工作」，那就直接去 [Sitter](https://github.com/caty-ai/sitter) —— 它同样已经公开，同样是 MIT。
 
-横轴的 FMA 仍在准备公开。想在它公开时第一时间知道，请 Watch 这个仓库。
+横轴的 [FMA](https://github.com/caty-ai/family-memory-architecture) 也已公开（MIT）。如果你最头疼的是记忆各自为政，就从它开始。
 
 在你出发之前，先把这张地图绝对不会做的事说清楚。
 

@@ -143,7 +143,7 @@ flowchart TB
 | --- | --- | --- |
 | **掟** | 複数のセッションが同じファイルを取り合って壊れる | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook)（公開・MIT） |
 | **縦軸** | 忘れる。途中で止まる。「できました」が確かめられない | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（公開・MIT）を基盤に、成長ループを足す |
-| **横軸** | AIごとに記憶がばらばら。任せた仕事が行方不明になる | [FMA](https://github.com/shojikumaru/family-memory-architecture)（公開準備中）と [Sitter](https://github.com/caty-ai/sitter)（公開・MIT） |
+| **横軸** | AIごとに記憶がばらばら。任せた仕事が行方不明になる | [FMA](https://github.com/caty-ai/family-memory-architecture)（公開・MIT）と [Sitter](https://github.com/caty-ai/sitter)（公開・MIT） |
 
 > **メモ:** 「公開・MIT」と書いてあるものは、いますぐ開けます。「公開準備中」のリンクは、いまはまだ開けません。公開の順に開いていきます。
 
@@ -211,7 +211,7 @@ Persona Engine と X Collector は、この図から切り離して単独でも�
 
 ## 家族をつなぐ横軸
 
-同じ縦軸を持つエージェント同士を、[Family Memory Architecture（FMA）](https://github.com/shojikumaru/family-memory-architecture)（公開準備中）が横につなぎます。ファミリー間の情報共有と、連携のやり方を受け持つ層です。
+同じ縦軸を持つエージェント同士を、[Family Memory Architecture（FMA）](https://github.com/caty-ai/family-memory-architecture)（公開・MIT）が横につなぎます。ファミリー間の情報共有と、連携のやり方を受け持つ層です。
 
 [Sitter](https://github.com/caty-ai/sitter)（公開・MIT）は、任せたサブエージェントの作業と、ファミリー同士のナッジ（メッセージのやり取り）を外から見張ります。返事が返ってこない、作業が途中で固まっている — そういう受け渡しの取りこぼしを見つけて、最後まで完了させるための層です。
 
@@ -280,7 +280,7 @@ Family OS 側でやることはありません。インストールも、アカ�
 
 迷ったら、縦軸の [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) から始めてください。1体のAIが失敗から学び、長い作業を証拠つきで最後まで進められるようになります。無料の MIT で、導入手順はそのリポジトリの README にあります。いちばん困っているのが「黙って止まる作業」なら、[Sitter](https://github.com/caty-ai/sitter) へ直接どうぞ — こちらも公開済み・MIT です。
 
-横軸の FMA は公開準備中です。公開したときに知りたい場合は、このリポジトリを Watch してください。
+横軸の [FMA](https://github.com/caty-ai/family-memory-architecture) も公開済み（MIT）です。いちばん困っているのが「記憶がばらばら」なら、そちらから始めてください。
 
 進む前に、この地図が絶対にしないことを先にお伝えします。
 

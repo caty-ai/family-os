@@ -45,7 +45,7 @@ flowchart TB
 | --- | --- | --- |
 | Rules | how parallel work stays safe — issues, branches, worktrees, handoffs | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook) |
 | Vertical | how one agent remembers, finishes, and grows | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) plus growth loops |
-| Horizontal | how several agents share memory and hand work over | [Family Memory Architecture](https://github.com/shojikumaru/family-memory-architecture) and [Sitter](https://github.com/caty-ai/sitter) |
+| Horizontal | how several agents share memory and hand work over | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) and [Sitter](https://github.com/caty-ai/sitter) |
 
 The rules layer sits **above** both axes rather than inside either one. It is a document, not a program: it constrains how humans and agents develop the modules, and it enforces nothing at runtime.
 
@@ -64,7 +64,7 @@ The rules layer sits **above** both axes rather than inside either one. It is a 
 | [Persona Growth Loop](https://github.com/shojikumaru/persona-growth-loop) | planned frontend | minimised, idempotent proposal production | publication in preparation; planned |
 | [X Collector](https://github.com/caty-ai/x-collector) | runtime, optional input | collecting external material for the ability loop | published, MIT |
 | [Self Growth Loop](https://github.com/shojikumaru/self-growth-loop) | runtime, application | proposal, governance, adoption records, growth interpretation | publication in preparation; harness link implemented |
-| [Family Memory Architecture](https://github.com/shojikumaru/family-memory-architecture) | runtime, horizontal infrastructure | the memory bus; registered schedule expectation, check-in, provenance | publication in preparation |
+| [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) | runtime, horizontal infrastructure | the memory bus; registered schedule expectation, check-in, provenance | published, MIT |
 | [Sitter](https://github.com/caty-ai/sitter) | runtime, observation | local process and reply facts, dispatch-attempt evidence, delegated same-attempt restart | published, MIT |
 <!-- family:generated:module-inventory:end -->
 
