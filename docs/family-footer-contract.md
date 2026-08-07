@@ -2,7 +2,7 @@
 
 The family footer is one generated region per declared root `README*.md` in sibling repositories. Literal generated marker lines may appear in documentation only inside fenced code blocks.
 
-The v3.2 content amendment adds the Family OS map row and a leading axis column to the full-module table. The v3.3 amendment fixes the block's placement (below, trialled on sitter and owner-approved). Marker parsing, declared files, byte-exact comparison, and all four enforcement rules are unchanged.
+The v3.2 content amendment adds the Family OS map row and a leading axis column to the full-module table. The v3.3 amendment fixes the block's placement (below, trialled on sitter and owner-approved). The v3.4 amendment lets the map repository render the same table into its own README (the `family-table` block) with the map row bold and unlinked — member-repo footers are unchanged. Marker parsing, declared files, byte-exact comparison, and all four enforcement rules are unchanged.
 
 ## Markers
 
@@ -30,7 +30,7 @@ The v3.2 content amendment adds the Family OS map row and a leading axis column 
 
 ## Content
 
-- The first data row is always the Family OS map. Its name is always linked to `https://github.com/<map_repo>`, including when there is no host module to exclude. Its axis label, localized tagline, and published state come from `footer_text.axis_map`, `footer_text.map_tagline`, and `status_labels.published`; its uniform display name comes from `footer_text.map_name`.
+- The first data row is always the Family OS map. In member-repo footers its name is always linked to `https://github.com/<map_repo>`, including when there is no host module to exclude. Exception (v3.4): when the map repository renders this table into its own README via the `family-table` block, the map row is bold and unlinked — the same host-row convention the member repositories follow. Its axis label, localized tagline, and published state come from `footer_text.axis_map`, `footer_text.map_tagline`, and `status_labels.published`; its uniform display name comes from `footer_text.map_name`.
 - The remaining rows contain every registry module in registry order, including modules still being prepared and the repository hosting the footer. Registry order is the display order: it encodes rules first, then the vertical axis with its foundation first, then the horizontal axis with its foundation first.
 - Each module declares `axis.group` as `rules`, `vertical`, or `horizontal`, and `axis.foundation` as a boolean. The localized axis cell comes from `footer_text.axis_rules`, `footer_text.axis_vertical`, or `footer_text.axis_horizontal`; a true foundation flag appends `footer_text.axis_foundation_suffix`.
 - The axis column mirrors the Family OS three-layer structure: rules sit above the vertical and horizontal axes beneath them. The map row represents the whole structure rather than one of those module layers.
