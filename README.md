@@ -142,7 +142,7 @@ flowchart TB
 | Layer | The problem it solves | What is in it |
 | --- | --- | --- |
 | **Rules** | parallel sessions fight over the same file and break it | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook) (published, MIT) |
-| **Vertical** | forgetting; stopping halfway; "it's done" that cannot be checked | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) (published, MIT) as the foundation, with [context-kit](https://github.com/caty-ai/context-kit) (publication in preparation) as desk equipment and growth loops on top |
+| **Vertical** | forgetting; stopping halfway; "it's done" that cannot be checked | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) (published, MIT) as the foundation, with [context-kit](https://github.com/caty-ai/context-kit) (published, MIT) as desk equipment and growth loops on top |
 | **Horizontal** | memory scattered per agent; delegated work that goes missing | [FMA](https://github.com/caty-ai/family-memory-architecture) (published, MIT) and [Sitter](https://github.com/caty-ai/sitter) (published, MIT) |
 
 > **Note:** Everything marked "published, MIT" is open right now — you can click it today. Links marked "publication in preparation" cannot be opened yet, and will open in order of release.
@@ -163,7 +163,7 @@ On top of that foundation come one set of equipment and two kinds of growth. Eac
 
 **Equipment for the desk**
 
-- [context-kit](https://github.com/caty-ai/context-kit) (publication in preparation) — a five-piece context hygiene kit for one agent: bounded tool output, delegation-brief validation, safety guards, memory recall. Every piece works entirely on its own
+- [context-kit](https://github.com/caty-ai/context-kit) (published, MIT) — a five-piece context hygiene kit for one agent: bounded tool output, delegation-brief validation, safety guards, memory recall. Every piece works entirely on its own
 
 **Growth of personality**
 

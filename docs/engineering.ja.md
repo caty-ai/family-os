@@ -60,7 +60,7 @@ flowchart TB
 | --- | --- | --- | --- |
 | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook) | non-runtime・ガバナンス | Issue・PR・worktree・受け渡し・並行開発のルール | 公開・MIT |
 | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) | runtime・縦軸の基盤 | タスクの意味・試行・リトライ・チェックポイント・完了判定・完了・DLQ | 公開・MIT |
-| [context-kit](https://github.com/caty-ai/context-kit) | runtime・机まわりの装備 | ツール出力の退避と抜粋・委譲ブリーフ検査・危険削除/公開事故/キー漏れのガード・1体分の記憶検索 | 公開準備中 |
+| [context-kit](https://github.com/caty-ai/context-kit) | runtime・机まわりの装備 | ツール出力の退避と抜粋・委譲ブリーフ検査・危険削除/公開事故/キー漏れのガード・1体分の記憶検索 | 公開・MIT |
 | [Persona Engine](https://github.com/caty-ai/persona-engine) | runtime・単独利用可能 | 人格のレイヤーと感情のグラデーション | 公開・MIT |
 | [Persona Growth Loop](https://github.com/shojikumaru/persona-growth-loop) | 計画中のフロントエンド | 最小化された冪等な提案の生成 | 公開準備中・計画中 |
 | [X Collector](https://github.com/caty-ai/x-collector) | runtime・任意の入力 | 能力ループ向けの外部素材の収集 | 公開・MIT |
