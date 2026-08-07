@@ -312,7 +312,12 @@ def module_axis(registry: dict, module: dict, lang: str) -> str:
 
 
 def module_table(
-    registry: dict, host_module: Optional[dict], lang: str, newline: str
+    registry: dict,
+    host_module: Optional[dict],
+    lang: str,
+    newline: str,
+    *,
+    bold_map: bool = False,
 ) -> str:
     footer_text = registry["footer_text"]
     headers = [
@@ -336,10 +341,8 @@ def module_table(
     validate_table_cell_value("footer_text.map_name.%s" % lang, map_name)
     validate_table_cell_value("footer_text.map_tagline.%s" % lang, map_tagline)
     validate_table_cell_value("status_labels.published.%s" % lang, map_status)
-    rows.append(
-        "| %s | %s | %s | %s |"
-        % (map_axis, map_link(registry, lang), map_tagline, map_status)
-    )
+    rendered_map = "**%s**" % map_name if bold_map else map_link(registry, lang)
+    rows.append("| %s | %s | %s | %s |" % (map_axis, rendered_map, map_tagline, map_status))
     for module in registry["modules"]:
         axis = module_axis(registry, module, lang)
         name = module["name"]

@@ -20,17 +20,26 @@ from family_common import (
     language_of,
     line_ending,
 )
+from family_footer import module_table
 
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
 REGISTRY = REPO_ROOT / "registry" / "modules.json"
 
 EXPECTED_BLOCKS = {
+    pathlib.Path("README.md"): ("family-table",),
+    pathlib.Path("README.ja.md"): ("family-table",),
+    pathlib.Path("README.zh.md"): ("family-table",),
+    pathlib.Path("README.th.md"): ("family-table",),
     pathlib.Path("docs/engineering.md"): ("module-inventory",),
     pathlib.Path("docs/engineering.ja.md"): ("module-inventory",),
     pathlib.Path("docs/readme-visual-system.md"): ("repository-links",),
 }
 FILE_LANG_OVERRIDES = {
+    "README.md": "en",
+    "README.ja.md": "ja",
+    "README.zh.md": "zh",
+    "README.th.md": "th",
     "engineering.md": "en",
     "engineering.ja.md": "ja",
     "readme-visual-system.md": "en",
@@ -167,7 +176,17 @@ def render_repository_links(registry: dict) -> str:
     return "\n".join(rows)
 
 
+def render_family_table(registry: dict, lang: str, newline: str) -> str:
+    return module_table(registry, None, lang, newline, bold_map=True)
+
+
 def render_block(block: str, registry: dict, path: pathlib.Path) -> str:
+    if block == "family-table":
+        try:
+            lang = language_of(path, registry["languages"], FILE_LANG_OVERRIDES)
+        except FamilyCommonError as exc:
+            raise RenderError(str(exc))
+        return render_family_table(registry, lang, "\n")
     if block == "module-inventory":
         try:
             return render_inventory(
