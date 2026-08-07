@@ -142,7 +142,7 @@ flowchart TB
 | 層 | 効く困りごと | 中身 |
 | --- | --- | --- |
 | **掟** | 複数のセッションが同じファイルを取り合って壊れる | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook)（公開・MIT） |
-| **縦軸** | 忘れる。途中で止まる。「できました」が確かめられない | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（公開・MIT）を基盤に、成長ループを足す |
+| **縦軸** | 忘れる。途中で止まる。「できました」が確かめられない | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（公開・MIT）を基盤に、机まわりの装備 [context-kit](https://github.com/caty-ai/context-kit)（公開準備中）と成長ループを足す |
 | **横軸** | AIごとに記憶がばらばら。任せた仕事が行方不明になる | [FMA](https://github.com/caty-ai/family-memory-architecture)（公開・MIT）と [Sitter](https://github.com/caty-ai/sitter)（公開・MIT） |
 
 > **メモ:** 「公開・MIT」と書いてあるものは、いますぐ開けます。「公開準備中」のリンクは、いまはまだ開けません。公開の順に開いていきます。
@@ -159,7 +159,11 @@ flowchart TB
 
 そしてこの基盤は、**タスクが終わったと決めてよい唯一の場所**でもあります。見張り役も、共有の記憶も、この地図も、基盤に代わって「終わった」と言うことはできません。「できましたと言われても確かめようがない」への答えがこれです — その言葉を持つのは1か所だけで、そこだけが持ちます。
 
-その基盤の上に、2種類の成長を足せます。家族の各エージェントが、この縦軸をそれぞれ1つずつ持ちます。
+その基盤の上に、1組の装備と2種類の成長を足せます。家族の各エージェントが、この縦軸をそれぞれ1つずつ持ちます。
+
+**机まわりの装備**
+
+- [context-kit](https://github.com/caty-ai/context-kit)（公開準備中）— エージェント1体分のコンテキスト衛生キット。大出力の退避・委譲ブリーフ検査・安全フック・記憶検索の5点で、どの装備も単体で動く
 
 **人格の成長**
 

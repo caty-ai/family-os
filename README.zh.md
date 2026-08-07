@@ -142,7 +142,7 @@ flowchart TB
 | 层 | 解决的烦恼 | 内容 |
 | --- | --- | --- |
 | **规约** | 多个会话争抢同一个文件并把它弄坏 | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook)（已公开・MIT） |
-| **纵轴** | 会忘记、会中途停下、「做好了」无法核实 | 以 [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（已公开・MIT）为基础，再加上成长循环 |
+| **纵轴** | 会忘记、会中途停下、「做好了」无法核实 | 以 [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（已公开・MIT）为基础，以 [context-kit](https://github.com/caty-ai/context-kit)（准备公开中）为桌面装备，再往上叠加成长循环 |
 | **横轴** | 每个 AI 的记忆各自为政；交出去的工作不知所踪 | [FMA](https://github.com/caty-ai/family-memory-architecture)（已公开・MIT）与 [Sitter](https://github.com/caty-ai/sitter)（已公开・MIT） |
 
 > **备注:** 标有「已公开・MIT」的现在就能点开。标有「准备公开中」的链接目前还打不开，会按公开顺序陆续开放。
@@ -159,7 +159,11 @@ flowchart TB
 
 而且这个基础还是**唯一有权判定任务已经完成的地方**。盯梢的一方、共享的记忆、这张地图，都不能替它说「做完了」。「它说做好了，我却无从核实」的答案就在这里 —— 这个词只属于一个地方，也只由那里说了算。
 
-在这个基础之上，可以再加两种成长。家族中的每个智能体，各自持有一条这样的纵轴。
+在这个基础之上，还有一套装备与两种成长。家族中的每个智能体，各自持有一条这样的纵轴。
+
+**桌面装备**
+
+- [context-kit](https://github.com/caty-ai/context-kit)（准备公开中）— 面向单个智能体的五件套上下文卫生工具包：限定工具输出、委托说明校验、安全防护、记忆召回。每一件都能完全独立使用
 
 **人格的成长**
 
