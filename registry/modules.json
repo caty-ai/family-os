@@ -316,7 +316,8 @@
       "owns": {
         "en": "the memory bus; registered schedule expectation, check-in, provenance",
         "ja": "記憶バス・登録されたスケジュールの期待・check-in・来歴"
-      }
+      },
+      "footer": true
     },
     {
       "id": "sitter",
