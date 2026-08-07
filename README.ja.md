@@ -31,6 +31,7 @@ Family OS は、その一つひとつに効く仕組みが**どこにあるか**
 - [最初の一歩](#get-started)
 - [変えない約束](#promises)
 - [もっと詳しく](#shelf)
+- [ファミリー全体をひと目で](#family-table)
 - [ライセンスと参加](#license)
 
 ---
@@ -334,6 +335,29 @@ Family OS が広がっても、次の5つは変わりません。
 | このREADMEと画像の視覚ルール | [README visual system](docs/readme-visual-system.md)（英語） |
 
 最後に、この地図の立ち位置と、関わり方を一言だけ。
+
+---
+
+<a id="family-table"></a>
+
+## ファミリー全体をひと目で
+
+この地図に載っている全モジュールと現在の状態です。各リポジトリのフッターと同じ registry から生成されています。
+
+<!-- family:generated:family-table:start -->
+| 軸 | モジュール | 何をするもの | 状態 |
+| --- | --- | --- | --- |
+| 地図 | **Family OS** | AIファミリー全体の地図 — モジュール・状態・つながり | 公開・MIT |
+| 掟 | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook) | 開発の交通ルール — Issue・PR・worktree・受け渡し・並行開発 | 公開・MIT |
+| 縦軸・基盤 | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) | AIエージェントのタスク基盤 — 試行・リトライ・チェックポイント・完了判定 | 公開・MIT |
+| 縦軸 | [context-kit](https://github.com/caty-ai/context-kit) | エージェント1体分のコンテキスト衛生キット — 大出力の退避・委譲ブリーフ検査・安全フック・記憶検索 | 公開・MIT |
+| 縦軸 | [Persona Engine](https://github.com/caty-ai/persona-engine) | エージェントに人格を与える — 人格レイヤーと感情のグラデーション | 公開・MIT |
+| 縦軸 | **Persona Growth Loop** | 人格そのものを育てる — 最小・冪等な提案づくり | 公開準備中 |
+| 縦軸 | [X Collector](https://github.com/caty-ai/x-collector) | Xやウェブの素材を1日1回のダイジェストに — 人にもエージェントにも | 公開・MIT |
+| 縦軸 | **Self Growth Loop** | エージェントが自分の能力を育てるループ — 提案・ガバナンス・採用記録 | 公開準備中 |
+| 横軸・基盤 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) | 記憶バス — 家族が知っていることを共有する層 | 公開・MIT |
+| 横軸 | [Sitter](https://github.com/caty-ai/sitter) | 委譲したエージェント実行の見張り番 — 監視・証拠の記録・再起動 | 公開・MIT |
+<!-- family:generated:family-table:end -->
 
 ---
 

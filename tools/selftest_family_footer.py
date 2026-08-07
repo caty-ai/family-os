@@ -16,6 +16,7 @@ from family_footer import (
     FooterError,
     check_registry_footers,
     lint_registry,
+    module_table,
     render_region,
     render_repo_to_target,
     resolve_declared_readmes,
@@ -328,6 +329,20 @@ def test_map_row_and_registry_ordering():
     assert region.index("| Rules | [Alpha]") < region.index("| Vertical · foundation | [Beta]")
 
 
+def test_module_table_map_rendering():
+    registry = base_registry()
+    host = registry["modules"][0]
+
+    default_table = module_table(registry, host, "en", "\n")
+    explicit_default_table = module_table(registry, host, "en", "\n", bold_map=False)
+    bold_map_table = module_table(registry, None, "en", "\n", bold_map=True)
+
+    assert default_table == explicit_default_table
+    assert "| Map | [Family OS](https://github.com/caty-ai/family-os) |" in default_table
+    assert "| Map | **Family OS** | The family map | published |" in bold_map_table
+    assert "https://github.com/caty-ai/family-os" not in bold_map_table
+
+
 def test_table_lint_failures():
     missing_tagline = base_registry()
     del missing_tagline["modules"][0]["tagline"]["th"]
@@ -454,6 +469,7 @@ def main() -> int:
         test_declared_set_resolution,
         test_table_rendering,
         test_map_row_and_registry_ordering,
+        test_module_table_map_rendering,
         test_table_lint_failures,
         test_check_rules,
         test_render_idempotency_and_listing,

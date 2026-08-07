@@ -31,6 +31,7 @@ Family OS 是一张地图，告诉你解决每一个问题的部件**在哪里**
 - [第一步](#get-started)
 - [不会改变的承诺](#promises)
 - [了解更多](#shelf)
+- [全家族一览](#family-table)
 - [许可证与参与](#license)
 
 ---
@@ -334,6 +335,29 @@ Family OS 这边没有要做的事。不用安装，不用注册账号，也没�
 | 这份 README 与图像的视觉规则 | [README visual system](docs/readme-visual-system.md)（英文） |
 
 最后，用一句话说明这张地图的立场，以及参与的方式。
+
+---
+
+<a id="family-table"></a>
+
+## 全家族一览
+
+这张地图上的全部模块及其当前状态——与各仓库页脚使用同一个 registry 生成。
+
+<!-- family:generated:family-table:start -->
+| 轴 | 模块 | 做什么 | 状态 |
+| --- | --- | --- | --- |
+| 地图 | **Family OS** | 整个家族的地图 — 模块、状态与结构 | 已公开・MIT |
+| 规则 | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook) | 开发的交通规则 — Issue、PR、worktree、交接与并行开发 | 已公开・MIT |
+| 纵轴・基座 | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) | AI 智能体的任务基座 — 重试、检查点与完成判定 | 已公开・MIT |
+| 纵轴 | [context-kit](https://github.com/caty-ai/context-kit) | 面向单个智能体的上下文卫生工具组 — 限制大输出、委托简报校验、安全防护、记忆检索 | 已公开・MIT |
+| 纵轴 | [Persona Engine](https://github.com/caty-ai/persona-engine) | 为智能体赋予人格 — 分层人格与情感渐变 | 已公开・MIT |
+| 纵轴 | **Persona Growth Loop** | 让人格本身成长 — 以最小且幂等的提案 | 准备公开中 |
+| 纵轴 | [X Collector](https://github.com/caty-ai/x-collector) | 把 X 与网络素材汇成每日一份摘要 — 给人也给智能体 | 已公开・MIT |
+| 纵轴 | **Self Growth Loop** | 让智能体自我成长的循环 — 提案、治理与采用记录 | 准备公开中 |
+| 横轴・基座 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) | 记忆总线 — 家族共享所知的一层 | 已公开・MIT |
+| 横轴 | [Sitter](https://github.com/caty-ai/sitter) | 替你盯着委派出去的智能体 — 监视、留证、重启 | 已公开・MIT |
+<!-- family:generated:family-table:end -->
 
 ---
 
