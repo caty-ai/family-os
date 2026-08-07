@@ -126,6 +126,7 @@ module means editing that file; every generated block in every language follows.
 | --- | --- | --- |
 | Family Dev Handbook | `caty-ai/family-dev-handbook` | published, MIT |
 | Caty Agent Harness | `caty-ai/caty-agent-harness` | published, MIT |
+| context-kit | `caty-ai/context-kit` | publication in preparation |
 | Persona Engine | `caty-ai/persona-engine` | published, MIT |
 | Persona Growth Loop | `shojikumaru/persona-growth-loop` | publication in preparation; planned |
 | X Collector | `caty-ai/x-collector` | published, MIT |

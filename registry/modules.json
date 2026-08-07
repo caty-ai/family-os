@@ -156,6 +156,31 @@
       "footer": true
     },
     {
+      "id": "context-kit",
+      "name": "context-kit",
+      "repo": "caty-ai/context-kit",
+      "status": "preparing",
+      "tagline": {
+        "en": "Five-piece context hygiene kit for one agent — bounded output, delegation briefs, safety guards, recall",
+        "ja": "エージェント1体分のコンテキスト衛生キット — 大出力の退避・委譲ブリーフ検査・安全フック・記憶検索",
+        "zh": "面向单个智能体的上下文卫生工具组 — 限制大输出、委托简报校验、安全防护、记忆检索",
+        "th": "ชุดดูแลคอนเท็กซ์สำหรับเอเจนต์หนึ่งตัว — จำกัดเอาต์พุตขนาดใหญ่, ตรวจ brief การมอบงาน, การ์ดความปลอดภัย, ค้นความทรงจำ"
+      },
+      "axis": {
+        "group": "vertical",
+        "foundation": false
+      },
+      "license": "MIT",
+      "class": {
+        "en": "runtime, desk equipment",
+        "ja": "runtime・机まわりの装備"
+      },
+      "owns": {
+        "en": "bounded tool output and scratch persistence, delegation-brief validation, destructive/public-repo/credential guards, one agent's memory recall",
+        "ja": "ツール出力の退避と抜粋・委譲ブリーフ検査・危険削除/公開事故/キー漏れのガード・1体分の記憶検索"
+      }
+    },
+    {
       "id": "persona-engine",
       "name": "Persona Engine",
       "repo": "caty-ai/persona-engine",
