@@ -2,7 +2,7 @@
 
 The family footer is one generated region per declared root `README*.md` in sibling repositories. Literal generated marker lines may appear in documentation only inside fenced code blocks.
 
-The v3.2 content amendment adds the Family OS map row and a leading axis column to the full-module table. The v3.3 amendment fixes the block's placement (below, trialled on sitter and owner-approved). The v3.4 amendment lets the map repository render the same table into its own README (the `family-table` block) with the map row bold and unlinked — member-repo footers are unchanged. Marker parsing, declared files, byte-exact comparison, and all four enforcement rules are unchanged.
+The v3.2 content amendment adds the Family OS map row and a leading axis column to the full-module table. The v3.3 amendment fixes the block's placement (below, trialled on sitter and owner-approved). The v3.4 amendment lets the map repository render the same table into its own README (the `family-table` block) with the map row bold and unlinked — member-repo footers are unchanged. The v3.5 amendment allows a repository with a hand-written family section to host the block inside that section — heading, member prose, generated table, then connecting prose (owner-approved, first applied on FMA); the byte-exact comparison is position-independent either way. Marker parsing, declared files, byte-exact comparison, and all four enforcement rules are unchanged.
 
 ## Markers
 
@@ -26,7 +26,7 @@ The v3.2 content amendment adds the Family OS map row and a leading axis column 
 - The block id is `family-footer`.
 - The content inside the region always has a leading blank line and a trailing blank line.
 - The renderer preserves the start marker's newline bytes and compares only the bytes between the markers.
-- Placement (v3.3): the block sits directly below the repository's learn-more section — the part that points readers deeper — and above any acknowledgements, hand-written family prose, and the License section. The byte-exact comparison itself is position-independent; this is the layout convention every family README follows, and the position new repositories adopt at publication.
+- Placement (v3.3): the block sits directly below the repository's learn-more section — the part that points readers deeper — and above any acknowledgements, hand-written family prose, and the License section. The byte-exact comparison itself is position-independent; this is the layout convention every family README follows, and the position new repositories adopt at publication. Exception (v3.5): a repository with a hand-written family section (e.g. FMA's "Part of Family OS") may host the block inside that section, after the member prose and before the connecting prose.
 
 ## Content
 
