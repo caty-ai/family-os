@@ -130,7 +130,7 @@ module means editing that file; every generated block in every language follows.
 | Persona Engine | `caty-ai/persona-engine` | published, MIT |
 | Persona Growth Loop | `shojikumaru/persona-growth-loop` | publication in preparation; planned |
 | X Collector | `caty-ai/x-collector` | published, MIT |
-| Self Growth Loop | `shojikumaru/self-growth-loop` | publication in preparation; harness link implemented |
+| Self Growth Loop | `caty-ai/self-growth-loop` | published, MIT |
 | Family Memory Architecture | `caty-ai/family-memory-architecture` | published, MIT |
 | Sitter | `caty-ai/sitter` | published, MIT |
 <!-- family:generated:repository-links:end -->

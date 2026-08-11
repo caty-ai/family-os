@@ -64,7 +64,7 @@ The rules layer sits **above** both axes rather than inside either one. It is a 
 | [Persona Engine](https://github.com/caty-ai/persona-engine) | runtime, standalone | persona layers and emotion gradation | published, MIT |
 | [Persona Growth Loop](https://github.com/shojikumaru/persona-growth-loop) | planned frontend | minimised, idempotent proposal production | publication in preparation; planned |
 | [X Collector](https://github.com/caty-ai/x-collector) | runtime, optional input | collecting external material for the ability loop | published, MIT |
-| [Self Growth Loop](https://github.com/shojikumaru/self-growth-loop) | runtime, application | proposal, governance, adoption records, growth interpretation | publication in preparation; harness link implemented |
+| [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) | runtime, application | proposal, governance, adoption records, growth interpretation | published, MIT |
 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) | runtime, horizontal infrastructure | the memory bus; registered schedule expectation, check-in, provenance | published, MIT |
 | [Sitter](https://github.com/caty-ai/sitter) | runtime, observation | local process and reply facts, dispatch-attempt evidence, delegated same-attempt restart | published, MIT |
 <!-- family:generated:module-inventory:end -->
