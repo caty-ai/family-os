@@ -104,7 +104,7 @@
   },
   "org_profile": {
     "repo": "caty-ai/.github",
-    "enforced": false,
+    "enforced": true,
     "files": {
       "profile/README.md": "en",
       "README.md": "en",
