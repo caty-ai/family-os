@@ -7,6 +7,7 @@ Python 3.9+, standard library only.
 from __future__ import annotations
 
 import argparse
+import html
 import json
 import pathlib
 import re
@@ -30,9 +31,31 @@ from family_common import (
 REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
 REGISTRY = REPO_ROOT / "registry" / "modules.json"
 BLOCK_ID = "family-footer"
+ORG_BLOCK_ID = "org-profile-modules"
 START_MARKER = "<!-- family:generated:%s:start -->" % BLOCK_ID
 END_MARKER = "<!-- family:generated:%s:end -->" % BLOCK_ID
+ORG_START_MARKER = "<!-- family:generated:%s:start -->" % ORG_BLOCK_ID
+ORG_END_MARKER = "<!-- family:generated:%s:end -->" % ORG_BLOCK_ID
 REPO_NAME = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
+ORG_README_PATTERN = re.compile(r"(?:profile/)?README(?:\.[A-Za-z0-9-]+)?\.md")
+ORG_DECLARED_FILES = (
+    ("profile/README.md", "en"),
+    ("README.md", "en"),
+    ("README.ja.md", "ja"),
+    ("README.zh.md", "zh"),
+    ("README.th.md", "th"),
+)
+ORG_SVG_FILES = tuple(
+    ("profile/assets/readme-terminal-%s.svg" % lang, lang)
+    for lang in ("en", "ja", "zh", "th")
+)
+# Keep these badges coupled to the wording emitted by .github/tools/gen_readme_svg.py.
+ORG_SVG_PREPARING_BADGES = {
+    "en": "coming soon",
+    "ja": "公開準備中",
+    "zh": "即将发布",
+    "th": "เร็ว ๆ นี้",
+}
 
 
 class FooterError(Exception):
@@ -46,8 +69,18 @@ class FetchResult:
 
 
 def load_registry(path: pathlib.Path = REGISTRY) -> dict:
+    def reject_duplicate_keys(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise FooterError("duplicate JSON key '%s'" % key)
+            result[key] = value
+        return result
+
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
+        return json.loads(
+            path.read_text(encoding="utf-8"), object_pairs_hook=reject_duplicate_keys
+        )
     except (OSError, json.JSONDecodeError) as exc:
         raise FooterError("could not read %s: %s" % (path, exc))
 
@@ -175,6 +208,61 @@ def resolve_declared_readmes(module: dict, languages: Sequence[str]) -> List[Tup
     return ordered
 
 
+def validate_org_path(path: str) -> None:
+    if not isinstance(path, str):
+        raise FooterError("registry/modules.json: org_profile.files keys must be strings")
+    if (
+        path.startswith("/")
+        or "\\" in path
+        or "%" in path
+        or any(part == ".." for part in path.split("/"))
+        or any(character.isspace() for character in path)
+        or re.fullmatch(ORG_README_PATTERN, path) is None
+    ):
+        raise FooterError(
+            "registry/modules.json: org_profile file '%s' is not an allowed README path" % path
+        )
+
+
+def resolve_org_files(registry: dict) -> List[Tuple[str, str]]:
+    profile = registry.get("org_profile")
+    if not isinstance(profile, dict):
+        raise FooterError("registry/modules.json: org_profile must be an object")
+    files = profile.get("files")
+    if not isinstance(files, dict) or not files:
+        raise FooterError("registry/modules.json: org_profile.files must be a non-empty object")
+    resolved = []
+    for path, lang in files.items():
+        validate_org_path(path)
+        if lang not in registry.get("languages", []):
+            raise FooterError(
+                "registry/modules.json: org_profile.files.%s has unknown language '%s'"
+                % (path, lang)
+            )
+        resolved.append((path, lang))
+    if tuple(resolved) != ORG_DECLARED_FILES:
+        raise FooterError(
+            "registry/modules.json: org_profile.files must be exactly the closed declared set"
+        )
+    return resolved
+
+
+def validate_org_text_value(label: str, value: str, leading_guard: bool = False) -> None:
+    if not isinstance(value, str):
+        raise FooterError("%s must be a string" % label)
+    if "\n" in value or "\r" in value:
+        raise FooterError("%s may not contain a newline" % label)
+    if any(ord(character) < 0x20 or ord(character) == 0x7F for character in value):
+        raise FooterError("%s may not contain control characters" % label)
+    if MARKER_TOKEN in value.lower():
+        raise FooterError("%s may not contain generated-marker text" % label)
+    for character in ("[", "]", "|", "<", "`"):
+        if character in value:
+            raise FooterError("%s may not contain '%s'" % (label, character))
+    if leading_guard and value.startswith(("-", "*", "#", ">")):
+        raise FooterError("%s may not begin with Markdown bullet or heading syntax" % label)
+
+
 def lint_registry(registry: dict) -> List[str]:
     failures: List[str] = []
     languages = registry.get("languages")
@@ -292,6 +380,125 @@ def lint_registry(registry: dict) -> List[str]:
         except (FooterError, FamilyCommonError) as exc:
             failures.append(str(exc))
 
+    org_profile = registry.get("org_profile")
+    if not isinstance(org_profile, dict):
+        failures.append("registry/modules.json: org_profile must be an object")
+        return failures
+    try:
+        validate_repo_name("registry/modules.json: org_profile.repo", org_profile.get("repo"))
+    except FooterError as exc:
+        failures.append(str(exc))
+    if not isinstance(org_profile.get("enforced"), bool):
+        failures.append("registry/modules.json: org_profile.enforced must be a boolean")
+    try:
+        resolve_org_files(registry)
+    except FooterError as exc:
+        failures.append(str(exc))
+
+    module_repos = {module.get("repo") for module in modules}
+    if map_repo in module_repos:
+        failures.append("registry/modules.json: map_repo must not appear in modules[].repo")
+
+    intro = org_profile.get("intro")
+    if not isinstance(intro, dict):
+        failures.append("registry/modules.json: org_profile.intro must be an object")
+    else:
+        for lang in languages:
+            label = "registry/modules.json: org_profile.intro.%s" % lang
+            try:
+                validate_org_text_value(label, intro.get(lang))
+            except FooterError as exc:
+                failures.append(str(exc))
+                continue
+            if intro[lang].count("{count}") != 1:
+                failures.append("%s must contain exactly one {count} placeholder" % label)
+
+    org_status = org_profile.get("status_labels")
+    if not isinstance(org_status, dict):
+        failures.append("registry/modules.json: org_profile.status_labels must be an object")
+        org_status = {}
+    for status in ("published", "preparing"):
+        section = org_status.get(status)
+        if not isinstance(section, dict):
+            failures.append(
+                "registry/modules.json: org_profile.status_labels.%s must be an object" % status
+            )
+            continue
+        for lang in languages:
+            label = "registry/modules.json: org_profile.status_labels.%s.%s" % (
+                status,
+                lang,
+            )
+            try:
+                validate_org_text_value(label, section.get(lang))
+            except FooterError as exc:
+                failures.append(str(exc))
+
+    org_map = org_profile.get("map")
+    if not isinstance(org_map, dict):
+        failures.append("registry/modules.json: org_profile.map must be an object")
+    else:
+        try:
+            validate_org_text_value(
+                "registry/modules.json: org_profile.map.name",
+                org_map.get("name"),
+                leading_guard=True,
+            )
+        except FooterError as exc:
+            failures.append(str(exc))
+        desc = org_map.get("desc")
+        if not isinstance(desc, dict):
+            failures.append("registry/modules.json: org_profile.map.desc must be an object")
+        else:
+            for lang in languages:
+                try:
+                    validate_org_text_value(
+                        "registry/modules.json: org_profile.map.desc.%s" % lang,
+                        desc.get(lang),
+                        leading_guard=True,
+                    )
+                except FooterError as exc:
+                    failures.append(str(exc))
+
+    org_modules = org_profile.get("modules")
+    if not isinstance(org_modules, dict):
+        failures.append("registry/modules.json: org_profile.modules must be an object")
+        org_modules = {}
+    module_ids = {module.get("id") for module in modules}
+    org_ids = set(org_modules)
+    if org_ids != module_ids:
+        missing = sorted(module_ids - org_ids)
+        extra = sorted(org_ids - module_ids)
+        failures.append(
+            "registry/modules.json: org_profile.modules keys must exactly match modules[].id"
+            " (missing: %s; extra: %s)"
+            % (", ".join(missing) or "none", ", ".join(extra) or "none")
+        )
+    for module_id, text in org_modules.items():
+        label = "registry/modules.json: org_profile.modules.%s" % module_id
+        if not isinstance(text, dict):
+            failures.append("%s must be an object" % label)
+            continue
+        try:
+            validate_org_text_value(
+                "%s.name" % label, text.get("name"), leading_guard=True
+            )
+        except FooterError as exc:
+            failures.append(str(exc))
+        desc = text.get("desc")
+        if not isinstance(desc, dict):
+            failures.append("%s.desc must be an object" % label)
+            continue
+        for lang in languages:
+            try:
+                validate_org_text_value(
+                    "%s.desc.%s" % (label, lang),
+                    desc.get(lang),
+                    leading_guard=True,
+                )
+            except FooterError as exc:
+                failures.append(str(exc))
+
     return failures
 
 
@@ -381,12 +588,53 @@ def render_region(
     )
 
 
-def find_footer_regions(label: str, text: str) -> Dict[str, Tuple[int, int]]:
+def render_org_block(registry: dict, lang: str) -> str:
+    profile = registry["org_profile"]
+    count = len(published_modules(registry)) + 1
+    rows = [profile["intro"][lang].replace("{count}", str(count)), ""]
+    rows.append(
+        "- **[%s](https://github.com/%s)** — %s%s"
+        % (
+            profile["map"]["name"],
+            registry["map_repo"],
+            profile["map"]["desc"][lang],
+            profile["status_labels"]["published"][lang],
+        )
+    )
+    for module in registry["modules"]:
+        try:
+            org_module = profile["modules"][module["id"]]
+        except KeyError:
+            raise FooterError(
+                "registry/modules.json: registry module '%s' is missing from "
+                "org_profile.modules" % module["id"]
+            )
+        if module["status"] == "published":
+            rendered_name = "[%s](https://github.com/%s)" % (
+                org_module["name"],
+                module["repo"],
+            )
+        else:
+            rendered_name = org_module["name"]
+        rows.append(
+            "- **%s** — %s%s"
+            % (
+                rendered_name,
+                org_module["desc"][lang],
+                profile["status_labels"][module["status"]][lang],
+            )
+        )
+    return "\n" + "\n".join(rows) + "\n\n"
+
+
+def find_footer_regions(
+    label: str, text: str, block_id: str = BLOCK_ID
+) -> Dict[str, Tuple[int, int]]:
     regions: Dict[str, Tuple[int, int]] = {}
     open_marker: Optional[Tuple[str, int]] = None
     try:
-        for index, block, edge in iter_marker_lines(text, {BLOCK_ID}):
-            if block != BLOCK_ID:
+        for index, block, edge in iter_marker_lines(text, {block_id}):
+            if block != block_id:
                 raise FooterError("%s:%d: unknown block-id '%s'" % (label, index + 1, block))
             if edge == "start":
                 if block in regions:
@@ -475,6 +723,47 @@ def fetch_readme(repo: str, filename: str, timeout: float = 20.0) -> FetchResult
         return FetchResult("skip")
 
 
+def assert_org_svg(registry: dict, lang: str, text: str, label: str) -> List[str]:
+    failures = []
+    visible = html.unescape(re.sub(r"<[^>]+>", "", text))
+    lines = [line.strip() for line in visible.splitlines()]
+    for module in registry["modules"]:
+        needle = "⏺ " + module["id"]
+        index = next((i for i, line in enumerate(lines) if line == needle), None)
+        if index is None:
+            failures.append("%s: %s SVG is missing module '%s'" % (label, lang, module["id"]))
+            continue
+        badge = next((line for line in lines[index + 1 :] if line), None)
+        if badge is None or "⏺ " in badge:
+            failures.append("%s: %s SVG has no badge after module '%s'" % (label, lang, module["id"]))
+            continue
+        expected_badge = (
+            "repo ↗"
+            if module["status"] == "published"
+            else ORG_SVG_PREPARING_BADGES[lang]
+        )
+        if badge != expected_badge:
+            failures.append(
+                "%s: %s SVG module '%s' must have badge '%s'"
+                % (label, lang, module["id"], expected_badge)
+            )
+    intro_needles = {
+        "en": "open today",
+        "ja": "このうち",
+        "zh": "其中",
+        "th": "ตัวในนี้",
+    }
+    intro_line = next((line for line in lines if intro_needles[lang] in line), None)
+    count = str(len(published_modules(registry)) + 1)
+    if intro_line is None:
+        failures.append("%s: %s SVG is missing the ecosystem intro line" % (label, lang))
+    elif re.search(r"(?<![0-9])%s(?![0-9])" % re.escape(count), intro_line) is None:
+        failures.append(
+            "%s: %s SVG ecosystem intro does not contain count %s" % (label, lang, count)
+        )
+    return failures
+
+
 def check_registry_footers(
     registry: dict,
     require_reality: bool = False,
@@ -539,8 +828,54 @@ def check_registry_footers(
         if module_complete and not saw_markers and not footer_enabled(module):
             failures.append("%s: published module has no footer" % module["repo"])
 
+    org_profile = registry["org_profile"]
+    org_repo = org_profile["repo"]
+    for filename, lang in resolve_org_files(registry):
+        label = "%s:%s" % (org_repo, filename)
+        fetched = fetcher(org_repo, filename)
+        if fetched.status == "missing":
+            failures.append("%s: declared org profile file returned 404" % label)
+            continue
+        if fetched.status != "ok":
+            degraded.skip(
+                label, "%s: could not reach GitHub, org profile check skipped" % label
+            )
+            continue
+        try:
+            regions = find_footer_regions(label, fetched.text, ORG_BLOCK_ID)
+        except FooterError as exc:
+            failures.append(str(exc))
+            continue
+        region = regions.get(ORG_BLOCK_ID)
+        if region is None:
+            failures.append("%s: org profile markers are missing" % label)
+            continue
+        if not org_profile["enforced"]:
+            failures.append("%s: org profile block exists but is not enforced" % label)
+            continue
+        lines = fetched.text.splitlines(keepends=True)
+        try:
+            newline = line_ending(lines[region[0]])
+        except (FamilyCommonError, IndexError) as exc:
+            failures.append("%s: %s" % (label, exc))
+            continue
+        expected = render_org_block(registry, lang).replace("\n", newline)
+        if extract_region(fetched.text, region) != expected:
+            failures.append("%s: org profile content does not match the registry" % label)
+
+    for filename, lang in ORG_SVG_FILES:
+        label = "%s:%s" % (org_repo, filename)
+        fetched = fetcher(org_repo, filename)
+        if fetched.status == "missing":
+            failures.append("%s: committed SVG artifact returned 404" % label)
+            continue
+        if fetched.status != "ok":
+            degraded.skip(label, "%s: could not reach GitHub, SVG check skipped" % label)
+            continue
+        failures.extend(assert_org_svg(registry, lang, fetched.text, label))
+
     notes.extend(degraded.notes())
-    degraded.finalize(failures, require_reality)
+    degraded.finalize(failures, require_reality, noun="targets")
     return failures, notes
 
 
@@ -595,6 +930,64 @@ def render_repo_to_target(
     return bool(changed_files), changed_files
 
 
+def render_org_to_target(
+    registry: dict, target: pathlib.Path, stray_scan: bool = False
+) -> List[Tuple[str, bool]]:
+    failures = lint_registry(registry)
+    if failures:
+        raise FooterError("\n".join(failures))
+    profile = registry["org_profile"]
+    declared = resolve_org_files(registry)
+    declared_names = {filename for filename, _lang in declared}
+
+    if stray_scan:
+        marker = ("family:generated:%s" % ORG_BLOCK_ID).encode("ascii")
+        for path in sorted(target.rglob("*")):
+            relative = path.relative_to(target)
+            if ".git" in relative.parts or not path.is_file():
+                continue
+            if relative.as_posix() in declared_names:
+                continue
+            if marker in path.read_bytes().lower():
+                raise FooterError(
+                    "%s: org-profile-modules marker is outside the declared file set"
+                    % relative.as_posix()
+                )
+
+    documents = []
+    missing = []
+    for filename, lang in declared:
+        path = target / filename
+        if not path.is_file():
+            missing.append(filename)
+            continue
+        text = path.read_bytes().decode("utf-8")
+        label = "%s:%s" % (profile["repo"], filename)
+        regions = find_footer_regions(label, text, ORG_BLOCK_ID)
+        region = regions.get(ORG_BLOCK_ID)
+        if region is None:
+            missing.append(filename)
+            continue
+        documents.append((filename, lang, path, text, region))
+    if missing:
+        raise FooterError("org profile markers are missing from: %s" % ", ".join(missing))
+
+    results = []
+    for filename, lang, path, text, region in documents:
+        lines = text.splitlines(keepends=True)
+        try:
+            newline = line_ending(lines[region[0]])
+        except (FamilyCommonError, IndexError) as exc:
+            raise FooterError("%s:%s: %s" % (profile["repo"], filename, exc))
+        expected = render_org_block(registry, lang).replace("\n", newline)
+        updated = replace_region(text, region, expected)
+        changed = updated != text
+        if changed:
+            path.write_bytes(updated.encode("utf-8"))
+        results.append((filename, changed))
+    return results
+
+
 def command_lint(_args) -> int:
     try:
         failures = lint_registry(load_registry())
@@ -644,6 +1037,24 @@ def command_render(args) -> int:
     return 0
 
 
+def command_render_org(args) -> int:
+    try:
+        target = args.target.expanduser().resolve()
+        if not target.is_dir():
+            raise FooterError("--target must be an existing directory")
+        results = render_org_to_target(load_registry(), target, args.stray_scan)
+    except (FooterError, OSError, UnicodeDecodeError) as exc:
+        print("ERROR: %s" % exc, file=sys.stderr)
+        return 1
+    changed = False
+    for filename, file_changed in results:
+        print("%s: %s" % (filename, "changed" if file_changed else "unchanged"))
+        changed = changed or file_changed
+    if not changed:
+        print("No org profile content changed.")
+    return 0
+
+
 def command_render_all(args) -> int:
     try:
         registry = load_registry()
@@ -669,6 +1080,15 @@ def command_render_all(args) -> int:
             target = checkouts / module["repo"].rsplit("/", 1)[1]
             changed, _changed_files = render_repo_to_target(registry, target, module["repo"])
             print("%s: %s" % (module["repo"], "changed" if changed else "unchanged"))
+        if args.org_target is None:
+            print("NOTE: the org profile was not rendered; pass --org-target to render it.")
+        else:
+            org_target = args.org_target.expanduser().resolve()
+            if not org_target.is_dir():
+                raise FooterError("--org-target must be an existing directory")
+            results = render_org_to_target(registry, org_target)
+            for filename, changed in results:
+                print("%s:%s: %s" % (registry["org_profile"]["repo"], filename, "changed" if changed else "unchanged"))
         return 0
     except (FooterError, OSError, UnicodeDecodeError) as exc:
         print("ERROR: %s" % exc, file=sys.stderr)
@@ -695,10 +1115,22 @@ def build_parser() -> argparse.ArgumentParser:
     render.add_argument("--repo", required=True)
     render.set_defaults(func=command_render)
 
+    render_org = subparsers.add_parser(
+        "render-org", help="render the declared org profile checkout in place"
+    )
+    render_org.add_argument("--target", type=pathlib.Path, required=True)
+    render_org.add_argument(
+        "--stray-scan",
+        action="store_true",
+        help="reject org-profile-modules markers outside the declared files",
+    )
+    render_org.set_defaults(func=command_render_org)
+
     render_all = subparsers.add_parser(
         "render-all", help="render every published repo checkout under one directory"
     )
     render_all.add_argument("--checkouts", type=pathlib.Path, required=True)
+    render_all.add_argument("--org-target", type=pathlib.Path)
     render_all.set_defaults(func=command_render_all)
 
     return parser
