@@ -2,7 +2,7 @@
 
 The family footer is one generated region per declared root `README*.md` in sibling repositories. Literal generated marker lines may appear in documentation only inside fenced code blocks.
 
-The v3.2 content amendment adds the Family OS map row and a leading axis column to the full-module table. The v3.3 amendment fixes the block's placement (below, trialled on sitter and owner-approved). The v3.4 amendment lets the map repository render the same table into its own README (the `family-table` block) with the map row bold and unlinked — member-repo footers are unchanged. The v3.5 amendment allows a repository with a hand-written family section to host the block inside that section — heading, member prose, generated table, then connecting prose (owner-approved, first applied on FMA); the byte-exact comparison is position-independent either way. Marker parsing, declared files, byte-exact comparison, and all four enforcement rules are unchanged.
+The v3.2 content amendment adds the Family OS map row and a leading axis column to the full-module table. The v3.3 amendment fixes the block's placement (below, trialled on sitter and owner-approved). The v3.4 amendment lets the map repository render the same table into its own README (the `family-table` block) with the map row bold and unlinked — member-repo footers are unchanged. The v3.5 amendment allows a repository with a hand-written family section to host the block inside that section — heading, member prose, generated table, then connecting prose (owner-approved, first applied on FMA); the byte-exact comparison is position-independent either way. The v3.6 amendment adds the separately enforced `org-profile-modules` block for the caty-ai organization profile. Existing member-footer rendering and enforcement remain unchanged.
 
 ## Markers
 
@@ -71,6 +71,67 @@ The weekly content check reads every declared README of every published module, 
 - Sibling-first ordering is mandatory. Flip-first makes the scheduled check fail immediately on `footer:true` plus missing markers, while sibling-first is only stale until the flag PR closes the rollout.
 - The rollout window is deliberately red after Epic #0 merges and before the flag flip PR lands. That red state is the reminder that the map and the published siblings are still being brought into sync.
 
+## v3.6 Organization Profile Amendment
+
+The org profile uses a second block id, `org-profile-modules`, owned by `tools/family_footer.py`. It renders the localized ecosystem intro and the complete bullet list from `registry/modules.json`: the Family OS map first, then every module in registry order. Published module names link to the module's declared `repo`; preparing names remain bold and unlinked. The open count is rendered as digits and is always the number of published modules plus one for the map.
+
+```html
+<!-- family:generated:org-profile-modules:start -->
+
+{localized ecosystem intro with {count} replaced by digits}
+
+- **[Family OS](https://github.com/<map_repo>)** — {localized map description}{localized published label}
+- **[Published module](https://github.com/<module repo>)** — {localized description}{localized published label}
+- **Preparing module** — {localized description}{localized preparing label}
+
+<!-- family:generated:org-profile-modules:end -->
+```
+
+Like the member footer, the bytes inside the org region start and end with a blank line, and the start marker's newline style is preserved. Unlike the member footer, the region has no horizontal-rule separator. Each checking or rendering pass recognizes exactly one block id; a live marker for the other id in a checked file is a hard error.
+
+### Declared org files and placement
+
+The declared org-profile paths are a closed, ordered set. Both English files are independent verification targets and may not be collapsed:
+
+1. `profile/README.md` → `en`
+2. `README.md` → `en`
+3. `README.ja.md` → `ja`
+4. `README.zh.md` → `zh`
+5. `README.th.md` → `th`
+
+Every path must additionally pass `re.fullmatch(r'(?:profile/)?README(?:\.[A-Za-z0-9-]+)?\.md', path)`. Leading slashes, `..` segments, backslashes, percent encoding, and whitespace are rejected explicitly. The pattern validates shape; equality with the closed set validates identity. A local `render-org --stray-scan` walks the full checkout except `.git` and rejects any org marker outside these five paths.
+
+The block sits inside the profile's collapsed `<details>` text version. Its intro sentence is inside the generated region. The whole region occupies the ecosystem-list position above the “With any agent…” paragraph; it is not appended to the file and is not placed outside the details element. `render-org` never inserts markers: all five marker pairs must already exist.
+
+### Org enforcement rules R1–R4
+
+The weekly check visits every declared org file in the order above and applies these rules independently:
+
+1. **R1:** markers present and `enforced:false` fails with `org profile block exists but is not enforced`.
+2. **R2:** markers present and `enforced:true` requires byte-exact registry output in every declared file; mismatches name the file.
+3. **R3:** markers missing from any declared file fails regardless of `enforced`. The required section is the deployment declaration; the check may not silently narrow it.
+4. **R4:** `org_profile` is required by lint. Missing `repo`, missing or empty `files`, or any incomplete localized content fails before remote checking.
+
+A declared file returning `404` fails. Network errors, `403`, `429`, and `5xx` produce one degraded-skip note per file. Module and org passes share one degraded-reality ledger; `check --require-reality` rejects degradation in either pass.
+
+The same org pass fetches the four committed visitor-facing artifacts `profile/assets/readme-terminal-{en,ja,zh,th}.svg`. After stripping tags, it asserts for each language that every module appears as an exact `⏺ <id>` line; the next non-empty line is exactly `repo ↗` for published modules and exactly the language-specific preparing badge (`coming soon`, `公開準備中`, `即将发布`, or `เร็ว ๆ นี้`) for preparing modules; and the published-plus-map count appears in the localized ecosystem-intro line. Assertions are per-language and name the failed artifact.
+
+### Three-PR rollout
+
+1. PR 1 in family-os adds this renderer, required `org_profile` with `enforced:false`, and contract v3.6.
+2. PR 2 in `caty-ai/.github` adds all five marker pairs and content rendered with the merged PR 1 CLI. The v3.6 runbook uses the `render-all --org-target <dir>` path together with its required checkout root: `python3 -B tools/family_footer.py render-all --checkouts <dir> --org-target <dir>`.
+3. PR 3 in family-os flips `enforced:true`, then runs `workflow_dispatch` with `check --require-reality`.
+
+The weekly check is intentionally **RED from PR 1 through PR 3**: R3 fails before the sibling markers land, then R1 fails while the markers exist but enforcement remains false. R3 must not be weakened to shorten this rollout window.
+
+### Rejected alternatives
+
+- A check-only `check_status_text` variant was rejected as the primary mechanism. It can catch enumerated mistakes, but generation makes omission of a new module row structurally impossible; the SVG artifact assertion retains the useful check-only part.
+- Collapsing the dual English files was rejected as out of scope. Both remain authoritative and independently checked.
+- Full SVG generation from the family-os registry was rejected for this PR. SVG generation remains owned by `.github`; committed artifacts are asserted here.
+
 ## Known Limit
 
 An undeclared remote root `README*.md` that already contains generated markers is only caught when `render` runs against a local checkout. The remote checker does not discover undeclared files.
+
+The org-profile names, descriptions, intro templates, and status labels live outside every translation pipeline. Lint proves that each registry language is present and structurally safe, not that its prose is linguistically correct. The SVG check's hardcoded per-language ecosystem-intro fragments are intentionally coupled to wording in `.github/tools/gen_readme_svg.py`; missing-intro wording drift fails closed until the assertion and generator are updated together. The `.github` SVG generator source is otherwise asserted only transitively through the committed artifacts; a regenerate-and-diff gate remains a `.github` follow-up. The hand-written product bullets above the generated region (Caty Phone, ai-meet-participant) are not registry modules and stay outside every org-profile check.

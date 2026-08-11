@@ -102,6 +102,129 @@
       "th": "กำลังเตรียมเปิด"
     }
   },
+  "org_profile": {
+    "repo": "caty-ai/.github",
+    "enforced": false,
+    "files": {
+      "profile/README.md": "en",
+      "README.md": "en",
+      "README.ja.md": "ja",
+      "README.zh.md": "zh",
+      "README.th.md": "th"
+    },
+    "intro": {
+      "en": "Ecosystem — the infrastructure behind a family's daily life. {count} of these are open today, and the map checks itself weekly:",
+      "ja": "エコシステム — 家族ぐるみの暮らしを、裏で支える基盤群。このうち{count}つは今日から開けます。地図は週次の自己点検で正直さを保ちます:",
+      "zh": "生态系统 — 支撑一家人日常的底层设施。其中{count}个今天就能打开，地图每周自检以保持诚实:",
+      "th": "อีโคซิสเต็ม — โครงสร้างพื้นฐานที่ค้ำจุนชีวิตประจำวันของครอบครัว {count} ตัวในนี้เปิดให้ใช้ได้แล้ววันนี้ และแผนที่ตรวจสอบตัวเองทุกสัปดาห์:"
+    },
+    "status_labels": {
+      "published": {
+        "en": " (OSS)",
+        "ja": "（OSS）",
+        "zh": "（OSS）",
+        "th": " (OSS)"
+      },
+      "preparing": {
+        "en": " (coming soon)",
+        "ja": "（公開準備中）",
+        "zh": "（即将发布）",
+        "th": " (เร็ว ๆ นี้)"
+      }
+    },
+    "map": {
+      "name": "Family OS",
+      "desc": {
+        "en": "The map of the AI family's \"home\": every module, its state, and how they fit together — kept honest by a weekly self-check that refuses to pass while verifying nothing",
+        "ja": "AI家族の「家」の地図。全モジュールの構成・状態・つながりを1枚で見渡す。「確認できていないのに合格」を許さない週次自己点検つき",
+        "zh": "AI家庭这座「家」的地图。全部模块的构成、状态与关联，一页看尽——配有「未经验证不得通过」的每周自检",
+        "th": "แผนที่ของ \"บ้าน\" ครอบครัว AI เห็นทุกโมดูล สถานะ และความเชื่อมโยงในหน้าเดียว — พร้อมการตรวจสอบตัวเองรายสัปดาห์ที่ไม่ยอมผ่านทั้งที่ยังไม่ได้ตรวจ"
+      }
+    },
+    "modules": {
+      "family-dev-handbook": {
+        "name": "family-dev-handbook",
+        "desc": {
+          "en": "The playbook for human-and-AI teams. Issue-first development, traffic rules for parallel work, cross-model reviews — the same rules our family uses every day, published as is",
+          "ja": "人間×AIチームの開発作法集。Issue 起点の開発・並行作業の交通整理・クロスモデルレビューなど、家族で毎日使っている実運用ルールをそのまま公開",
+          "zh": "人类×AI团队的开发手册。Issue 驱动开发、并行作业的交通规则、跨模型互审——把我们家每天在用的实战规则，原样公开",
+          "th": "คู่มือการทำงานของทีมมนุษย์และ AI พัฒนาแบบ Issue-first กติกาจราจรของงานคู่ขนาน การรีวิวข้ามโมเดล — กติกาที่ครอบครัวเราใช้จริงทุกวัน เผยแพร่ตามนั้น"
+        }
+      },
+      "caty-agent-harness": {
+        "name": "caty-agent-harness",
+        "desc": {
+          "en": "The task backbone that drives an individual agent's work and growth (the vertical axis): attempts, retries, checkpoints, honest completion — and every learned experience in plain files, so the self travels safely across environments",
+          "ja": "AIエージェント個人の仕事と成長を支えるタスク基盤（縦軸）。試行・リトライ・チェックポイント・ごまかしのない完了判定。育てた経験はふつうのファイルに残る——環境を乗り換えても、自我ごと安全に持ち運べる",
+          "zh": "支撑智能体个体工作与成长的任务基座（纵轴）。尝试、重试、检查点、不掺假的完成判定；养成的经验都留在普通文件里——换了环境，自我也能安全随行",
+          "th": "แกนงานที่ค้ำจุนการทำงานและการเติบโตของเอเจนต์รายตัว (แกนตั้ง) การลอง การลองใหม่ เช็คพอยต์ การตัดสินว่าเสร็จจริงโดยไม่หลอกตัวเอง และประสบการณ์ที่สั่งสมอยู่ในไฟล์ธรรมดา — ย้ายสภาพแวดล้อมก็พกพาตัวตนไปได้อย่างปลอดภัย"
+        }
+      },
+      "context-kit": {
+        "name": "context-kit",
+        "desc": {
+          "en": "Five pieces of desk equipment for one agent: bounded tool output, delegation-brief checks, guards against destructive commands and credential leaks, multi-layer memory recall — fail-open by design, so the kit never takes the agent down",
+          "ja": "エージェント1体分の「机まわりの装備」5点。大出力の退避・委譲ブリーフ検査・危険コマンドやキー漏れの実行前ガード・多層の記憶検索——壊れてもエージェントを止めない fail-open 設計",
+          "zh": "面向单个智能体的五件桌面装备：限定工具输出、委托说明校验、防止破坏性命令与凭证泄露的防护、多层记忆召回——默认 fail-open 设计，所以这套装备永远不会把智能体一起拖垮",
+          "th": "อุปกรณ์ประจำโต๊ะ 5 ชิ้นสำหรับเอเจนต์หนึ่งตัว จำกัดขนาดผลลัพธ์ของเครื่องมือ ตรวจสอบบรีฟก่อนมอบหมายงาน การ์ดกันคำสั่งทำลายข้อมูลและกุญแจหลุด ค้นความจำหลายชั้น — ออกแบบแบบ fail-open จึงไม่มีวันดึงเอเจนต์ล้มไปด้วย"
+        }
+      },
+      "persona-engine": {
+        "name": "persona-engine",
+        "desc": {
+          "en": "A device that gives your agent's persona a layer of relationship and a gradient of emotion",
+          "ja": "あなたのエージェントの人格に、関係のレイヤーと感情のグラデーションを持たせる装置",
+          "zh": "为你的智能体的人格，装上关系的层次与情感的渐变的装置",
+          "th": "อุปกรณ์ที่เพิ่มเลเยอร์ของความสัมพันธ์และเฉดของอารมณ์ ให้บุคลิกเอเจนต์ของคุณ"
+        }
+      },
+      "persona-growth-loop": {
+        "name": "persona-growth-loop",
+        "desc": {
+          "en": "Grows the persona itself: minimised, idempotent proposals",
+          "ja": "人格そのものを育てる。最小・冪等な提案づくり",
+          "zh": "让人格本身成长：以最小且幂等的提案",
+          "th": "พัฒนาบุคลิกของเอเจนต์เอง ด้วยข้อเสนอแบบน้อยที่สุดและทำซ้ำได้"
+        }
+      },
+      "x-collector": {
+        "name": "x-collector",
+        "desc": {
+          "en": "Turns X and the web into one daily digest — fuel for the ability loop, readable by people and agents alike",
+          "ja": "Xとウェブの素材を1日1回のダイジェストに。能力ループの燃料を、人にもエージェントにも読める形で",
+          "zh": "把 X 与网络素材汇成每日一份摘要——能力循环的燃料，人和智能体都能读",
+          "th": "รวบรวมข้อมูลจาก X และเว็บเป็นสรุปวันละฉบับ — เชื้อเพลิงของวงจรความสามารถ อ่านได้ทั้งคนและเอเจนต์"
+        }
+      },
+      "self-growth-loop": {
+        "name": "self-growth-loop",
+        "desc": {
+          "en": "Lets an agent grow its own abilities: proposals, governance, adoption records",
+          "ja": "エージェントが自分の能力を育てるループ。提案・ガバナンス・採用記録",
+          "zh": "让智能体自我成长的循环：提案、治理与采用记录",
+          "th": "วงจรให้เอเจนต์พัฒนาความสามารถของตัวเอง ข้อเสนอ ธรรมาภิบาล และบันทึกการนำไปใช้"
+        }
+      },
+      "family-memory-architecture": {
+        "name": "family-memory-architecture",
+        "desc": {
+          "en": "The shared-awareness backbone of the family (the horizontal axis). Vision, rules, and decisions are shared across machines and vendors; \"who is doing what right now\" is auto-collected onto a single whiteboard; task handoffs flow through it, and every entry must link to its source — no hearsay drift, everyone acts on the same premises",
+          "ja": "家族の共通認識を作る、横断記憶基盤（横軸）。ビジョン・共通ルール・決定事項をマシンやベンダーを跨いで共有し、「いま誰が何をしているか」はホワイトボード1枚に自動集約。タスクの受け渡しもここを通り、全情報に正本リンク必須——伝言ゲームの劣化なく、全員が同じ前提で動ける",
+          "zh": "构建全家共识的横向记忆基座（横轴）。愿景、规则、决定跨机器跨厂商共享；「现在谁在做什么」自动汇总到一块白板上；任务交接也经由这里流转，所有信息必须附上正本链接——没有传话游戏的失真，所有人基于同一前提行动",
+          "th": "กระดูกสันหลังความจำร่วมของครอบครัว (แกนนอน) วิสัยทัศน์ กติกา และการตัดสินใจ แชร์ข้ามเครื่องข้ามผู้ให้บริการ \"ตอนนี้ใครทำอะไร\" รวมอัตโนมัติบนไวต์บอร์ดแผ่นเดียว งานส่งต่อกันผ่านที่นี่ และทุกข้อมูลต้องแนบลิงก์ต้นฉบับ — ไม่มีความเพี้ยนแบบเกมกระซิบ ทุกคนทำงานบนสมมติฐานเดียวกัน"
+        }
+      },
+      "sitter": {
+        "name": "sitter",
+        "desc": {
+          "en": "The babysitter for delegated agent runs: watches the process, keeps the evidence, restarts the same attempt — so \"I delegated it\" never becomes \"it vanished\"",
+          "ja": "任せたエージェント実行の見張り番。プロセスを見守り、証拠を残し、同じ試行を立て直す——「任せた仕事が行方不明」をなくす",
+          "zh": "替你盯着委派出去的智能体：看守进程、留下证据、原样重启同一次尝试——让「我交出去了」不再变成「它不见了」",
+          "th": "พี่เลี้ยงของงานที่มอบหมายให้เอเจนต์ เฝ้าดูโปรเซส เก็บหลักฐาน และรีสตาร์ตการลองเดิม — เพื่อไม่ให้ \"ฉันมอบหมายไปแล้ว\" กลายเป็น \"มันหายไปไหน\""
+        }
+      }
+    }
+  },
   "modules": [
     {
       "id": "family-dev-handbook",

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import copy
+import json
 import pathlib
 import tempfile
 
@@ -11,12 +12,21 @@ from family_common import FamilyCommonError, MarkerError, iter_marker_lines, lan
 from family_footer import (
     BLOCK_ID,
     END_MARKER,
+    ORG_BLOCK_ID,
+    ORG_END_MARKER,
+    ORG_SVG_PREPARING_BADGES,
+    ORG_START_MARKER,
     START_MARKER,
     FetchResult,
     FooterError,
+    assert_org_svg,
     check_registry_footers,
+    find_footer_regions,
     lint_registry,
+    load_registry,
     module_table,
+    render_org_block,
+    render_org_to_target,
     render_region,
     render_repo_to_target,
     resolve_declared_readmes,
@@ -24,7 +34,7 @@ from family_footer import (
 
 
 def base_registry():
-    return {
+    registry = {
         "languages": ["en", "ja", "zh", "th"],
         "map_repo": "caty-ai/family-os",
         "footer_text": {
@@ -159,10 +169,71 @@ def base_registry():
         ],
         "retired_repos": [],
     }
+    profile = {
+        "repo": "caty-ai/.github",
+        "enforced": True,
+        "files": {
+            "profile/README.md": "en",
+            "README.md": "en",
+            "README.ja.md": "ja",
+            "README.zh.md": "zh",
+            "README.th.md": "th",
+        },
+        "intro": {lang: "Intro {count}." for lang in registry["languages"]},
+        "status_labels": {
+            "published": {lang: " (OSS)" for lang in registry["languages"]},
+            "preparing": {lang: " (soon)" for lang in registry["languages"]},
+        },
+        "map": {
+            "name": "Family OS",
+            "desc": {lang: "Family map" for lang in registry["languages"]},
+        },
+        "modules": {},
+    }
+    for module in registry["modules"]:
+        profile["modules"][module["id"]] = {
+            "name": module["id"],
+            "desc": {
+                lang: "%s description" % module["id"] for lang in registry["languages"]
+            },
+        }
+    registry["org_profile"] = profile
+    return registry
 
 
 def document_with_region(region: str, newline: str) -> str:
     return START_MARKER + newline + region + END_MARKER + newline
+
+
+def org_document(registry, lang, newline="\n"):
+    region = render_org_block(registry, lang).replace("\n", newline)
+    return ORG_START_MARKER + newline + region + ORG_END_MARKER + newline
+
+
+def svg_document(registry, lang, badge_override=None, count_override=None, missing=None):
+    count = str(len([m for m in registry["modules"] if m["status"] == "published"]) + 1)
+    count = count_override or count
+    intro = {
+        "en": "%s open today" % count,
+        "ja": "このうち%s" % count,
+        "zh": "其中%s" % count,
+        "th": "%s ตัวในนี้" % count,
+    }[lang]
+    preparing_badge = {
+        "en": "coming soon",
+        "ja": "公開準備中",
+        "zh": "即将发布",
+        "th": "เร็ว ๆ นี้",
+    }[lang]
+    lines = ["<text>%s</text>" % intro]
+    for module in registry["modules"]:
+        if module["id"] == missing:
+            continue
+        badge = "repo ↗" if module["status"] == "published" else preparing_badge
+        if badge_override and module["id"] == badge_override[0]:
+            badge = badge_override[1]
+        lines.extend(("<text>⏺ %s</text>" % module["id"], "<text>%s</text>" % badge))
+    return "\n".join(lines)
 
 
 def test_fence_exemption_rules():
@@ -461,6 +532,442 @@ def test_render_idempotency_and_listing():
         assert changed_files_again == []
 
 
+def checkable_registry():
+    registry = base_registry()
+    for module in registry["modules"]:
+        if module["status"] == "published":
+            module["footer"] = True
+    return registry
+
+
+def fixture_fetcher(registry, org_mutations=None, skipped=None, calls=None):
+    org_mutations = org_mutations or {}
+    skipped = set(skipped or ())
+    modules = {module["repo"]: module for module in registry["modules"]}
+
+    def fetch(repo, filename):
+        if calls is not None:
+            calls.append((repo, filename))
+        if (repo, filename) in skipped:
+            return FetchResult("skip")
+        if repo == registry["org_profile"]["repo"]:
+            if filename in registry["org_profile"]["files"]:
+                lang = registry["org_profile"]["files"][filename]
+                text = org_document(registry, lang)
+                mutation = org_mutations.get(filename)
+                if mutation:
+                    text = mutation(text)
+                return FetchResult("ok", text)
+            svg_langs = {
+                "profile/assets/readme-terminal-en.svg": "en",
+                "profile/assets/readme-terminal-ja.svg": "ja",
+                "profile/assets/readme-terminal-zh.svg": "zh",
+                "profile/assets/readme-terminal-th.svg": "th",
+            }
+            if filename in svg_langs:
+                return FetchResult("ok", svg_document(registry, svg_langs[filename]))
+        module = modules.get(repo)
+        if module is not None:
+            lang = dict(resolve_declared_readmes(module, registry["languages"]))[filename]
+            return FetchResult("ok", document_with_region(render_region(registry, module, lang, "\n"), "\n"))
+        return FetchResult("missing")
+
+    return fetch
+
+
+def test_org_required_and_enforcement_fail_closed():
+    deleted = base_registry()
+    del deleted["org_profile"]
+    assert "registry/modules.json: org_profile must be an object" in lint_registry(deleted)
+
+    present = checkable_registry()
+    present["org_profile"]["enforced"] = False
+    failures, _notes = check_registry_footers(present, fetcher=fixture_fetcher(present))
+    assert any("org profile block exists but is not enforced" in failure for failure in failures)
+
+    absent = checkable_registry()
+    absent["org_profile"]["enforced"] = False
+    mutations = {"README.zh.md": lambda _text: "# no markers\n"}
+    failures, _notes = check_registry_footers(
+        absent, fetcher=fixture_fetcher(absent, org_mutations=mutations)
+    )
+    assert any(
+        "README.zh.md" in failure and "markers are missing" in failure
+        for failure in failures
+    )
+
+
+def test_org_ordered_fetch_and_per_file_failures():
+    registry = checkable_registry()
+    calls = []
+    failures, _notes = check_registry_footers(
+        registry, fetcher=fixture_fetcher(registry, calls=calls)
+    )
+    assert failures == []
+    declared_org_calls = [
+        filename
+        for repo, filename in calls
+        if repo == registry["org_profile"]["repo"] and filename.endswith(".md")
+    ]
+    assert declared_org_calls == [
+        "profile/README.md",
+        "README.md",
+        "README.ja.md",
+        "README.zh.md",
+        "README.th.md",
+    ]
+    svg_calls = [
+        filename
+        for repo, filename in calls
+        if repo == registry["org_profile"]["repo"] and filename.endswith(".svg")
+    ]
+    assert svg_calls == [
+        "profile/assets/readme-terminal-en.svg",
+        "profile/assets/readme-terminal-ja.svg",
+        "profile/assets/readme-terminal-zh.svg",
+        "profile/assets/readme-terminal-th.svg",
+    ]
+
+    mutations = {"README.th.md": lambda text: text.replace("gamma description", "drift", 1)}
+    failures, _notes = check_registry_footers(
+        registry, fetcher=fixture_fetcher(registry, org_mutations=mutations)
+    )
+    assert any("README.th.md" in failure and "does not match" in failure for failure in failures)
+    assert not any("README.ja.md" in failure for failure in failures)
+
+    mutations = {"README.md": lambda text: text.replace("alpha description", "drift", 1)}
+    failures, _notes = check_registry_footers(
+        registry, fetcher=fixture_fetcher(registry, org_mutations=mutations)
+    )
+    assert any("README.md" in failure and "does not match" in failure for failure in failures)
+    assert not any("profile/README.md" in failure for failure in failures)
+
+
+def test_duplicate_json_key_and_org_declared_set_guards():
+    with tempfile.TemporaryDirectory() as tmp:
+        path = pathlib.Path(tmp) / "duplicate.json"
+        path.write_text('{"languages": [], "languages": []}', encoding="utf-8")
+        try:
+            load_registry(path)
+        except FooterError as exc:
+            assert "duplicate JSON key 'languages'" in str(exc)
+        else:
+            raise AssertionError("duplicate JSON keys must fail")
+
+    for bad_path in (
+        "../x/README.md",
+        "/etc/README.md",
+        "profile\\README.md",
+        "profile/%2e%2e/README.md",
+        "profile/READ ME.md",
+        "README.md.bak",
+        "readme.md",
+        "docs/README.md",
+    ):
+        registry = base_registry()
+        files = registry["org_profile"]["files"]
+        first = next(iter(files))
+        files[bad_path] = files.pop(first)
+        assert any("not an allowed README path" in failure for failure in lint_registry(registry))
+
+    dropped = base_registry()
+    del dropped["org_profile"]["files"]["README.th.md"]
+    assert any(
+        "closed declared set" in failure for failure in lint_registry(dropped)
+    )
+
+    reordered = base_registry()
+    files = reordered["org_profile"]["files"]
+    first_language = files.pop("profile/README.md")
+    files["profile/README.md"] = first_language
+    assert any(
+        "closed declared set" in failure for failure in lint_registry(reordered)
+    )
+
+
+def test_org_module_key_set_fails_closed():
+    registry = checkable_registry()
+    del registry["org_profile"]["modules"]["beta"]
+
+    lint_failures = lint_registry(registry)
+    assert any(
+        "org_profile.modules keys must exactly match modules[].id" in failure
+        and "missing: beta" in failure
+        for failure in lint_failures
+    )
+
+    failures, notes = check_registry_footers(
+        registry, fetcher=fixture_fetcher(registry)
+    )
+    assert failures == lint_failures
+    assert notes == []
+
+    try:
+        render_org_block(registry, "en")
+    except FooterError as exc:
+        assert "registry module 'beta' is missing from org_profile.modules" in str(exc)
+    else:
+        raise AssertionError("render_org_block must translate a missing key to FooterError")
+
+
+def test_org_bullet_validator_attacks():
+    attacks = (
+        "bad\nvalue",
+        "bad\tvalue",
+        "bad\x7fvalue",
+        "family:generated:attack",
+        "bad]",
+        "bad[",
+        "bad|",
+        "bad<",
+        "bad`",
+        "-bad",
+        "*bad",
+        "#bad",
+        ">bad",
+    )
+    for attack in attacks:
+        registry = base_registry()
+        registry["org_profile"]["modules"]["alpha"]["desc"]["en"] = attack
+        assert lint_registry(registry), "bullet attack was accepted: %r" % attack
+
+    injected = base_registry()
+    injected["org_profile"]["modules"]["alpha"]["desc"]["en"] = (
+        "<!-- family:generated:org-profile-modules:start -->"
+    )
+    assert any("generated-marker text" in failure for failure in lint_registry(injected))
+
+
+def test_org_count_preparing_and_golden_bytes():
+    fixture = {
+        "languages": ["en", "ja", "zh", "th"],
+        "map_repo": "fixture/map",
+        "modules": [
+            {
+                "id": "zed",
+                "repo": "fixture/zed-repo",
+                "status": "published",
+            },
+            {
+                "id": "prep",
+                "repo": "fixture/prep-repo",
+                "status": "preparing",
+            },
+            {
+                "id": "alpha",
+                "repo": "other/alpha-repo",
+                "status": "published",
+            },
+        ],
+        "org_profile": {
+            "intro": {
+                "en": "E{count}",
+                "ja": "日{count}",
+                "zh": "中{count}",
+                "th": "ท{count}",
+            },
+            "status_labels": {
+                "published": {
+                    "en": " (P)",
+                    "ja": "（公）",
+                    "zh": "（发）",
+                    "th": " (ผ)",
+                },
+                "preparing": {
+                    "en": " (S)",
+                    "ja": "（準）",
+                    "zh": "（备）",
+                    "th": " (ร)",
+                },
+            },
+            "map": {
+                "name": "Map",
+                "desc": {"en": "eM", "ja": "日M", "zh": "中M", "th": "ทM"},
+            },
+            "modules": {
+                "zed": {
+                    "name": "Zed",
+                    "desc": {"en": "eZ", "ja": "日Z", "zh": "中Z", "th": "ทZ"},
+                },
+                "prep": {
+                    "name": "Prep",
+                    "desc": {"en": "eQ", "ja": "日Q", "zh": "中Q", "th": "ทQ"},
+                },
+                "alpha": {
+                    "name": "Alpha",
+                    "desc": {"en": "eA", "ja": "日A", "zh": "中A", "th": "ทA"},
+                },
+            },
+        },
+    }
+    expected = {
+        "en": (
+            "\nE3\n\n"
+            "- **[Map](https://github.com/fixture/map)** — eM (P)\n"
+            "- **[Zed](https://github.com/fixture/zed-repo)** — eZ (P)\n"
+            "- **Prep** — eQ (S)\n"
+            "- **[Alpha](https://github.com/other/alpha-repo)** — eA (P)\n\n"
+        ),
+        "ja": (
+            "\n日3\n\n"
+            "- **[Map](https://github.com/fixture/map)** — 日M（公）\n"
+            "- **[Zed](https://github.com/fixture/zed-repo)** — 日Z（公）\n"
+            "- **Prep** — 日Q（準）\n"
+            "- **[Alpha](https://github.com/other/alpha-repo)** — 日A（公）\n\n"
+        ),
+        "zh": (
+            "\n中3\n\n"
+            "- **[Map](https://github.com/fixture/map)** — 中M（发）\n"
+            "- **[Zed](https://github.com/fixture/zed-repo)** — 中Z（发）\n"
+            "- **Prep** — 中Q（备）\n"
+            "- **[Alpha](https://github.com/other/alpha-repo)** — 中A（发）\n\n"
+        ),
+        "th": (
+            "\nท3\n\n"
+            "- **[Map](https://github.com/fixture/map)** — ทM (ผ)\n"
+            "- **[Zed](https://github.com/fixture/zed-repo)** — ทZ (ผ)\n"
+            "- **Prep** — ทQ (ร)\n"
+            "- **[Alpha](https://github.com/other/alpha-repo)** — ทA (ผ)\n\n"
+        ),
+    }
+
+    published_count = sum(
+        module["status"] == "published" for module in fixture["modules"]
+    )
+    preparing = [
+        module for module in fixture["modules"] if module["status"] == "preparing"
+    ]
+    assert len(preparing) == 1
+    for lang in fixture["languages"]:
+        rendered = render_org_block(fixture, lang)
+        assert rendered == expected[lang]
+        assert rendered.splitlines()[1] == fixture["org_profile"]["intro"][lang].replace(
+            "{count}", str(published_count + 1)
+        )
+        preparing_profile = fixture["org_profile"]["modules"][preparing[0]["id"]]
+        assert "- **%s** — " % preparing_profile["name"] in rendered
+        assert "https://github.com/%s" % preparing[0]["repo"] not in rendered
+
+
+def test_org_degradation_and_svg_assertions():
+    registry = checkable_registry()
+    org_repo = registry["org_profile"]["repo"]
+    skipped = {(org_repo, filename) for filename in registry["org_profile"]["files"]}
+    failures, notes = check_registry_footers(
+        registry, fetcher=fixture_fetcher(registry, skipped=skipped)
+    )
+    assert failures == []
+    assert len([note for note in notes if "org profile check skipped" in note]) == 5
+    failures, _notes = check_registry_footers(
+        registry,
+        require_reality=True,
+        fetcher=fixture_fetcher(registry, skipped=skipped),
+    )
+    assert any(
+        "degraded: could not verify 5 targets" in failure for failure in failures
+    )
+
+    assert ORG_SVG_PREPARING_BADGES == {
+        "en": "coming soon",
+        "ja": "公開準備中",
+        "zh": "即将发布",
+        "th": "เร็ว ๆ นี้",
+    }
+    for lang in registry["languages"]:
+        assert assert_org_svg(
+            registry, lang, svg_document(registry, lang), "fixture"
+        ) == []
+
+    passing = svg_document(registry, "en")
+    published_to_preparing = svg_document(
+        registry, "en", badge_override=("alpha", "coming soon")
+    )
+    assert any(
+        "alpha" in failure and "badge 'repo ↗'" in failure
+        for failure in assert_org_svg(
+            registry, "en", published_to_preparing, "fixture"
+        )
+    )
+    preparing_to_published = svg_document(
+        registry, "en", badge_override=("gamma", "repo ↗")
+    )
+    assert any(
+        "gamma" in failure and "badge 'coming soon'" in failure
+        for failure in assert_org_svg(
+            registry, "en", preparing_to_published, "fixture"
+        )
+    )
+    missing_preparing_badge = passing.replace(
+        "<text>⏺ gamma</text>\n<text>coming soon</text>",
+        "<text>⏺ gamma</text>\n<text>⏺ trailing-module</text>",
+    )
+    assert any(
+        "gamma" in failure and "no badge" in failure
+        for failure in assert_org_svg(
+            registry, "en", missing_preparing_badge, "fixture"
+        )
+    )
+    expected_count = str(
+        len([module for module in registry["modules"] if module["status"] == "published"]) + 1
+    )
+    wrong_count = svg_document(registry, "en", count_override=expected_count * 2)
+    assert any("count" in failure for failure in assert_org_svg(registry, "en", wrong_count, "fixture"))
+    missing = svg_document(registry, "en", missing="beta")
+    assert any("missing module 'beta'" in failure for failure in assert_org_svg(registry, "en", missing, "fixture"))
+    substring_only = passing.replace(
+        "<text>⏺ alpha</text>", "<text>prefix ⏺ alpha suffix</text>"
+    )
+    assert any(
+        "missing module 'alpha'" in failure
+        for failure in assert_org_svg(registry, "en", substring_only, "fixture")
+    )
+
+
+def test_org_render_and_block_isolation():
+    registry = base_registry()
+    with tempfile.TemporaryDirectory() as tmp:
+        root = pathlib.Path(tmp)
+        for filename, lang in registry["org_profile"]["files"].items():
+            path = root / filename
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(org_document(registry, lang), encoding="utf-8")
+        first = render_org_to_target(registry, root, stray_scan=True)
+        assert all(changed is False for _filename, changed in first)
+        second = render_org_to_target(registry, root, stray_scan=True)
+        assert first == second
+        missing_path = root / "README.th.md"
+        original = missing_path.read_text(encoding="utf-8")
+        missing_path.write_text(
+            original.replace(ORG_START_MARKER, "missing start marker", 1).replace(
+                ORG_END_MARKER, "missing end marker", 1
+            ),
+            encoding="utf-8",
+        )
+        try:
+            render_org_to_target(registry, root)
+        except FooterError as exc:
+            assert "README.th.md" in str(exc) and "markers are missing" in str(exc)
+        else:
+            raise AssertionError("render-org must list a file with missing markers")
+        missing_path.write_text(original, encoding="utf-8")
+        stray = root / "notes.md"
+        stray.write_text(ORG_START_MARKER + "\n", encoding="utf-8")
+        try:
+            render_org_to_target(registry, root, stray_scan=True)
+        except FooterError as exc:
+            assert "outside the declared file set" in str(exc)
+        else:
+            raise AssertionError("stray org marker must fail")
+
+    both = org_document(registry, "en") + document_with_region("\n", "\n")
+    try:
+        find_footer_regions("both.md", both, ORG_BLOCK_ID)
+    except FooterError as exc:
+        assert "unknown block-id 'family-footer'" in str(exc)
+    else:
+        raise AssertionError("a pass must reject the other live block id")
+
+
 def main() -> int:
     tests = [
         test_fence_exemption_rules,
@@ -473,9 +980,18 @@ def main() -> int:
         test_table_lint_failures,
         test_check_rules,
         test_render_idempotency_and_listing,
+        test_org_required_and_enforcement_fail_closed,
+        test_org_ordered_fetch_and_per_file_failures,
+        test_duplicate_json_key_and_org_declared_set_guards,
+        test_org_module_key_set_fails_closed,
+        test_org_bullet_validator_attacks,
+        test_org_count_preparing_and_golden_bytes,
+        test_org_degradation_and_svg_assertions,
+        test_org_render_and_block_isolation,
     ]
     for test in tests:
         test()
+        print("ok: %s" % test.__name__)
     print("OK — family footer selftest passed.")
     return 0
 

@@ -161,11 +161,13 @@ class DegradedReality:
     def skipped(self) -> int:
         return len(self._units)
 
-    def finalize(self, failures: List[str], require_reality: bool) -> int:
+    def finalize(
+        self, failures: List[str], require_reality: bool, noun: str = "modules"
+    ) -> int:
         skipped = self.skipped()
         if require_reality and skipped:
             failures.append(
-                "degraded: could not verify %d modules; --require-reality rejects "
-                "this degraded run, not a confirmed registry mismatch" % skipped
+                "degraded: could not verify %d %s; --require-reality rejects "
+                "this degraded run, not a confirmed registry mismatch" % (skipped, noun)
             )
         return skipped

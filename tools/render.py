@@ -46,7 +46,7 @@ FILE_LANG_OVERRIDES = {
 }
 RENDERABLE_BLOCKS = {block for blocks in EXPECTED_BLOCKS.values() for block in blocks}
 KNOWN_BLOCKS = set(RENDERABLE_BLOCKS)
-KNOWN_BLOCKS.add("family-footer")
+KNOWN_BLOCKS.update(("family-footer", "org-profile-modules"))
 
 INVENTORY_HEADERS = {
     "en": ("Module", "Class", "Owns", "State"),
@@ -235,10 +235,10 @@ def collect_files(registry: dict):
         allowed = live_ids
         for block in regions:
             if block not in allowed:
-                if block == "family-footer":
+                if block in {"family-footer", "org-profile-modules"}:
                     raise RenderError(
-                        "%s: block 'family-footer' is rendered by tools/family_footer.py into sibling repositories"
-                        % relative
+                        "%s: block '%s' is rendered by tools/family_footer.py into sibling repositories"
+                        % (relative, block)
                     )
                 raise RenderError(
                     "%s: block-id '%s' has no renderer for this file" % (relative, block)
