@@ -268,8 +268,8 @@
     {
       "id": "self-growth-loop",
       "name": "Self Growth Loop",
-      "repo": "shojikumaru/self-growth-loop",
-      "status": "preparing",
+      "repo": "caty-ai/self-growth-loop",
+      "status": "published",
       "tagline": {
         "en": "Lets an agent grow its own abilities — proposals, governance, adoption records",
         "ja": "エージェントが自分の能力を育てるループ — 提案・ガバナンス・採用記録",
@@ -280,7 +280,7 @@
         "group": "vertical",
         "foundation": false
       },
-      "license": null,
+      "license": "MIT",
       "class": {
         "en": "runtime, application",
         "ja": "runtime・アプリケーション"
@@ -289,10 +289,7 @@
         "en": "proposal, governance, adoption records, growth interpretation",
         "ja": "提案・ガバナンス・採用記録・成長の解釈"
       },
-      "note": {
-        "en": "harness link implemented",
-        "ja": "基盤との接続は実装済み"
-      }
+      "footer": true
     },
     {
       "id": "family-memory-architecture",
