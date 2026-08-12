@@ -89,10 +89,124 @@ jobs:
             --exclude 'img\.shields\.io'
             './**/*.md'
 
+  evidence-freshness:
+    name: evidence freshness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: check evidence freshness
+        run: |
+          python3 -B <<'PY'
+          from datetime import datetime, timezone
+          from pathlib import Path
+          import os
+          import re
+
+          required_fields = {
+              "claim-id",
+              "believe",
+              "built",
+              "actually happened",
+              "still don't know",
+              "state (delivery · visibility · evidence)",
+              "evidence",
+              "observed-at",
+              "last-reviewed",
+              "owner",
+              "counter-evidence",
+          }
+
+          def fail(message: str) -> None:
+              print(f"FAIL: {message}")
+              raise SystemExit(1)
+
+          text = Path("docs/evidence.md").read_text(encoding="utf-8")
+          entries = []
+          current = None
+
+          row_pattern = re.compile(r"^\|(?P<left>[^|]+)\|(?P<right>[^|]+)\|$")
+
+          for raw_line in text.splitlines():
+              line = raw_line.strip()
+              match = row_pattern.match(line)
+              if not match:
+                  if current is not None:
+                      entries.append(current)
+                      current = None
+                  continue
+
+              left = match.group("left").strip()
+              right = match.group("right").strip()
+
+              if left == "---" or left == "field":
+                  continue
+
+              if left == "claim-id":
+                  if current is not None:
+                      entries.append(current)
+                  current = {"claim-id": right}
+                  continue
+
+              if current is not None:
+                  current[left] = right
+
+          if current is not None:
+              entries.append(current)
+
+          claim_entries = [entry for entry in entries if "claim-id" in entry]
+          parsed = [
+              entry for entry in claim_entries if "last-reviewed" in entry
+          ]
+
+          if not claim_entries:
+              fail("parsed 0 claim entries from docs/evidence.md")
+
+          if not parsed:
+              fail("parsed 0 evidence entries with the exact last-reviewed field")
+
+          for entry in claim_entries:
+              missing = sorted(required_fields.difference(entry))
+              if missing:
+                  fail(
+                      f"{entry['claim-id']} is missing required fields: "
+                      + ", ".join(missing)
+                  )
+
+          today_override = os.environ.get("EVIDENCE_FRESHNESS_TODAY")
+          if today_override:
+              today = datetime.strptime(today_override, "%Y-%m-%d").date()
+          else:
+              today = datetime.now(timezone.utc).date()
+
+          stale = []
+          ages = []
+          for entry in parsed:
+              reviewed = datetime.strptime(entry["last-reviewed"], "%Y-%m-%d").date()
+              age_days = (today - reviewed).days
+              ages.append((entry["claim-id"], entry["last-reviewed"], age_days))
+              if age_days > 90:
+                  stale.append((entry["claim-id"], entry["last-reviewed"], age_days))
+
+          if stale:
+              print(
+                  f"FAIL: parsed {len(parsed)} evidence entries from docs/evidence.md"
+              )
+              for claim_id, reviewed, age_days in stale:
+                  print(
+                      f"- {claim_id}: last-reviewed {reviewed} is {age_days} days old"
+                  )
+              raise SystemExit(1)
+
+          print(f"PASS: parsed {len(parsed)} evidence entries from docs/evidence.md")
+          for claim_id, reviewed, age_days in ages:
+              print(f"- {claim_id}: last-reviewed {reviewed} ({age_days} days old)")
+          PY
+
   report:
     name: open an issue if the scheduled run failed
     runs-on: ubuntu-latest
-    needs: [registry, family-footer, publication-gate, links]
+    needs: [registry, family-footer, publication-gate, links, evidence-freshness]
     if: failure() && github.event_name == 'schedule'
     steps:
       # Both labels (stale-pointer and severity:high) are assumed to exist;
