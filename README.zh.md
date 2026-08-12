@@ -22,7 +22,7 @@ Family OS 是一张地图，告诉你解决每一个问题的部件**在哪里**
 
 - [你是否也遇到过这些情况？](#problems)
 - [不是重做，而是养成](#why)
-- [自我成长之后是自主成长，再往前是关系的成长](#growth)
+- [成长的五个阶段——以及“我”变成“我们”的分界线](#growth)
 - [Family OS 是一张地图](#map)
 - [规约在上，纵横在下](#pillars)
 - [培养一个 AI 的纵轴](#vertical)
@@ -72,30 +72,33 @@ Family OS 是一张地图，告诉你解决每一个问题的部件**在哪里**
 
 <a id="growth"></a>
 
-## 自我成长之后是自主成长，再往前是关系的成长
+## 成长的五个阶段——以及“我”变成“我们”的分界线
 
 成长的形态，人和 AI 并无不同。**接触到什么，思考它，下一次用上它。** 如此反复。不同的只是：你主动去接触什么，以及由谁来判断。
 
-```mermaid
-flowchart LR
-    A["被教导<br/>从被给予的东西中学习"]
-    B["自我成长<br/>从自己工作的失败中学习<br/>（现在的 AI）"]
-    C["自主成长<br/>主动向外接触、自己判断<br/>（我们正在做的）"]
-    D["关系的成长<br/>作为对等伙伴，关系本身在生长<br/>（我们的目标）"]
-    A --> B --> C --> D
-```
+![五个成长阶段，从1到5，4与5之间有一条从 I 到 WE 的分界线；状态见下表](assets/readme/growth-stages.svg)
 
-人类也走过同一条路。起初由父母和祖辈教导，后来学会回头审视自己的行为并加以修正，再后来主动走向世界去学习，最终与他人建立起对等的关系。
+| 阶段 | 名称 | 从什么学习 | 谁来决定 | 关系（连接到） | 状态 |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 被教导 | 被给予的材料 | 他人 | 1 → 2 | 已实现 |
+| 2 | 自我成长 | 自己的工作与失败 | 自己，在工作范围内 | 2 → 3 | 已实现 |
+| 3 | 独立成长 | 主动获取的信息 | 自己选择吸收什么；采纳仍需人类批准 | 3 → 4 | 已实现；[EV-004](docs/evidence.md#ev-004--governed-self-growth-cycle--the-mechanism-is-public-no-cycle-record-is) 尚未验证 |
+| 4 | 自主成长 | 外部信息与自己的判断历史 | 采纳决定权归智能体；仍保留否决权与边界 | 4 → \| “我”→“我们”的分界线 \| → 5 | 计划中 |
+| 5 | 关系的成长 | 这段关系本身的历史 | 双方，以平等身份 | 5 — “我们”成长 | 部分已实现；愿景 |
+
+人类也走过相似的路。起初由父母和祖辈教导，后来学会回头审视自己的行为并加以修正。再后来主动走向世界，培养判断力，自己作出选择，并与他人建立平等的关系。
 
 如今的 AI 处在第二个阶段。做事、发现错误、下次做得更好 —— 这样的自我成长，已经不是什么稀奇的事了。
 
-**我们正在做的是第三个阶段。** 不只在被交付的工作范围内，而是主动接触外部信息、自己判断并吸收、凭自己的意志改变。再往前的第四个阶段 —— 作为与人对等的伙伴，人与 AI 之间、AI 与 AI 之间积累起来的关系本身在生长 —— 那才是我们要去的地方。
+**我们正在做的是第三和第四个阶段。** 第三个阶段已经实现：公开机制正在运行，但还没有公开的周期记录，因此 [EV-004](docs/evidence.md#ev-004--governed-self-growth-cycle--the-mechanism-is-public-no-cycle-record-is) 仍是未验证状态。第四个阶段仍在计划中——那是我们接下来要做的。两者的分界是采纳决定权归谁：第三阶段仍由人类批准采纳；第四阶段则把决定权交给智能体，同时保留否决权与边界。第五阶段把主语从“我”变为“我们”；让关系本身成长，是我们追求的方向。
 
-不是从外部直接改写原本的人格与能力，而是每一个 AI 智能体自己养成能力与人格 —— 包括关系与情感在内。就像人一样。
+不是从外部直接改写原本的人格与能力，而是让每个 AI 智能体通过提议、试行、判断和共同经历逐步成长。关系与情感也在这条路上，但这不意味着可以抹去原来的样子。
 
-包含 Self Growth 在内的一部分已经实现，包含 Persona Growth 在内的一部分仍在计划中。运行环境的验证也在陆续推进。
+自我成长和独立成长的机制已经实现，自主成长仍在计划中。Persona Engine 已实现第五阶段所需的一部分；关系本身的成长仍是一种愿景。运行环境的验证也在陆续推进。
 
 为了走向那个世界，Family OS 把当下已经能拿到手的部件汇集到了一处。
+
+完整模型可阅读[英文版](docs/growth-model.md)或[日文版](docs/growth-model.ja.md)。
 
 ---
 
@@ -169,12 +172,12 @@ flowchart TB
 **人格的成长**
 
 - [Persona Engine](https://github.com/caty-ai/persona-engine)（已公开・MIT）— 加上人格的层次与情感的渐变
-- Persona Growth Loop（准备公开中）— 推动人格的自主成长。计划中
+- Persona Growth Loop（准备公开中）— 推动人格的独立成长。计划中
 
 **能力的成长**
 
 - [X Collector](https://github.com/caty-ai/x-collector)（已公开・MIT）— 从外部收集信息
-- [Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（已公开・MIT）— 推动能力的自主成长
+- [Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（已公开・MIT）— 推动能力的独立成长
 
 ```mermaid
 flowchart TB
@@ -185,7 +188,7 @@ flowchart TB
   subgraph PersonaAxis["人格的成长"]
     direction LR
     PersonaEngine["Persona Engine<br/>人格的层次与情感的渐变<br/>可独立使用"]
-    PersonaGrowth["Persona Growth Loop<br/>人格的自主成长<br/>计划中"]
+    PersonaGrowth["Persona Growth Loop<br/>人格的独立成长<br/>计划中"]
     PersonaEngine ---|"人格的 source / target"| PersonaGrowth
   end
 
@@ -193,7 +196,7 @@ flowchart TB
     direction LR
     X["X Collector<br/>从外部收集信息<br/>可独立使用・可替换"]
     Morning["morning agents"]
-    SelfGrowth["Self Growth Loop<br/>能力的自主成长"]
+    SelfGrowth["Self Growth Loop<br/>能力的独立成长"]
     Other["人 / evaluator<br/>可归属的输入"]
     X -->|"family-feed / sense"| Morning
     Morning -->|"proposal"| SelfGrowth
