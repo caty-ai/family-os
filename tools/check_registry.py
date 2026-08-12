@@ -76,10 +76,10 @@ def github_is_public(repo: str, timeout: float = 20.0):
     quota, which made skips common on shared CI runner IPs. Redirects are not
     followed so repository renames become detectable drift.
 
-    Returns True for a public repository, False for private/absent, a
-    ``("moved", location)`` tuple for any redirect, an
-    ``("unexpected", status)`` tuple for any other HTTP status, and None when
-    GitHub could not be reached. Push and pull-request runs intentionally leave
+    Returns True for a public repository; False for private, absent, or
+    unavailable repositories (404/410/451); a ``("moved", location)`` tuple
+    for any redirect; an ``("unexpected", status)`` tuple for any other HTTP
+    status; and None when GitHub could not be reached. Push and pull-request runs intentionally leave
     that last case non-fatal, so a flaky network never reads as a confirmed
     mismatch.
     """
@@ -99,7 +99,9 @@ def github_is_public(repo: str, timeout: float = 20.0):
             return "moved", exc.headers.get("Location")
         if exc.code == 404:
             return False
-        if exc.code in (403, 429) or 500 <= exc.code <= 599:
+        if exc.code in (410, 451):
+            return False
+        if exc.code == 403 or exc.code == 429 or 500 <= exc.code < 600:
             return None
         return "unexpected", exc.code
     except (urllib.error.URLError, TimeoutError):

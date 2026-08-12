@@ -60,8 +60,8 @@ def check_status_contract() -> None:
         (http_error(599), None),
         (http_error(401), ("unexpected", 401)),
         (http_error(405), ("unexpected", 405)),
-        (http_error(410), ("unexpected", 410)),
-        (http_error(451), ("unexpected", 451)),
+        (http_error(410), False),
+        (http_error(451), False),
     ]
     for result, expected in cases:
         with mock.patch(
@@ -72,7 +72,7 @@ def check_status_contract() -> None:
 
 
 def check_unexpected_statuses_are_recorded_and_later_modules_continue() -> None:
-    statuses = [303, 401, 405, 410, 451]
+    statuses = [303, 401, 405]
     registry = {
         "modules": [
             {"repo": "caty-ai/status-%d" % status, "status": "published"}
@@ -84,8 +84,6 @@ def check_unexpected_statuses_are_recorded_and_later_modules_continue() -> None:
         ("moved", "https://github.com/caty-ai/renamed"),
         ("unexpected", 401),
         ("unexpected", 405),
-        ("unexpected", 410),
-        ("unexpected", 451),
         True,
     ]
     failures = []
@@ -95,7 +93,7 @@ def check_unexpected_statuses_are_recorded_and_later_modules_continue() -> None:
 
     assert probe.call_count == len(registry["modules"]), probe.call_count
     assert probe.call_args_list[-1] == mock.call("caty-ai/after")
-    assert skipped == 4, skipped
+    assert skipped == 2, skipped
     assert len(failures) == 1 and failures[0].startswith("moved: caty-ai/status-303")
     for status in statuses[1:]:
         assert any(
@@ -105,7 +103,41 @@ def check_unexpected_statuses_are_recorded_and_later_modules_continue() -> None:
         ), (status, notes)
 
 
+def check_gone_statuses_hard_fail_published_modules() -> None:
+    registry = {
+        "modules": [
+            {"repo": "caty-ai/gone", "status": "published"},
+            {"repo": "caty-ai/legal", "status": "published"},
+        ]
+    }
+    failures = []
+    notes = []
+    with mock.patch("check_registry.github_is_public", side_effect=[False, False]):
+        skipped = check_reality(registry, failures, notes)
+
+    assert skipped == 0, skipped
+    assert len(failures) == 2, failures
+    assert all("PRIVATE/absent" in failure for failure in failures), failures
+
+
+def check_require_reality_escalates_unexpected_status() -> None:
+    registry = {"modules": [{"repo": "caty-ai/unexpected", "status": "published"}]}
+    failures = []
+    notes = []
+    with mock.patch(
+        "check_registry.github_is_public", return_value=("unexpected", 401)
+    ):
+        skipped = check_reality(registry, failures, notes, require_reality=True)
+
+    assert skipped == 1, skipped
+    assert len(failures) == 1, failures
+    assert "--require-reality rejects this degraded run" in failures[0], failures
+    assert any("unexpected HTTP status 401" in note for note in notes), notes
+
+
 if __name__ == "__main__":
     check_status_contract()
     check_unexpected_statuses_are_recorded_and_later_modules_continue()
+    check_gone_statuses_hard_fail_published_modules()
+    check_require_reality_escalates_unexpected_status()
     print("selftest_check_registry: ok")
