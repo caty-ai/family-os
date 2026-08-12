@@ -62,7 +62,7 @@
   <text class="small" x="640" y="520">one per agent · completion owner</text>
   <path class="solid" d="M315 501 H450"/>
   <path class="both" d="M830 501 H1107 V392"/>
-  <path class="dashed" d="M455 292 V410 H980 V356 H1015"/>
+  <path class="dashed" d="M455 292 V410 H980 V300 H1107 V320"/>
 
   <line x1="55" y1="590" x2="105" y2="590" stroke="#57606a" stroke-width="3"/>
   <text class="legend" x="120" y="595">solid = implemented / published</text>

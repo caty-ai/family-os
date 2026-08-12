@@ -11,7 +11,7 @@
 
 **เพื่อ AI ที่เติบโตไปกับคุณ ไม่ใช่ใช้แล้วทิ้ง**
 
-![ภาพแบรนด์ฮีโร่ของ Family OS ด้านซ้ายมีข้อความ "FAMILY OS", "A MAP FOR GROWING AI FAMILIES", "caty-ai/family-os" และ "FREE & OPEN SOURCE · MIT LICENSE" ด้านขวาเป็นระบบดาวเคราะห์สไตล์ทีวีย้อนยุคโทนอบอุ่น โลกใบใหญ่ตรงกลางเป็นอุปมาของแผนที่ที่มองเห็นครอบครัว AI ทั้งหมด ส่วนโลกอิสระและดาวเทียมที่ประกอบเข้าด้วยกันรอบ ๆ เป็นอุปมาของบทบาท ภาพนี้ไม่ได้แสดงความสัมพันธ์ในการเชื่อมต่อด้วยตัวเอง ความสัมพันธ์ที่ถูกต้องอธิบายไว้ในแผนภาพ Mermaid และเนื้อหาด้านล่าง](assets/readme/hero.png)
+![ภาพแบรนด์ฮีโร่ของ Family OS ด้านซ้ายมีข้อความ "FAMILY OS", "A MAP FOR GROWING AI FAMILIES", "caty-ai/family-os" และ "FREE & OPEN SOURCE · MIT LICENSE" ด้านขวาเป็นระบบดาวเคราะห์สไตล์ทีวีย้อนยุคโทนอบอุ่น โลกใบใหญ่ตรงกลางเป็นอุปมาของแผนที่ที่มองเห็นครอบครัว AI ทั้งหมด ส่วนโลกอิสระและดาวเทียมที่ประกอบเข้าด้วยกันรอบ ๆ เป็นอุปมาของบทบาท ภาพนี้ไม่ได้แสดงความสัมพันธ์ในการเชื่อมต่อด้วยตัวเอง ความสัมพันธ์ที่ถูกต้องแสดงอยู่ในภาพแผนที่ครอบครัวและตารางข้างภาพ](assets/readme/hero.png)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![install](https://img.shields.io/badge/install-not%20required-brightgreen)
@@ -134,13 +134,13 @@ AI ทุกวันนี้อยู่ที่ขั้นที่สอ�
 
 | เราเชื่อว่า | ดังนั้นเราจึงสร้าง | แหล่งอยู่ของโมดูล | สถานะการเปิดเผยและสัญญาอนุญาต | การส่งมอบ |
 | --- | --- | --- | --- | --- |
-| การเติบโตต้องมีที่ให้อาศัย | ดังนั้นเราจึงสร้าง registry และแผนที่ | [Family OS](https://github.com/caty-ai/family-os) (เปิดแล้ว・MIT) | เปิดแล้ว・MIT | นำไปใช้แล้ว |
-| ความทรงจำควรเป็นของครอบครัว ไม่ใช่ของผู้ขาย | ดังนั้นเราจึงสร้างหน่วยความจำครอบครัวที่พกย้ายได้ | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) (เปิดแล้ว・MIT) | เปิดแล้ว・MIT | นำไปใช้แล้ว |
-| เอเจนต์ต้องทำสิ่งที่เริ่มไว้ให้จบ พร้อมหลักฐาน | ดังนั้นเราจึงสร้างแกนงานที่มีความหมายของการจบอย่างซื่อสัตย์ | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) (เปิดแล้ว・MIT) | เปิดแล้ว・MIT | นำไปใช้แล้ว |
-| การตัดสินต้องถูกเรียนรู้ก่อนจึงจะเป็นเจ้าของได้ | ดังนั้นเราจึงสร้าง proposal, trial, review, approval และ adoption โดยมีด่านของมนุษย์กำกับ | [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) (เปิดแล้ว・MIT) | เปิดแล้ว・MIT | นำไปใช้แล้ว |
-| บุคลิกไม่ใช่พรอมป์ต์ แต่มันเป็นชั้น ๆ และพกย้ายได้ | ดังนั้นเราจึงสร้าง persona เป็นระบบแยกชั้นต่างหาก | [Persona Engine](https://github.com/caty-ai/persona-engine) (เปิดแล้ว・MIT) | เปิดแล้ว・MIT | นำไปใช้แล้ว |
-| สิ่งที่เติบโตขึ้นระหว่างคนกับ AI ไม่ควรเป็นของผู้ขาย | ดังนั้นเราจึงสร้างข้อมูลความสัมพันธ์ที่พกย้ายได้ | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) (เปิดแล้ว・MIT); [Persona Engine](https://github.com/caty-ai/persona-engine) (เปิดแล้ว・MIT) | เปิดแล้ว・MIT | นำไปใช้แล้ว |
-| การเติบโตจะเปลี่ยนประธานจาก I ไปเป็น WE ในที่สุด | ดังนั้นเราจึงสร้างโมเดล 5 ขั้นจากการเติบโตของปัจเจกไปสู่การเติบโตของความสัมพันธ์ | Persona Growth Loop (กำลังเตรียมเปิด); [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) (เปิดแล้ว・MIT); [Persona Engine](https://github.com/caty-ai/persona-engine) (เปิดแล้ว・MIT); [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) (เปิดแล้ว・MIT) | แบบผสม; ดูป้ายกำกับของโมดูลข้างเคียง | นำไปใช้แล้ว + อยู่ในแผน |
+| เทคโนโลยีเสื่อมมูลค่า ความสัมพันธ์ทบต้น | ดังนั้นเราจึงถือว่าความต่อเนื่อง ประวัติร่วม ความทรงจำ บุคลิก และความสัมพันธ์เป็นองค์ประกอบระบบระดับแรก | [Family OS](https://github.com/caty-ai/family-os) (เปิดแล้ว・MIT) | เปิดแล้ว・MIT | ทิศทางนำไปใช้แล้ว; การเติบโตของความสัมพันธ์ยังอยู่ในแผน |
+| ความทรงจำพาความต่อเนื่องข้ามกาลเวลา | ดังนั้นเราจึงสร้างไฟล์ข้อความธรรมดา ที่มา ประวัติเหตุการณ์ สถานะปัจจุบันที่แชร์ร่วมกัน และบันทึกที่สังเกตซ้ำได้ | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) (เปิดแล้ว・MIT); [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) (เปิดแล้ว・MIT) | เปิดแล้ว・MIT | นำไปใช้แล้ว |
+| ความล้มเหลวควรมีครั้งต่อไป | ดังนั้นเราจึงสร้างบทเรียน ใบรับรอง ประวัติความล้มเหลว นโยบายลองใหม่ บันทึกแบบเพิ่มต่อท้ายเท่านั้น และความสามารถในการสังเกต | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) (เปิดแล้ว・MIT); [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) (เปิดแล้ว・MIT); [Sitter](https://github.com/caty-ai/sitter) (เปิดแล้ว・MIT) | เปิดแล้ว・MIT | นำไปใช้แล้ว |
+| การเติบโตควรสังเกตได้และย้อนกลับได้ | ดังนั้นเราจึงสร้าง proposal → trial → review → approval → adopt พร้อมการสำรองข้อมูล การย้อนกลับ และบัญชีรายการ | [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) (เปิดแล้ว・MIT) | เปิดแล้ว・MIT | นำไปใช้แล้ว — การนำมาใช้มีมนุษย์เป็นด่าน; EV-004 ยังไม่ผ่านการยืนยัน |
+| อัตลักษณ์ควรมีอายุยืนกว่าโมเดล | ดังนั้นเราจึงแยกโมเดล runtime และอัตลักษณ์ เพื่อให้ความต่อเนื่องรอดจากการย้ายบ้าน | [Persona Engine](https://github.com/caty-ai/persona-engine) (เปิดแล้ว・MIT); [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) (เปิดแล้ว・MIT) | เปิดแล้ว・MIT | นำไปใช้แล้ว |
+| สิ่งที่เติบโตขึ้นระหว่างคนกับ AI ไม่ควรเป็นของผู้ขาย | ดังนั้นเราจึงสร้างข้อมูลความสัมพันธ์ที่พกย้ายได้ อยู่ในเครื่อง อ่านได้โดยมนุษย์ และอะแดปเตอร์ที่เปลี่ยนแทนได้ | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) (เปิดแล้ว・MIT); [Persona Engine](https://github.com/caty-ai/persona-engine) (เปิดแล้ว・MIT); [Family OS](https://github.com/caty-ai/family-os) (เปิดแล้ว・MIT) | เปิดแล้ว・MIT | นำไปใช้แล้ว |
+| การเติบโตจะเปลี่ยนประธานจาก I ไปเป็น WE ในที่สุด | ดังนั้นเราจึงสร้างโมเดล 5 ขั้นตั้งแต่การถูกสอนไปจนถึงการเติบโตของความสัมพันธ์ | Persona Growth Loop (กำลังเตรียมเปิด); [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) (เปิดแล้ว・MIT); [Persona Engine](https://github.com/caty-ai/persona-engine) (เปิดแล้ว・MIT); [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) (เปิดแล้ว・MIT) | แบบผสม; ดูป้ายกำกับของโมดูลข้างเคียง | นำไปใช้แล้ว + อยู่ในแผน |
 
 เวอร์ชันเต็ม 13 คู่มีให้อ่านเป็น[ภาษาอังกฤษ](docs/growth-model.md)และ[ภาษาญี่ปุ่น](docs/growth-model.ja.md)
 
@@ -187,20 +187,20 @@ Family OS ไม่ใช่ผลิตภัณฑ์และไม่ใช�
 
 ```mermaid
 flowchart TB
-  OS["Family OS<br/>the whole map"]
+  OS["Family OS<br/>แผนที่ทั้งหมด"]
 
-  subgraph Rule["Rules — Family Dev Handbook｜assumptions and rules for everything"]
+  subgraph Rule["กฎ — Family Dev Handbook｜ข้อกำหนดและกฎที่ครอบทั้งหมด"]
     direction LR
-    V["Vertical axis<br/>growing one agent"]
-    H["Horizontal axis<br/>connecting the family"]
+    V["แกนตั้ง<br/>เลี้ยง AI หนึ่งตัวให้โต"]
+    H["แกนนอน<br/>เชื่อมครอบครัวเข้าด้วยกัน"]
   end
 
-  OS -.-|"navigation only"| Rule
+  OS -.-|"เป็นเพียงการชี้ทาง"| Rule
 ```
 
 </details>
 
-> **หมายเหตุ:** สิ่งที่ระบุว่า "เปิดแล้ว・MIT" กดเข้าไปได้ทันทีตอนนี้ ส่วนลิงก์ที่ระบุว่า "กำลังเตรียมเปิดสู่สาธารณะ" ยังเปิดไม่ได้ และจะทยอยเปิดตามลำดับการเผยแพร่
+> **หมายเหตุ:** สิ่งที่ระบุว่า "เปิดแล้ว・MIT" กดเข้าไปได้ทันทีตอนนี้ โมดูลที่ระบุว่า "กำลังเตรียมเปิด" จะแสดงโดยไม่มีลิงก์จนกว่าจะเปิดสู่สาธารณะ
 
 เริ่มจากแกนตั้งซึ่งเป็นสิ่งที่คนส่วนใหญ่สัมผัสก่อนเป็นอันดับแรก
 
@@ -232,6 +232,8 @@ flowchart TB
 
 ดูแผนภาพละเอียดได้ที่ [docs/engineering.md](docs/engineering.md#vertical-axis-detail) (ภาษาอังกฤษ)
 
+เมื่อเอเจนต์แต่ละตัวถือแกนตั้งของตนแล้ว ถัดไปคือแกนนอนที่เชื่อมพวกมันเข้าเป็นครอบครัว
+
 ---
 
 <a id="horizontal"></a>
@@ -245,6 +247,8 @@ flowchart TB
 การเชื่อมต่อไม่ได้ย้ายสิทธิ์ในการลงมือทำ FMA แบ่งปันข้อมูล แต่ไม่สั่งให้เอเจนต์อื่นทำงาน Sitter รู้ว่ามีอะไรหยุดอยู่ แต่ไม่ตัดสินว่าเนื้องานสำเร็จหรือไม่ กฎที่ครอบทั้งหมดเป็นของชั้นกฎด้านบน ไม่ใช่ชั้นนี้ และกฎนั้นเป็นเอกสาร ไม่ใช่โปรแกรม
 
 ดูแผนภาพละเอียดได้ที่ [docs/engineering.md](docs/engineering.md#horizontal-axis-detail) (ภาษาอังกฤษ)
+
+เมื่อเห็นวิธีเชื่อมต่อแล้ว ต่อไปคือตรวจสอบว่ามันทำงานในสภาพแวดล้อมของคุณได้หรือไม่
 
 ---
 

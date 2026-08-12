@@ -93,7 +93,7 @@
   <text class="label" x="1170" y="535">Sitter</text>
   <path class="aux" d="M1025 461 V480 H912 V500"/>
   <path class="aux" d="M1025 461 V500"/>
-  <path class="aux" d="M1130 529 H1120"/>
+  <path class="aux" d="M1130 529 H1120 V500 H1060"/>
   <path class="aux" d="M1170 500 V480 H912 V500"/>
 
   <text class="subheading" x="1025" y="586">Independent shared surfaces</text>

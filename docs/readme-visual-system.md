@@ -30,7 +30,7 @@ independent worlds and composed roles, never exact runtime edges.
 | Item | Fixed rule |
 | --- | --- |
 | Canonical README asset | `assets/readme/hero.png`, `1600 × 900 px`, 16:9 PNG |
-| README placement | Immediately below the H1 entrance routes and language line, before the one-sentence value copy |
+| README placement | Immediately after the one-sentence value copy, which follows the H1 entrance routes and language line |
 | Composition | Left approximately 38% contains the exact brand copy; right contains the planetary ecosystem |
 | Style | Warm monochrome 1950s–60s overseas educational TV / CRT / halftone illustration; calm, editorial, optimistic |
 | Central globe | A large globe for the ecosystem / map metaphor, not a command centre, controller, authority, registry, or hub |

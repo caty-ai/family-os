@@ -11,7 +11,7 @@
 
 **让 AI 不再用完即弃，而是与你一同成长。**
 
-![Family OS 品牌主视觉。左侧是「FAMILY OS」「A MAP FOR GROWING AI FAMILIES」「caty-ai/family-os」「FREE & OPEN SOURCE · MIT LICENSE」等文字，右侧是暖色复古电视风格的行星系。中央的大地球是「俯瞰 AI 家族的地图」的比喻，周围各自独立的世界与可组合的卫星是「角色」的比喻。图像本身不表示连接关系，准确的关系由下文的 Mermaid 图与正文说明。](assets/readme/hero.png)
+![Family OS 品牌主视觉。左侧是「FAMILY OS」「A MAP FOR GROWING AI FAMILIES」「caty-ai/family-os」「FREE & OPEN SOURCE · MIT LICENSE」等文字，右侧是暖色复古电视风格的行星系。中央的大地球是「俯瞰 AI 家族的地图」的比喻，周围各自独立的世界与可组合的卫星是「角色」的比喻。图像本身不表示连接关系，准确的关系见家族地图图示及其旁边的表格。](assets/readme/hero.png)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![install](https://img.shields.io/badge/install-not%20required-brightgreen)
@@ -134,13 +134,13 @@ Family OS 是一张地图，告诉你解决每一个问题的部件**在哪里**
 
 | 我们相信 | 因此我们构建 | 模块所在地 | 公开状态与许可证 | 交付状态 |
 | --- | --- | --- | --- | --- |
-| 成长需要一个能安放它的地方。 | 因此我们构建注册表与地图。 | [Family OS](https://github.com/caty-ai/family-os)（已公开・MIT） | 已公开・MIT | 已实现 |
-| 记忆应当属于家族，而不是厂商。 | 因此我们构建可迁移的家族记忆。 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（已公开・MIT） | 已公开・MIT | 已实现 |
-| 一个智能体必须把开始的事做完，并拿出证据。 | 因此我们构建一条带有诚实完成语义的任务骨架。 | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（已公开・MIT） | 已公开・MIT | 已实现 |
-| 判断必须先被学会，才能被拥有。 | 因此我们构建带有人类闸门的 proposal、trial、review、approval 与 adoption。 | [Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（已公开・MIT） | 已公开・MIT | 已实现 |
-| 人格不是提示词；它是分层的，而且可迁移。 | 因此我们把 persona 作为独立的分层系统来构建。 | [Persona Engine](https://github.com/caty-ai/persona-engine)（已公开・MIT） | 已公开・MIT | 已实现 |
-| 人与 AI 之间生长出来的东西不该属于厂商。 | 因此我们构建可迁移的关系数据。 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（已公开・MIT）；[Persona Engine](https://github.com/caty-ai/persona-engine)（已公开・MIT） | 已公开・MIT | 已实现 |
-| 成长最终会把主语从 I 变成 WE。 | 因此我们构建从个体成长走向关系成长的五阶段模型。 | Persona Growth Loop（准备公开中）；[Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（已公开・MIT）；[Persona Engine](https://github.com/caty-ai/persona-engine)（已公开・MIT）；[Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（已公开・MIT） | 混合；见相邻模块标注 | 已实现 + 计划中 |
+| 技术会贬值，关系会复利增长。 | 因此我们把连续性、共同历史、记忆、人格与关系作为一等系统要素。 | [Family OS](https://github.com/caty-ai/family-os)（已公开・MIT） | 已公开・MIT | 已实现的方向；关系成长仍在计划中 |
+| 记忆承载跨越时间的连续性。 | 因此我们构建纯文本文件、来源记录、事件历史、共享的当前状态，以及可重新观测的记录。 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（已公开・MIT）；[Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（已公开・MIT） | 已公开・MIT | 已实现 |
+| 失败应当有下一次机会。 | 因此我们构建经验、回执、失败历史、重试策略、仅追加记录与可观测性。 | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（已公开・MIT）；[Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（已公开・MIT）；[Sitter](https://github.com/caty-ai/sitter)（已公开・MIT） | 已公开・MIT | 已实现 |
+| 成长应当可观测、可逆转。 | 因此我们构建 proposal → trial → review → approval → adopt，并配套备份、回滚与台账。 | [Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（已公开・MIT） | 已公开・MIT | 已实现 — 采纳由人类把关；EV-004 尚未验证 |
+| 身份应当比模型更长寿。 | 因此我们分离模型、runtime 与身份，让连续性能够在迁移之后继续存在。 | [Persona Engine](https://github.com/caty-ai/persona-engine)（已公开・MIT）；[Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（已公开・MIT） | 已公开・MIT | 已实现 |
+| 人与 AI 之间生长出来的东西不该属于厂商。 | 因此我们构建可迁移、本地、人类可读的关系数据，以及可替换的适配器。 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（已公开・MIT）；[Persona Engine](https://github.com/caty-ai/persona-engine)（已公开・MIT）；[Family OS](https://github.com/caty-ai/family-os)（已公开・MIT） | 已公开・MIT | 已实现 |
+| 成长最终会把主语从 I 变成 WE。 | 因此我们构建从被教导到关系成长的五阶段模型。 | Persona Growth Loop（准备公开中）；[Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（已公开・MIT）；[Persona Engine](https://github.com/caty-ai/persona-engine)（已公开・MIT）；[Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（已公开・MIT） | 混合；见相邻模块标注 | 已实现 + 计划中 |
 
 完整的 13 组对应关系，请阅读[英文版](docs/growth-model.md)或[日文版](docs/growth-model.ja.md)。
 
@@ -187,20 +187,20 @@ Family OS 之下有三层。最上面是作用于全体的前提与规则（规�
 
 ```mermaid
 flowchart TB
-  OS["Family OS<br/>the whole map"]
+  OS["Family OS<br/>整体地图"]
 
-  subgraph Rule["Rules — Family Dev Handbook｜assumptions and rules for everything"]
+  subgraph Rule["规约 — Family Dev Handbook｜适用于全体的前提与规则"]
     direction LR
-    V["Vertical axis<br/>growing one agent"]
-    H["Horizontal axis<br/>connecting the family"]
+    V["纵轴<br/>培养一个 AI"]
+    H["横轴<br/>连接家族"]
   end
 
-  OS -.-|"navigation only"| Rule
+  OS -.-|"仅作指引"| Rule
 ```
 
 </details>
 
-> **备注:** 标有「已公开・MIT」的现在就能点开。标有「准备公开中」的链接目前还打不开，会按公开顺序陆续开放。
+> **备注:** 标有「已公开・MIT」的现在就能点开。标为「准备公开中」的模块在公开前不提供链接。
 
 先从大多数人最先接触到的纵轴看起。
 
@@ -232,6 +232,8 @@ flowchart TB
 
 详细图请见 [docs/engineering.md](docs/engineering.md#vertical-axis-detail)（英文）。
 
+当每个智能体都持有一条纵轴之后，接下来就是把它们连成家族的横轴。
+
 ---
 
 <a id="horizontal"></a>
@@ -245,6 +247,8 @@ flowchart TB
 连起来，并不意味着执行权限也跟着转移。FMA 共享信息，但不驱动其他智能体。Sitter 会察觉「停住了」，但不判定工作内容本身是否成功。适用于全体的规则由上面的规约层持有，而不是这一层。规约是文档，不是程序。
 
 详细图请见 [docs/engineering.md](docs/engineering.md#horizontal-axis-detail)（英文）。
+
+弄清楚怎么连之后，请确认它能不能在你的环境里跑起来。
 
 ---
 

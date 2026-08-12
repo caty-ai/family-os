@@ -11,7 +11,7 @@
 
 **For AI you grow with, instead of throwing away.**
 
-![Family OS brand hero. On the left, the words "FAMILY OS", "A MAP FOR GROWING AI FAMILIES", "caty-ai/family-os", and "FREE & OPEN SOURCE · MIT LICENSE"; on the right, a warm retro-TV planetary system. The large central globe is a metaphor for a map that overlooks an AI family, and the independent worlds and composable satellites around it are a metaphor for roles. The image encodes no connections on its own; the exact relationships are explained in the Mermaid diagrams and text below.](assets/readme/hero.png)
+![Family OS brand hero. On the left, the words "FAMILY OS", "A MAP FOR GROWING AI FAMILIES", "caty-ai/family-os", and "FREE & OPEN SOURCE · MIT LICENSE"; on the right, a warm retro-TV planetary system. The large central globe is a metaphor for a map that overlooks an AI family, and the independent worlds and composable satellites around it are a metaphor for roles. The image encodes no connections on its own; the exact relationships are shown in the family map figure and the tables beside it.](assets/readme/hero.png)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![install](https://img.shields.io/badge/install-not%20required-brightgreen)
@@ -134,13 +134,13 @@ Read the full model in [English](docs/growth-model.md) or [Japanese](docs/growth
 
 | We believe | Therefore we build | Module home(s) | Visibility + license | Delivery |
 | --- | --- | --- | --- | --- |
-| Growth needs a place to live. | Therefore we build a registry and map. | [Family OS](https://github.com/caty-ai/family-os) (published, MIT) | published, MIT | implemented |
-| Memory should belong to the family, not the vendor. | Therefore we build portable family memory. | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) (published, MIT) | published, MIT | implemented |
-| An agent must finish what it starts, with evidence. | Therefore we build a task backbone with honest completion. | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) (published, MIT) | published, MIT | implemented |
-| Judgment must be learned before it is owned. | Therefore we build proposal, trial, review, approval, and adoption with a human gate. | [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) (published, MIT) | published, MIT | implemented |
-| Personality is not a prompt; it is layered and portable. | Therefore we build persona as a separate, layered system. | [Persona Engine](https://github.com/caty-ai/persona-engine) (published, MIT) | published, MIT | implemented |
-| What grows between humans and AI should not belong to a vendor. | Therefore we build portable relationship data. | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) (published, MIT); [Persona Engine](https://github.com/caty-ai/persona-engine) (published, MIT) | published, MIT | implemented |
-| Growth eventually changes its subject from I to WE. | Therefore we build the five-stage model from individual growth to relational growth. | Persona Growth Loop (publication in preparation); [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) (published, MIT); [Persona Engine](https://github.com/caty-ai/persona-engine) (published, MIT); [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) (published, MIT) | mixed; see the adjacent module labels | implemented + planned |
+| Technology depreciates. Relationships compound. | Therefore we treat continuity, shared history, memory, persona, and relationship as first-class system elements. | [Family OS](https://github.com/caty-ai/family-os) (published, MIT) | published, MIT | implemented direction; relationship growth remains planned |
+| Memory carries continuity through time. | Therefore we build plain files, provenance, event history, shared current state, and re-observable records. | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) (published, MIT); [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) (published, MIT) | published, MIT | implemented |
+| Failure should have a next time. | Therefore we build lessons, receipts, failure history, retry policy, append-only records, and observability. | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) (published, MIT); [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) (published, MIT); [Sitter](https://github.com/caty-ai/sitter) (published, MIT) | published, MIT | implemented |
+| Growth should be observable and reversible. | Therefore we build proposal → trial → review → approval → adopt, with backup, rollback, and a ledger. | [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) (published, MIT) | published, MIT | implemented — adoption human-gated; EV-004 unverified |
+| Identity should outlive the model. | Therefore we separate model, runtime, and identity so continuity can survive a change of home. | [Persona Engine](https://github.com/caty-ai/persona-engine) (published, MIT); [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) (published, MIT) | published, MIT | implemented |
+| What grows between humans and AI should not belong to a vendor. | Therefore we build portable, local, human-readable relationship data and replaceable adapters. | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) (published, MIT); [Persona Engine](https://github.com/caty-ai/persona-engine) (published, MIT); [Family OS](https://github.com/caty-ai/family-os) (published, MIT) | published, MIT | implemented |
+| Growth eventually changes its subject from I to WE. | Therefore we build the five-stage model from being taught through relational growth. | Persona Growth Loop (publication in preparation); [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) (published, MIT); [Persona Engine](https://github.com/caty-ai/persona-engine) (published, MIT); [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) (published, MIT) | mixed; see the adjacent module labels | implemented + planned |
 
 The full version, with all 13 pairs, is in [the growth model](docs/growth-model.md).
 
@@ -200,7 +200,7 @@ flowchart TB
 
 </details>
 
-> **Note:** Everything marked "published, MIT" is open right now — you can click it today. Links marked "publication in preparation" cannot be opened yet, and will open in order of release.
+> **Note:** Everything marked "published, MIT" is open right now — you can click it today. Modules marked "publication in preparation" are listed without links until they are public.
 
 Let's start with the vertical axis, which is where most people arrive first.
 
@@ -232,6 +232,8 @@ On top of that foundation come one set of equipment and two kinds of growth. Eac
 
 Detailed diagram: [docs/engineering.md](docs/engineering.md#vertical-axis-detail).
 
+Once each agent holds one of these vertical axes, the horizontal axis connects them as a family.
+
 ---
 
 <a id="horizontal"></a>
@@ -245,6 +247,8 @@ Agents that each hold the same vertical axis are connected sideways by [Family M
 Connecting them does not move the right to act. FMA shares information; it does not drive other agents. Sitter notices that something has stopped; it does not judge whether the work itself succeeded. Rules that apply to everything belong to the layer above, not this one. And those rules are a document, not a program.
 
 Detailed diagram: [docs/engineering.md](docs/engineering.md#horizontal-axis-detail).
+
+Now that you can see how it fits together, check whether it runs in your environment.
 
 ---
 
