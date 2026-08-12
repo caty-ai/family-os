@@ -22,7 +22,7 @@ Every part runs on its own, so you can take just the one you need today.
 
 - [Does any of this sound familiar?](#problems)
 - [Grow it, don't rebuild it](#why)
-- [After self-growth comes independent growth — and then relationships](#growth)
+- [Five stages of growth — and the line where I becomes WE](#growth)
 - [Family OS is a map](#map)
 - [Rules on top, two axes below](#pillars)
 - [The vertical axis: growing one agent](#vertical)
@@ -72,30 +72,33 @@ So what does growing actually mean?
 
 <a id="growth"></a>
 
-## After self-growth comes independent growth — and then relationships
+## Five stages of growth — and the line where I becomes WE
 
 Growth has the same shape for people and for AI. **Encounter something, think about it, use it next time.** Over and over. The only differences are what you go out and encounter, and who decides.
 
-```mermaid
-flowchart LR
-    A["Being taught<br/>learning from what you are given"]
-    B["Self growth<br/>learning from your own mistakes<br/>(where AI is now)"]
-    C["Independent growth<br/>reaching outward and deciding for yourself<br/>(what we are building)"]
-    D["Growth of relationships<br/>a relationship that develops between equals<br/>(where we are heading)"]
-    A --> B --> C --> D
-```
+![Growth stages](assets/readme/growth-stages.svg)
 
-People walked the same road. First we are taught by parents and grandparents; then we learn to look back at what we did and correct it ourselves; then we go out into the world to learn on our own; and finally we build relationships as equals.
+| Stage | Name | What it learns from | Who decides | Relationship (connects to) | State |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Being taught | Given material | Others | 1 → 2 | Implemented |
+| 2 | Self growth | Its own work and failures | The agent, within the work | 2 → 3 | Implemented |
+| 3 | Independent growth | Information it goes out to fetch | The agent chooses what to take in; adoption still requires human approval | 3 → 4 | Implemented; [EV-004](docs/evidence.md#ev-004--governed-self-growth-cycle--the-mechanism-is-public-no-cycle-record-is) is unverified |
+| 4 | Autonomous growth | External information and its own judgment history | The agent owns adoption decisions; vetoes and boundaries remain | 4 → \| I → WE boundary \| → 5 | Planned |
+| 5 | Growth of relationships | The history of the relationship itself | Both, as equals | 5 — WE grows | Partly implemented; aspiration |
+
+People walk a similar road. First we are taught by parents and grandparents. Then we learn to look back at what we did and correct it ourselves. We go out into the world, develop judgment, make our own choices, and build relationships as equals.
 
 AI today is at the second stage. Do the work, notice the mistake, do better next time — that kind of self-growth is no longer remarkable.
 
-**What we are building is the third.** Not only inside the work it was handed, but reaching out to information on its own, deciding for itself what to take in, and changing by its own intent. And beyond that, the fourth — a world where AI stands as an equal partner, and the relationship itself grows: between people and AI, and between AI and AI. That is what we are heading toward.
+**What we are building is the third and the fourth.** The third is implemented: its public mechanism operates, but no public cycle record has been published, so [EV-004](docs/evidence.md#ev-004--governed-self-growth-cycle--the-mechanism-is-public-no-cycle-record-is) remains unverified. The fourth is planned and being built. The dividing line is ownership of adoption decisions: at stage 3 a human still approves adoption; at stage 4 that ownership moves to the agent, while vetoes and boundaries remain. Stage 5 changes the subject from I to WE. Growth of the relationship itself is the aspiration.
 
-Rather than overwriting personality and ability from the outside, each agent grows its own ability and its own personality — relationships and feelings included. The way a person does.
+Rather than overwriting personality and ability from the outside, each agent develops through proposals, trials, decisions, and shared history. Relationship and feeling are part of that path, not permission to erase what came before.
 
-Parts of this, including self growth, are implemented. Parts, including persona growth, are still planned. Verification across runtimes is ongoing.
+Self growth and the independent-growth mechanism are implemented. Autonomous growth is planned. Persona Engine implements parts needed for stage 5; growth of the relationship itself remains an aspiration. Verification across runtimes is ongoing.
 
 Family OS gathers the pieces that exist today, in one place, pointed at that world.
+
+Read the full model in [English](docs/growth-model.md) or [Japanese](docs/growth-model.ja.md).
 
 ---
 

@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 360" role="img" aria-labelledby="title desc">
+  <title id="title">Five stages of growth</title>
+  <desc id="desc">Five connected stages, with an I to WE boundary between stages four and five.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#57606a"/>
+    </marker>
+    <style>
+      .box { fill: #eaeef2; stroke: #57606a; stroke-width: 3; }
+      .planned { stroke-dasharray: 10 7; }
+      .focus { stroke: #d97706; }
+      .arrow { fill: none; stroke: #57606a; stroke-width: 3; marker-end: url(#arrow); }
+      .boundary { stroke: #57606a; stroke-width: 3; stroke-dasharray: 4 5; }
+      .stage { fill: #24292f; font: 700 17px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; text-anchor: middle; }
+      .name { fill: #24292f; font: 600 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; text-anchor: middle; }
+      .label { fill: #24292f; font: 600 15px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .legend { fill: #24292f; font: 14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+  </defs>
+
+  <rect width="1280" height="360" rx="16" fill="#f6f8fa"/>
+
+  <path class="arrow" d="M240 120 H275"/>
+  <path class="arrow" d="M480 120 H515"/>
+  <path class="arrow" d="M720 120 H755"/>
+  <path class="arrow" d="M960 120 H975"/>
+  <path class="arrow" d="M985 120 H995"/>
+
+  <rect class="box" x="40" y="75" width="200" height="90" rx="12"/>
+  <text class="stage" x="140" y="108">1</text>
+  <text class="name" x="140" y="138">Taught</text>
+
+  <rect class="box" x="280" y="75" width="200" height="90" rx="12"/>
+  <text class="stage" x="380" y="108">2</text>
+  <text class="name" x="380" y="138">Self growth</text>
+
+  <rect class="box focus" x="520" y="75" width="200" height="90" rx="12"/>
+  <text class="stage" x="620" y="108">3</text>
+  <text class="name" x="620" y="138">Independent growth</text>
+
+  <rect class="box planned focus" x="760" y="75" width="200" height="90" rx="12"/>
+  <text class="stage" x="860" y="108">4</text>
+  <text class="name" x="860" y="138">Autonomous growth</text>
+
+  <line class="boundary" x1="980" y1="48" x2="980" y2="195"/>
+  <text class="label" x="950" y="34">I → WE</text>
+
+  <rect class="box planned" x="1000" y="75" width="240" height="90" rx="12"/>
+  <text class="stage" x="1120" y="104">5</text>
+  <text class="name" x="1120" y="132">Growth of</text>
+  <text class="name" x="1120" y="153">relationships</text>
+
+  <line x1="55" y1="228" x2="105" y2="228" stroke="#57606a" stroke-width="3"/>
+  <text class="legend" x="120" y="233">solid = implemented</text>
+
+  <line x1="55" y1="263" x2="105" y2="263" stroke="#57606a" stroke-width="3" stroke-dasharray="10 7"/>
+  <text class="legend" x="120" y="268">dashed = planned</text>
+
+  <line x1="55" y1="298" x2="105" y2="298" stroke="#d97706" stroke-width="4"/>
+  <text class="legend" x="120" y="303">orange = what we are building now (focus, not a state)</text>
+
+  <text class="legend" x="55" y="338">Labels and states: see the table below the figure</text>
+</svg>
