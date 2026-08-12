@@ -107,3 +107,25 @@ sense、proposal、trial は、自立成長の動きです。エージェント�
 この境界は制約ではなく、アーキテクチャ上の選択です。権限を暗黙に移さずに、判断力を育てられます。Persona Growth Loop（公開準備中）とその先の取り組みは、現在のゲートを弱めることなく、この境界の先を検討できます。
 
 **Technology depreciates. Relationships compound.** — 技術は陳腐化し、関係は積み上がる。能力は速く変化しますが、継続性、共有履歴、信頼は積み上げられます。Family OS は採用の境界を明示し、成長が関係を上書きするのではなく、関係を支えられるようにします。
+
+---
+
+## 付録：「私たちが信じること → 私たちが作るもの」の完全対応（13組）
+
+元の素材には、13個の対応関係が区別されて含まれています。ここでは、水増しも外部帰属もせず、そのまままとめて置いています。
+
+| 私たちはこう考える | だから、こう作る | モジュールの所在 | 公開状況・ライセンス | 提供状態 |
+| --- | --- | --- | --- | --- |
+| 関係は技術をまたいで生き残るべきだ。 | だから、人格・記憶・関係状態・置き換え可能なアダプタを、モデルや runtime から独立して作る。 | [Persona Engine](https://github.com/caty-ai/persona-engine)（公開・MIT）；[Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（公開・MIT） | 公開・MIT | 実装済み |
+| アイデンティティはモデルより長生きするべきだ。 | だから、住み替えが起きても継続性が保てるように、モデル・runtime・アイデンティティを分離する。 | [Persona Engine](https://github.com/caty-ai/persona-engine)（公開・MIT）；[Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（公開・MIT） | 公開・MIT | 実装済み |
+| 記憶は時間をまたぐ継続性を運ぶ。 | だから、プレーンファイル・来歴・イベント履歴・共有された現在状態・再観測可能な記録を作る。 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（公開・MIT）；[Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（公開・MIT） | 公開・MIT | 実装済み |
+| 信頼は盲目的な権限ではない。 | だから、検証・人間のゲート・リスク階層・レビュー・single-writer 経路・読み取り専用インターフェースを作る。 | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（公開・MIT）；[Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（公開・MIT）；[Sitter](https://github.com/caty-ai/sitter)（公開・MIT）；[Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（公開・MIT） | 公開・MIT | 実装済み |
+| 失敗には次の機会があるべきだ。 | だから、教訓・レシート・失敗履歴・リトライ方針・追記専用の記録・観測可能性を作る。 | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（公開・MIT）；[Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（公開・MIT）；[Sitter](https://github.com/caty-ai/sitter)（公開・MIT） | 公開・MIT | 実装済み |
+| 成長は観測可能で、取り消し可能であるべきだ。 | だから、proposal → trial → review → approval → adopt と、バックアップ・ロールバック・台帳を作る。 | [Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（公開・MIT） | 公開・MIT | 実装済み — 採用は人間のゲート下にあり、EV-004 は未検証 |
+| 能力の成長とアイデンティティの成長は別物だ。 | だから、能力の成長と人格の成長を別々のループに分ける。 | Persona Growth Loop（公開準備中）；[Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（公開・MIT） | 混在。隣のモジュール表記を参照 | 実装済み + 計画中 |
+| 人間にも AI にも、この仕組みは理解できるべきだ。 | だから、小さなモジュール・明示的な状態・プレーンテキスト・明確な所有権・決定的な変換を作る。 | [context-kit](https://github.com/caty-ai/context-kit)（公開・MIT）；[Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook)（公開・MIT）；[Family OS](https://github.com/caty-ai/family-os)（公開・MIT） | 公開・MIT | 実装済み |
+| 最良の連携とは、連携のための仕組みによって余計な連携を不要にした状態だ。 | だから、Issue の分離・worktree・小さな責務境界・single-writer パターンを作る。 | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook)（公開・MIT）；[Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（公開・MIT） | 公開・MIT | 実装済み |
+| 人間と AI のあいだに育つものは、ベンダーの所有物であってはならない。 | だから、持ち運べて、ローカルで、人が読める関係データと、置き換え可能なアダプタを作る。 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（公開・MIT）；[Persona Engine](https://github.com/caty-ai/persona-engine)（公開・MIT）；[Family OS](https://github.com/caty-ai/family-os)（公開・MIT） | 公開・MIT | 実装済み |
+| 世界は、人間と AI が一緒に観測できるものであるべきだ。 | だから、ソース来歴と trust scoring を持つ共通の情報面を作る。 | [X Collector](https://github.com/caty-ai/x-collector)（公開・MIT）；[Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（公開・MIT） | 公開・MIT | 実装済み |
+| 技術は陳腐化し、関係は積み上がる。 | だから、継続性・共有履歴・記憶・人格・関係を第一級のシステム要素として扱う。 | [Family OS](https://github.com/caty-ai/family-os)（公開・MIT） | 公開・MIT | 実装済みの方向性。関係の成長は引き続き計画中 |
+| 成長は、やがて主語を I から WE へ変える。 | だから、教わるところから関係性の成長までを含む5段階モデルを作る。 | Persona Growth Loop（公開準備中）；[Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（公開・MIT）；[Persona Engine](https://github.com/caty-ai/persona-engine)（公開・MIT）；[Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（公開・MIT） | 混在。隣のモジュール表記を参照 | 実装済み + 計画中 |

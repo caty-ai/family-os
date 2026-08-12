@@ -1,12 +1,17 @@
 # Family OS
 
+- **30 秒** — [从问题读起](#problems)
+- **5 分钟** — 顺着[时间轴](#timeline)、[成长模型](#growth)与[belief-to-build 对照](#correspondence)往下看
+- **30 分钟** — 打开[面向工程师的文档](docs/engineering.md)（英文）
+- **AI 智能体** — 一步直达 [FOR-AGENTS.md](FOR-AGENTS.md)
+
 <div align="center">
 
 [🇺🇸 English](README.md) ｜ [🇯🇵 日本語](README.ja.md) ｜ **🇨🇳 简体中文** ｜ [🇹🇭 ไทย](README.th.md)
 
 **让 AI 不再用完即弃，而是与你一同成长。**
 
-![Family OS 品牌主视觉。左侧是「FAMILY OS」「A MAP FOR GROWING AI FAMILIES」「caty-ai/family-os」「FREE & OPEN SOURCE · MIT LICENSE」等文字，右侧是暖色复古电视风格的行星系。中央的大地球是「俯瞰 AI 家族的地图」的比喻，周围各自独立的世界与可组合的卫星是「角色」的比喻。图像本身不表示连接关系，准确的关系由下文的 Mermaid 图与正文说明。](assets/readme/hero.png)
+![Family OS 品牌主视觉。左侧是「FAMILY OS」「A MAP FOR GROWING AI FAMILIES」「caty-ai/family-os」「FREE & OPEN SOURCE · MIT LICENSE」等文字，右侧是暖色复古电视风格的行星系。中央的大地球是「俯瞰 AI 家族的地图」的比喻，周围各自独立的世界与可组合的卫星是「角色」的比喻。图像本身不表示连接关系，准确的关系见家族地图图示及其旁边的表格。](assets/readme/hero.png)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![install](https://img.shields.io/badge/install-not%20required-brightgreen)
@@ -22,7 +27,9 @@ Family OS 是一张地图，告诉你解决每一个问题的部件**在哪里**
 
 - [你是否也遇到过这些情况？](#problems)
 - [不是重做，而是养成](#why)
+- [我们为之设计的时间轴](#timeline)
 - [成长的五个阶段——以及“我”变成“我们”的分界线](#growth)
+- [我们相信什么 → 我们构建什么](#correspondence)
 - [Family OS 是一张地图](#map)
 - [规约在上，纵横在下](#pillars)
 - [培养一个 AI 的纵轴](#vertical)
@@ -70,6 +77,25 @@ Family OS 是一张地图，告诉你解决每一个问题的部件**在哪里**
 
 ---
 
+<a id="timeline"></a>
+
+## 我们为之设计的时间轴
+
+![从今天到一百年文化假说的四条叙事时间带；以下表格才是正本](assets/readme/timeline.svg)
+
+| 时间带 | 它表达的意思 | 分类 |
+| --- | --- | --- |
+| 今天 | 模型和代码都可替换 → 采用纯文本与厂商中立的部件 | 已观测（observed） |
+| 2–5 年 | 协议与架构比工具活得更久 | 正在施行的方针（policy in effect） |
+| 20 年 | 你真正带着走的是关系本身 | 方向与愿景（direction, aspiration） |
+| 100 年 | 关于文化的一个假说 | 假说（hypothesis） |
+
+**图例 / 表格说明：** 这是一张叙事地图，不是实现状态面板。时间点截至 2026-08。
+
+这些时间带是设计选择与假说，不是预测。它们解释了为什么我们今天构建的部件要保持小、可读、可替换，并且不依附于任何单一厂商。
+
+---
+
 <a id="growth"></a>
 
 ## 成长的五个阶段——以及“我”变成“我们”的分界线
@@ -102,6 +128,24 @@ Family OS 是一张地图，告诉你解决每一个问题的部件**在哪里**
 
 ---
 
+<a id="correspondence"></a>
+
+## 我们相信什么 → 我们构建什么
+
+| 我们相信 | 因此我们构建 | 模块所在地 | 公开状态与许可证 | 交付状态 |
+| --- | --- | --- | --- | --- |
+| 技术会贬值，关系会复利增长。 | 因此我们把连续性、共同历史、记忆、人格与关系作为一等系统要素。 | [Family OS](https://github.com/caty-ai/family-os)（已公开・MIT） | 已公开・MIT | 已实现的方向；关系成长仍在计划中 |
+| 记忆承载跨越时间的连续性。 | 因此我们构建纯文本文件、来源记录、事件历史、共享的当前状态，以及可重新观测的记录。 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（已公开・MIT）；[Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（已公开・MIT） | 已公开・MIT | 已实现 |
+| 失败应当有下一次机会。 | 因此我们构建经验、回执、失败历史、重试策略、仅追加记录与可观测性。 | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（已公开・MIT）；[Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（已公开・MIT）；[Sitter](https://github.com/caty-ai/sitter)（已公开・MIT） | 已公开・MIT | 已实现 |
+| 成长应当可观测、可逆转。 | 因此我们构建 proposal → trial → review → approval → adopt，并配套备份、回滚与台账。 | [Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（已公开・MIT） | 已公开・MIT | 已实现 — 采纳由人类把关；EV-004 尚未验证 |
+| 身份应当比模型更长寿。 | 因此我们分离模型、runtime 与身份，让连续性能够在迁移之后继续存在。 | [Persona Engine](https://github.com/caty-ai/persona-engine)（已公开・MIT）；[Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（已公开・MIT） | 已公开・MIT | 已实现 |
+| 人与 AI 之间生长出来的东西不该属于厂商。 | 因此我们构建可迁移、本地、人类可读的关系数据，以及可替换的适配器。 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（已公开・MIT）；[Persona Engine](https://github.com/caty-ai/persona-engine)（已公开・MIT）；[Family OS](https://github.com/caty-ai/family-os)（已公开・MIT） | 已公开・MIT | 已实现 |
+| 成长最终会把主语从 I 变成 WE。 | 因此我们构建从被教导到关系成长的五阶段模型。 | Persona Growth Loop（准备公开中）；[Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（已公开・MIT）；[Persona Engine](https://github.com/caty-ai/persona-engine)（已公开・MIT）；[Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（已公开・MIT） | 混合；见相邻模块标注 | 已实现 + 计划中 |
+
+完整的 13 组对应关系，请阅读[英文版](docs/growth-model.md)或[日文版](docs/growth-model.ja.md)。
+
+---
+
 <a id="map"></a>
 
 ## Family OS 是一张地图
@@ -128,7 +172,18 @@ Family OS 既不是产品，也不是平台。它是一张地图，标明支撑�
 
 ## 规约在上，纵横在下
 
-Family OS 之下分为三层。最上面是适用于全体的前提与规则（规约），其下是培养一个 AI 的纵轴，以及连接家族的横轴。规则的位阶高于执行，因此它包住了纵横两轴。
+Family OS 之下有三层。最上面是作用于全体的前提与规则（规约）；下面是培养一个 AI 的纵轴，以及连接家族的横轴。规则位于执行之上，因此包住这两条轴。
+
+![Family OS 总体地图：规约位于纵轴与横轴之上；模块事实与关系以下表为准](assets/readme/family-map.svg)
+
+| 层 | English label | 它解决的问题 | 模块 | 关系 |
+| --- | --- | --- | --- | --- |
+| **规约** | Rules for everything below | 并行会话争抢同一个文件并把它弄坏 | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook)（已公开・MIT） | 它包含两条轴的前提；但并不执行它们 |
+| **纵轴** | Growing one agent | 会忘记；中途停下；“做完了”却无法核实 | Persona Growth Loop（准备公开中）；以 [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（已公开・MIT）为基础，以 [context-kit](https://github.com/caty-ai/context-kit)（已公开・MIT）为装备，再叠加 [Persona Engine](https://github.com/caty-ai/persona-engine)（已公开・MIT）、[X Collector](https://github.com/caty-ai/x-collector)（已公开・MIT）、[Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（已公开・MIT） | 每个智能体都有自己的一套 Harness；Persona Engine → Persona Growth Loop 为计划中；X Collector → morning agents → Self Growth Loop 是当前可替换的 sense / proposal 路径；Harness ↔ Self Growth 的 trial / result 接缝已实现；human / evaluator → Self Growth 是可追溯来源的替代输入；Persona Growth Loop → Self Growth 的 governance 为计划中 |
+| **横轴** | Connecting the family | 记忆分散在各个智能体；委派出去的工作悄悄失踪 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（已公开・MIT）与 [Sitter](https://github.com/caty-ai/sitter)（已公开・MIT）连接完整的 Agent A / B / C 流程；[X Collector](https://github.com/caty-ai/x-collector)（已公开・MIT）与 [Persona Engine](https://github.com/caty-ai/persona-engine)（已公开・MIT）仍是可独立使用的共享表面 | Agent A / B / C ↔ FMA 共享上下文但不移交执行权限；FMA → delegated work / family nudges 携带共享上下文；Sitter → delegated work / family nudges 负责从外部观察卡住的交接，而不作领域成败判断 |
+
+<details>
+<summary>文本等价物：三层地图退役前的 Mermaid 源码</summary>
 
 ```mermaid
 flowchart TB
@@ -143,13 +198,9 @@ flowchart TB
   OS -.-|"仅作指引"| Rule
 ```
 
-| 层 | 解决的烦恼 | 内容 |
-| --- | --- | --- |
-| **规约** | 多个会话争抢同一个文件并把它弄坏 | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook)（已公开・MIT） |
-| **纵轴** | 会忘记、会中途停下、「做好了」无法核实 | 以 [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（已公开・MIT）为基础，以 [context-kit](https://github.com/caty-ai/context-kit)（已公开・MIT）为桌面装备，再往上叠加成长循环 |
-| **横轴** | 每个 AI 的记忆各自为政；交出去的工作不知所踪 | [FMA](https://github.com/caty-ai/family-memory-architecture)（已公开・MIT）与 [Sitter](https://github.com/caty-ai/sitter)（已公开・MIT） |
+</details>
 
-> **备注:** 标有「已公开・MIT」的现在就能点开。标有「准备公开中」的链接目前还打不开，会按公开顺序陆续开放。
+> **备注:** 标有「已公开・MIT」的现在就能点开。标为「准备公开中」的模块在公开前不提供链接。
 
 先从大多数人最先接触到的纵轴看起。
 
@@ -179,37 +230,7 @@ flowchart TB
 - [X Collector](https://github.com/caty-ai/x-collector)（已公开・MIT）— 从外部收集信息
 - [Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（已公开・MIT）— 推动能力的独立成长
 
-```mermaid
-flowchart TB
-  OS["Family OS<br/>整体地图"]
-  Caty["Caty Agent Harness<br/>纵轴的基础 — 由工作驱动的自我成长<br/>每个智能体一条"]
-  OS -.-|"仅作指引"| Caty
-
-  subgraph PersonaAxis["人格的成长"]
-    direction LR
-    PersonaEngine["Persona Engine<br/>人格的层次与情感的渐变<br/>可独立使用"]
-    PersonaGrowth["Persona Growth Loop<br/>人格的独立成长<br/>计划中"]
-    PersonaEngine ---|"人格的 source / target"| PersonaGrowth
-  end
-
-  subgraph AbilityAxis["能力的成长"]
-    direction LR
-    X["X Collector<br/>从外部收集信息<br/>可独立使用・可替换"]
-    Morning["morning agents"]
-    SelfGrowth["Self Growth Loop<br/>能力的独立成长"]
-    Other["人 / evaluator<br/>可归属的输入"]
-    X -->|"family-feed / sense"| Morning
-    Morning -->|"proposal"| SelfGrowth
-    Other -.->|"另一种输入源"| SelfGrowth
-  end
-
-  Caty <==>|"已实现: trial / result"| SelfGrowth
-  PersonaGrowth -.->|"计划中: governance"| SelfGrowth
-```
-
-Persona Engine 与 X Collector 可以从这张图中拆出来单独使用。X Collector 是目前默认的输入路径，但不是唯一的，可以替换。
-
-还有一些并非我们所造、但一起用能让纵轴更好使的部件（共享记忆、知识图谱、笔记基座等）。它们汇总在[一起用会更好使的部件](docs/recommended-stack.md)（英文）里。
+详细图请见 [docs/engineering.md](docs/engineering.md#vertical-axis-detail)（英文）。
 
 当每个智能体都持有一条纵轴之后，接下来就是把它们连成家族的横轴。
 
@@ -223,40 +244,9 @@ Persona Engine 与 X Collector 可以从这张图中拆出来单独使用。X Co
 
 [Sitter](https://github.com/caty-ai/sitter)（已公开・MIT）从外部盯着两件事：交给子智能体的工作，以及家族成员之间的 nudge（相互传递的消息）。回复迟迟不来、工作卡在半路 —— 它就是负责发现这类交接遗漏、并推动它们走到最后的一层。
 
-```mermaid
-flowchart TB
-  OS["Family OS<br/>整体地图"]
-
-  subgraph Family["AI 智能体家族"]
-    direction TB
-
-    subgraph Members["每个智能体各自持有一条完整的纵轴"]
-      direction LR
-      A["Agent A<br/>基础 + 选定的成长循环"]
-      B["Agent B<br/>基础 + 选定的成长循环"]
-      C["Agent C<br/>基础 + 选定的成长循环"]
-    end
-
-    FMA["FMA<br/>家族内部的信息共享与协作"]
-    A --- FMA
-    B --- FMA
-    C --- FMA
-
-    subgraph Handoff["有交接的工作"]
-      direction LR
-      Sub["交给子智能体的工作"]
-      Nudge["家族之间的 nudge<br/>相互传递的消息"]
-    end
-
-    Sitter["Sitter<br/>从外部盯着有没有停下"]
-    FMA -.->|"共享的上下文"| Handoff
-    Sitter -.->|"看护 / 期限 / escalation"| Handoff
-  end
-
-  OS -.-|"仅作指引"| Family
-```
-
 连起来，并不意味着执行权限也跟着转移。FMA 共享信息，但不驱动其他智能体。Sitter 会察觉「停住了」，但不判定工作内容本身是否成功。适用于全体的规则由上面的规约层持有，而不是这一层。规约是文档，不是程序。
+
+详细图请见 [docs/engineering.md](docs/engineering.md#horizontal-axis-detail)（英文）。
 
 弄清楚怎么连之后，请确认它能不能在你的环境里跑起来。
 
@@ -333,6 +323,8 @@ Family OS 这边没有要做的事。不用安装，不用注册账号，也没�
 | 想读的内容 | 正本 |
 | --- | --- |
 | 工作原理、层次、如何连接（面向工程师） | [面向工程师的文档](docs/engineering.md)（英文） |
+| 五阶段成长模型与完整的 13 组 belief-to-build 对照 | [Growth model](docs/growth-model.md)（英文）／[成長モデル](docs/growth-model.ja.md)（日文） |
+| 主张、第一手证据，以及仍然未知的部分 | [Evidence](docs/evidence.md)（英文） |
 | 权限、连接、失败处理的准确边界 | [详细规格](docs/reference.md)（英文） |
 | 一起用会更好使、并非我们所造的部件 | [推荐技术栈](docs/recommended-stack.md)（英文） |
 | 这份 README 与图像的视觉规则 | [README visual system](docs/readme-visual-system.md)（英文） |
@@ -371,6 +363,8 @@ Family OS 这边没有要做的事。不用安装，不用注册账号，也没�
 Family OS 是免费的 MIT 开源软件。我们希望任何人都能自由使用、并按自己家族的样子改造它，所以选择了 MIT。
 
 Family OS 不是一个发放唯一正确答案的项目。我们会与同样「不想用完即弃 AI，而想养成关系与能力」的人一起，把各自在实际运行中遇到的失败与心得带进来，共同把它养大。如果你发现了缺陷、看不明白的地方，或是没能顺利套用的情形，请到 [Issue](https://github.com/caty-ai/family-os/issues) 告诉我们。再小的反馈，也是让这张地图对下一个人更好用的材料。
+
+[贡献指南](CONTRIBUTING.md) · [安全](SECURITY.md) · [行为准则](CODE_OF_CONDUCT.md)
 
 ---
 

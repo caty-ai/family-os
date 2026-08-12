@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 760" role="img" aria-labelledby="title desc">
+  <title id="title">Family OS aggregate map</title>
+  <desc id="desc">Family Dev Handbook rules sit above a vertical axis for growing each agent and a horizontal axis for connecting complete agent flows.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#57606a"/>
+    </marker>
+    <style>
+      .zone { fill: none; stroke: #57606a; stroke-width: 2; }
+      .node { fill: #eaeef2; stroke: #57606a; stroke-width: 3; }
+      .planned { stroke-dasharray: 10 7; }
+      .focus { stroke: #d97706; stroke-width: 4; }
+      .solid { fill: none; stroke: #57606a; stroke-width: 3; marker-end: url(#arrow); }
+      .both { fill: none; stroke: #57606a; stroke-width: 3; marker-start: url(#arrow); marker-end: url(#arrow); }
+      .dashed { fill: none; stroke: #57606a; stroke-width: 3; stroke-dasharray: 10 7; marker-end: url(#arrow); }
+      .dotted { fill: none; stroke: #57606a; stroke-width: 2; stroke-dasharray: 2 7; }
+      .aux { fill: none; stroke: #57606a; stroke-width: 2; stroke-dasharray: 2 7; marker-end: url(#arrow); }
+      .heading { fill: #24292f; font: 700 18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .label { fill: #24292f; font: 600 15px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; text-anchor: middle; }
+      .small { fill: #24292f; font: 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; text-anchor: middle; }
+      .subheading { fill: #24292f; font: 600 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; text-anchor: middle; }
+      .legend { fill: #24292f; font: 14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+  </defs>
+
+  <rect width="1280" height="760" rx="16" fill="#f6f8fa"/>
+
+  <rect class="node" x="520" y="20" width="240" height="56" rx="12"/>
+  <text class="label" x="640" y="54">Family OS</text>
+  <path class="dotted" d="M640 76 V98"/>
+
+  <rect class="zone" x="45" y="98" width="1190" height="112" rx="16"/>
+  <text class="heading" x="70" y="130">Rules</text>
+  <rect class="node" x="365" y="120" width="550" height="66" rx="12"/>
+  <text class="label" x="640" y="150">Family Dev Handbook</text>
+  <text class="small" x="640" y="172">premises for both axes · non-runtime</text>
+
+  <rect class="zone" x="45" y="235" width="745" height="405" rx="16"/>
+  <text class="heading" x="70" y="267">Vertical axis · one agent</text>
+
+  <rect class="node" x="75" y="300" width="175" height="62" rx="10"/>
+  <text class="label" x="162" y="328">Persona Engine</text>
+  <text class="small" x="162" y="349">persona layers</text>
+  <rect class="node planned focus" x="295" y="300" width="190" height="62" rx="10"/>
+  <text class="label" x="390" y="328">Persona Growth Loop</text>
+  <text class="small" x="390" y="349">persona growth</text>
+  <path class="dashed" d="M250 331 H295"/>
+
+  <rect class="node" x="75" y="410" width="165" height="62" rx="10"/>
+  <text class="label" x="157" y="438">X Collector</text>
+  <text class="small" x="157" y="459">outside input</text>
+  <rect class="node" x="275" y="410" width="165" height="62" rx="10"/>
+  <text class="label" x="357" y="447">morning agents</text>
+  <rect class="node focus" x="505" y="410" width="230" height="62" rx="10"/>
+  <text class="label" x="620" y="438">Self Growth Loop</text>
+  <text class="small" x="620" y="459">ability growth</text>
+  <path class="solid" d="M240 441 H275"/>
+  <path class="solid" d="M440 441 H505"/>
+  <path class="dashed" d="M390 362 V388 H620 V410"/>
+
+  <rect class="node" x="75" y="535" width="175" height="62" rx="10"/>
+  <text class="label" x="162" y="571">context-kit</text>
+  <rect class="node" x="330" y="525" width="405" height="82" rx="12"/>
+  <text class="label" x="532" y="558">Caty Agent Harness</text>
+  <text class="small" x="532" y="582">foundation · one per agent · completion owner</text>
+  <path class="solid" d="M250 566 H330"/>
+  <path class="both" d="M620 472 V525"/>
+
+  <rect class="zone" x="815" y="235" width="420" height="410" rx="16"/>
+  <text class="heading" x="840" y="267">Horizontal axis · family</text>
+
+  <rect class="node" x="845" y="300" width="105" height="58" rx="10"/>
+  <text class="label" x="897" y="335">Agent A</text>
+  <rect class="node" x="972" y="300" width="105" height="58" rx="10"/>
+  <text class="label" x="1024" y="335">Agent B</text>
+  <rect class="node" x="1100" y="300" width="105" height="58" rx="10"/>
+  <text class="label" x="1152" y="335">Agent C</text>
+
+  <rect class="node" x="880" y="395" width="290" height="66" rx="12"/>
+  <text class="label" x="1025" y="423">Family Memory Architecture</text>
+  <text class="small" x="1025" y="445">shared context · no execution authority</text>
+  <path class="solid" d="M897 358 V380 H1025 V395"/>
+  <path class="solid" d="M1024 358 V395"/>
+  <path class="solid" d="M1152 358 V380 H1025 V395"/>
+
+  <rect class="node" x="840" y="500" width="145" height="58" rx="10"/>
+  <text class="label" x="912" y="526">delegated work</text>
+  <text class="small" x="912" y="547">handoff</text>
+  <rect class="node" x="1000" y="500" width="120" height="58" rx="10"/>
+  <text class="label" x="1060" y="526">family nudges</text>
+  <text class="small" x="1060" y="547">messages</text>
+  <rect class="node" x="1130" y="500" width="80" height="58" rx="10"/>
+  <text class="label" x="1170" y="535">Sitter</text>
+  <path class="aux" d="M1025 461 V480 H912 V500"/>
+  <path class="aux" d="M1025 461 V500"/>
+  <path class="aux" d="M1130 529 H1120 V500 H1060"/>
+  <path class="aux" d="M1170 500 V480 H912 V500"/>
+
+  <text class="subheading" x="1025" y="586">Independent shared surfaces</text>
+  <rect class="node" x="845" y="594" width="165" height="34" rx="10"/>
+  <text class="label" x="927" y="617">Persona Engine</text>
+  <rect class="node" x="1040" y="594" width="165" height="34" rx="10"/>
+  <text class="label" x="1122" y="617">X Collector</text>
+
+  <line x1="55" y1="690" x2="105" y2="690" stroke="#57606a" stroke-width="3"/>
+  <text class="legend" x="120" y="695">solid = implemented / published</text>
+  <line x1="370" y1="690" x2="420" y2="690" stroke="#57606a" stroke-width="3" stroke-dasharray="10 7"/>
+  <text class="legend" x="435" y="695">dashed = planned / preparing</text>
+  <line x1="735" y1="690" x2="785" y2="690" stroke="#d97706" stroke-width="4"/>
+  <text class="legend" x="800" y="695">orange = focus, not a state</text>
+  <text class="legend" x="55" y="730">dotted = navigation / context / observation, not authority · module facts and complete relations: see the table below</text>
+</svg>

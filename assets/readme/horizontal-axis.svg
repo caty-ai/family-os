@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 590" role="img" aria-labelledby="title desc">
+  <title id="title">Horizontal axis topology for the AI agent family</title>
+  <desc id="desc">Three complete agent flows connect through Family Memory Architecture while Sitter watches delegated work and family messages from outside.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#57606a"/>
+    </marker>
+    <style>
+      .zone { fill: none; stroke: #57606a; stroke-width: 2; }
+      .node { fill: #eaeef2; stroke: #57606a; stroke-width: 3; }
+      .solid { fill: none; stroke: #57606a; stroke-width: 3; }
+      .arrow { fill: none; stroke: #57606a; stroke-width: 3; marker-end: url(#arrow); }
+      .aux { fill: none; stroke: #57606a; stroke-width: 3; stroke-dasharray: 2 7; marker-end: url(#arrow); }
+      .dotted { fill: none; stroke: #57606a; stroke-width: 2; stroke-dasharray: 2 7; }
+      .heading { fill: #24292f; font: 700 18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .label { fill: #24292f; font: 600 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; text-anchor: middle; }
+      .small { fill: #24292f; font: 14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; text-anchor: middle; }
+      .legend { fill: #24292f; font: 14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+  </defs>
+
+  <rect width="1280" height="590" rx="16" fill="#f6f8fa"/>
+  <rect class="node" x="525" y="22" width="230" height="58" rx="12"/>
+  <text class="label" x="640" y="58">Family OS</text>
+  <path class="dotted" d="M640 80 V112"/>
+
+  <rect class="zone" x="45" y="112" width="1190" height="405" rx="16"/>
+  <text class="heading" x="70" y="146">The AI agent family</text>
+
+  <rect class="node" x="95" y="180" width="220" height="82" rx="12"/>
+  <text class="label" x="205" y="214">Agent A</text>
+  <text class="small" x="205" y="239">complete vertical axis</text>
+  <rect class="node" x="385" y="180" width="220" height="82" rx="12"/>
+  <text class="label" x="495" y="214">Agent B</text>
+  <text class="small" x="495" y="239">complete vertical axis</text>
+  <rect class="node" x="675" y="180" width="220" height="82" rx="12"/>
+  <text class="label" x="785" y="214">Agent C</text>
+  <text class="small" x="785" y="239">complete vertical axis</text>
+
+  <rect class="node" x="320" y="310" width="350" height="82" rx="12"/>
+  <text class="label" x="495" y="344">Family Memory Architecture</text>
+  <text class="small" x="495" y="369">shared context · no execution authority</text>
+  <path class="solid" d="M205 262 V285 H495 V310"/>
+  <path class="solid" d="M495 262 V310"/>
+  <path class="solid" d="M785 262 V285 H495 V310"/>
+
+  <rect class="node" x="760" y="320" width="205" height="72" rx="12"/>
+  <text class="label" x="862" y="351">delegated work</text>
+  <text class="small" x="862" y="374">handoff</text>
+  <rect class="node" x="995" y="320" width="200" height="72" rx="12"/>
+  <text class="label" x="1095" y="351">family nudges</text>
+  <text class="small" x="1095" y="374">messages</text>
+  <path class="aux" d="M670 351 H760"/>
+  <path class="aux" d="M670 370 H720 V410 H1095 V392"/>
+
+  <rect class="node" x="775" y="430" width="250" height="68" rx="12"/>
+  <text class="label" x="900" y="460">Sitter</text>
+  <text class="small" x="900" y="483">outside observation</text>
+  <path class="aux" d="M900 430 V410 H862 V392"/>
+  <path class="aux" d="M1025 464 H1150 V392"/>
+
+  <line x1="55" y1="552" x2="105" y2="552" stroke="#57606a" stroke-width="3"/>
+  <text class="legend" x="120" y="557">solid = implemented / published</text>
+  <line x1="430" y1="552" x2="480" y2="552" stroke="#57606a" stroke-width="2" stroke-dasharray="2 7"/>
+  <text class="legend" x="495" y="557">dotted = navigation / context / observation, not authority</text>
+</svg>
