@@ -1,12 +1,17 @@
 # Family OS
 
+- **30 seconds** — [start with the problems](#problems)
+- **5 minutes** — follow the [time axis](#timeline), [growth model](#growth), and [belief-to-build correspondence](#correspondence)
+- **30 minutes** — open the [engineering documentation](docs/engineering.md)
+- **AI agents** — take the one-line route to [FOR-AGENTS.md](FOR-AGENTS.md)
+
 <div align="center">
 
 **🇺🇸 English** ｜ [🇯🇵 日本語](README.ja.md) ｜ [🇨🇳 简体中文](README.zh.md) ｜ [🇹🇭 ไทย](README.th.md)
 
 **For AI you grow with, instead of throwing away.**
 
-![Family OS brand hero. On the left, the words "FAMILY OS", "A MAP FOR GROWING AI FAMILIES", "caty-ai/family-os", and "FREE & OPEN SOURCE · MIT LICENSE"; on the right, a warm retro-TV planetary system. The large central globe is a metaphor for a map that overlooks an AI family, and the independent worlds and composable satellites around it are a metaphor for roles. The image encodes no connections on its own; the exact relationships are explained in the Mermaid diagrams and text below.](assets/readme/hero.png)
+![Family OS brand hero. On the left, the words "FAMILY OS", "A MAP FOR GROWING AI FAMILIES", "caty-ai/family-os", and "FREE & OPEN SOURCE · MIT LICENSE"; on the right, a warm retro-TV planetary system. The large central globe is a metaphor for a map that overlooks an AI family, and the independent worlds and composable satellites around it are a metaphor for roles. The image encodes no connections on its own; the exact relationships are shown in the family map figure and the tables beside it.](assets/readme/hero.png)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![install](https://img.shields.io/badge/install-not%20required-brightgreen)
@@ -22,7 +27,9 @@ Every part runs on its own, so you can take just the one you need today.
 
 - [Does any of this sound familiar?](#problems)
 - [Grow it, don't rebuild it](#why)
-- [After self-growth comes independent growth — and then relationships](#growth)
+- [The time axis we design for](#timeline)
+- [Five stages of growth — and the line where I becomes WE](#growth)
+- [What we believe → what we build](#correspondence)
 - [Family OS is a map](#map)
 - [Rules on top, two axes below](#pillars)
 - [The vertical axis: growing one agent](#vertical)
@@ -70,32 +77,72 @@ So what does growing actually mean?
 
 ---
 
+<a id="timeline"></a>
+
+## The time axis we design for
+
+![Four narrative time bands from today to a 100-year culture hypothesis; the table below is the source of truth](assets/readme/timeline.svg)
+
+| Band | What it says | Class |
+| --- | --- | --- |
+| TODAY | Models and code are replaceable → plain text, vendor-neutral parts | observed |
+| 2–5 years | Protocols and architecture outlive tools | policy in effect |
+| 20 years | The relationship is what you carry | direction, aspiration |
+| 100 years | A culture hypothesis | hypothesis |
+
+**Legend / table note:** This is a narrative map, not an implementation-state display. As of 2026-08.
+
+These bands are design choices and hypotheses, not predictions. They explain why the parts we build today stay small, readable, replaceable, and independent of any one vendor.
+
+---
+
 <a id="growth"></a>
 
-## After self-growth comes independent growth — and then relationships
+## Five stages of growth — and the line where I becomes WE
 
 Growth has the same shape for people and for AI. **Encounter something, think about it, use it next time.** Over and over. The only differences are what you go out and encounter, and who decides.
 
-```mermaid
-flowchart LR
-    A["Being taught<br/>learning from what you are given"]
-    B["Self growth<br/>learning from your own mistakes<br/>(where AI is now)"]
-    C["Independent growth<br/>reaching outward and deciding for yourself<br/>(what we are building)"]
-    D["Growth of relationships<br/>a relationship that develops between equals<br/>(where we are heading)"]
-    A --> B --> C --> D
-```
+![Five growth stages, 1 to 5, with the I to WE boundary between stages 4 and 5; states are in the table below](assets/readme/growth-stages.svg)
 
-People walked the same road. First we are taught by parents and grandparents; then we learn to look back at what we did and correct it ourselves; then we go out into the world to learn on our own; and finally we build relationships as equals.
+| Stage | Name | What it learns from | Who decides | Relationship (connects to) | State |
+| --- | --- | --- | --- | --- | --- |
+| 1 | Being taught | Given material | Others | 1 → 2 | Implemented |
+| 2 | Self growth | Its own work and failures | The agent, within the work | 2 → 3 | Implemented |
+| 3 | Independent growth | Information it goes out to fetch | The agent chooses what to take in; adoption still requires human approval | 3 → 4 | Implemented; [EV-004](docs/evidence.md#ev-004--governed-self-growth-cycle--the-mechanism-is-public-no-cycle-record-is) is unverified |
+| 4 | Autonomous growth | External information and its own judgment history | The agent owns adoption decisions; vetoes and boundaries remain | 4 → \| I → WE boundary \| → 5 | Planned |
+| 5 | Growth of relationships | The history of the relationship itself | Both, as equals | 5 — WE grows | Partly implemented; aspiration |
+
+People walk a similar road. First we are taught by parents and grandparents. Then we learn to look back at what we did and correct it ourselves. We go out into the world, develop judgment, make our own choices, and build relationships as equals.
 
 AI today is at the second stage. Do the work, notice the mistake, do better next time — that kind of self-growth is no longer remarkable.
 
-**What we are building is the third.** Not only inside the work it was handed, but reaching out to information on its own, deciding for itself what to take in, and changing by its own intent. And beyond that, the fourth — a world where AI stands as an equal partner, and the relationship itself grows: between people and AI, and between AI and AI. That is what we are heading toward.
+**What we are building is the third and the fourth.** The third is implemented: its public mechanism operates, but no public cycle record has been published, so [EV-004](docs/evidence.md#ev-004--governed-self-growth-cycle--the-mechanism-is-public-no-cycle-record-is) remains unverified. The fourth is planned — it is what we are building next. The dividing line is ownership of adoption decisions: at stage 3 a human still approves adoption; at stage 4 that ownership moves to the agent, while vetoes and boundaries remain. Stage 5 changes the subject from I to WE. Growth of the relationship itself is the aspiration.
 
-Rather than overwriting personality and ability from the outside, each agent grows its own ability and its own personality — relationships and feelings included. The way a person does.
+Rather than overwriting personality and ability from the outside, each agent develops through proposals, trials, decisions, and shared history. Relationship and feeling are part of that path — and none of it is a license to erase what came before.
 
-Parts of this, including self growth, are implemented. Parts, including persona growth, are still planned. Verification across runtimes is ongoing.
+Self growth and the independent-growth mechanism are implemented. Autonomous growth is planned. Persona Engine implements parts needed for stage 5; growth of the relationship itself remains an aspiration. Verification across runtimes is ongoing.
 
 Family OS gathers the pieces that exist today, in one place, pointed at that world.
+
+Read the full model in [English](docs/growth-model.md) or [Japanese](docs/growth-model.ja.md).
+
+---
+
+<a id="correspondence"></a>
+
+## What we believe → what we build
+
+| We believe | Therefore we build | Module home(s) | Visibility + license | Delivery |
+| --- | --- | --- | --- | --- |
+| Technology depreciates. Relationships compound. | Therefore we treat continuity, shared history, memory, persona, and relationship as first-class system elements. | [Family OS](https://github.com/caty-ai/family-os) (published, MIT) | published, MIT | implemented direction; relationship growth remains planned |
+| Memory carries continuity through time. | Therefore we build plain files, provenance, event history, shared current state, and re-observable records. | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) (published, MIT); [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) (published, MIT) | published, MIT | implemented |
+| Failure should have a next time. | Therefore we build lessons, receipts, failure history, retry policy, append-only records, and observability. | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) (published, MIT); [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) (published, MIT); [Sitter](https://github.com/caty-ai/sitter) (published, MIT) | published, MIT | implemented |
+| Growth should be observable and reversible. | Therefore we build proposal → trial → review → approval → adopt, with backup, rollback, and a ledger. | [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) (published, MIT) | published, MIT | implemented — adoption human-gated; EV-004 unverified |
+| Identity should outlive the model. | Therefore we separate model, runtime, and identity so continuity can survive a change of home. | [Persona Engine](https://github.com/caty-ai/persona-engine) (published, MIT); [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) (published, MIT) | published, MIT | implemented |
+| What grows between humans and AI should not belong to a vendor. | Therefore we build portable, local, human-readable relationship data and replaceable adapters. | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) (published, MIT); [Persona Engine](https://github.com/caty-ai/persona-engine) (published, MIT); [Family OS](https://github.com/caty-ai/family-os) (published, MIT) | published, MIT | implemented |
+| Growth eventually changes its subject from I to WE. | Therefore we build the five-stage model from being taught through relational growth. | Persona Growth Loop (publication in preparation); [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) (published, MIT); [Persona Engine](https://github.com/caty-ai/persona-engine) (published, MIT); [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) (published, MIT) | mixed; see the adjacent module labels | implemented + planned |
+
+The full version, with all 13 pairs, is in [the growth model](docs/growth-model.md).
 
 ---
 
@@ -127,6 +174,17 @@ Those pieces fall into three layers. Start from whichever layer sits closest to 
 
 Below Family OS there are three layers. At the top, the assumptions and rules that apply to everything (the rules layer); beneath it, a vertical axis for growing one agent and a horizontal axis for connecting the family. Rules sit above execution, so they wrap both axes.
 
+![Family OS aggregate map with rules above the vertical and horizontal axes; module facts and relations are in the table below](assets/readme/family-map.svg)
+
+| Layer | English label | The problem it solves | Modules | Relations |
+| --- | --- | --- | --- | --- |
+| **Rules** | Rules for everything below | parallel sessions fight over the same file and break it | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook) (published, MIT) | contains the premises for both axes; it does not execute them |
+| **Vertical** | Growing one agent | forgetting; stopping halfway; "it's done" that cannot be checked | Persona Growth Loop (publication in preparation); [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) (published, MIT) as the foundation; [context-kit](https://github.com/caty-ai/context-kit) (published, MIT) as equipment; [Persona Engine](https://github.com/caty-ai/persona-engine) (published, MIT); [X Collector](https://github.com/caty-ai/x-collector) (published, MIT); [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) (published, MIT) | every agent has its own Harness; Persona Engine → Persona Growth Loop is planned; X Collector → morning agents → Self Growth Loop is the current replaceable sense/proposal path; the Harness ↔ Self Growth trial/result seam is implemented; human/evaluator → Self Growth is an attributable alternative input; Persona Growth Loop → Self Growth governance is planned |
+| **Horizontal** | Connecting the family | memory scattered per agent; delegated work that goes missing | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) (published, MIT) and [Sitter](https://github.com/caty-ai/sitter) (published, MIT) connect complete Agent A / B / C flows; [X Collector](https://github.com/caty-ai/x-collector) (published, MIT) and [Persona Engine](https://github.com/caty-ai/persona-engine) (published, MIT) remain independently usable shared surfaces | Agent A / B / C ↔ FMA shares context without execution authority; FMA → delegated work / family nudges carries shared context; Sitter → delegated work / family nudges is outside observation for stalls, not a domain verdict |
+
+<details>
+<summary>Text equivalent: retired Mermaid source for the three-layer map</summary>
+
 ```mermaid
 flowchart TB
   OS["Family OS<br/>the whole map"]
@@ -140,13 +198,9 @@ flowchart TB
   OS -.-|"navigation only"| Rule
 ```
 
-| Layer | The problem it solves | What is in it |
-| --- | --- | --- |
-| **Rules** | parallel sessions fight over the same file and break it | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook) (published, MIT) |
-| **Vertical** | forgetting; stopping halfway; "it's done" that cannot be checked | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) (published, MIT) as the foundation, with [context-kit](https://github.com/caty-ai/context-kit) (published, MIT) as desk equipment and growth loops on top |
-| **Horizontal** | memory scattered per agent; delegated work that goes missing | [FMA](https://github.com/caty-ai/family-memory-architecture) (published, MIT) and [Sitter](https://github.com/caty-ai/sitter) (published, MIT) |
+</details>
 
-> **Note:** Everything marked "published, MIT" is open right now — you can click it today. Links marked "publication in preparation" cannot be opened yet, and will open in order of release.
+> **Note:** Everything marked "published, MIT" is open right now — you can click it today. Modules marked "publication in preparation" are listed without links until they are public.
 
 Let's start with the vertical axis, which is where most people arrive first.
 
@@ -169,44 +223,14 @@ On top of that foundation come one set of equipment and two kinds of growth. Eac
 **Growth of personality**
 
 - [Persona Engine](https://github.com/caty-ai/persona-engine) (published, MIT) — adds persona layers and a gradation of feeling
-- [Persona Growth Loop](https://github.com/shojikumaru/persona-growth-loop) (publication in preparation) — drives independent growth of personality. Planned
+- Persona Growth Loop (publication in preparation) — drives independent growth of personality. Planned
 
 **Growth of ability**
 
 - [X Collector](https://github.com/caty-ai/x-collector) (published, MIT) — gathers information from outside
-- [Self Growth Loop](https://github.com/shojikumaru/self-growth-loop) (publication in preparation) — drives independent growth of ability. The link to the foundation is implemented
+- [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) (published, MIT) — drives independent growth of ability
 
-```mermaid
-flowchart TB
-  OS["Family OS<br/>the whole map"]
-  Caty["Caty Agent Harness<br/>vertical foundation — self growth from the work<br/>one per agent"]
-  OS -.-|"navigation only"| Caty
-
-  subgraph PersonaAxis["Growth of personality"]
-    direction LR
-    PersonaEngine["Persona Engine<br/>persona layers and a gradation of feeling<br/>usable on its own"]
-    PersonaGrowth["Persona Growth Loop<br/>independent growth of personality<br/>planned"]
-    PersonaEngine ---|"persona source / target"| PersonaGrowth
-  end
-
-  subgraph AbilityAxis["Growth of ability"]
-    direction LR
-    X["X Collector<br/>gathers information from outside<br/>usable on its own · replaceable"]
-    Morning["morning agents"]
-    SelfGrowth["Self Growth Loop<br/>independent growth of ability"]
-    Other["human / evaluator<br/>attributable input"]
-    X -->|"family-feed / sense"| Morning
-    Morning -->|"proposal"| SelfGrowth
-    Other -.->|"another input source"| SelfGrowth
-  end
-
-  Caty <==>|"implemented: trial / result"| SelfGrowth
-  PersonaGrowth -.->|"planned: governance"| SelfGrowth
-```
-
-Persona Engine and X Collector can be detached from this diagram and used alone. X Collector is the current default input path, not the only one — it can be replaced.
-
-There are also parts we did not build that make the vertical axis work better alongside it — shared memory, knowledge graphs, note bases. They are collected in [parts that work well alongside this](docs/recommended-stack.md).
+Detailed diagram: [docs/engineering.md](docs/engineering.md#vertical-axis-detail).
 
 Once each agent holds one of these vertical axes, the horizontal axis connects them as a family.
 
@@ -220,40 +244,9 @@ Agents that each hold the same vertical axis are connected sideways by [Family M
 
 [Sitter](https://github.com/caty-ai/sitter) (published, MIT) watches, from the outside, the work you delegate to sub-agents and the nudges — the messages — that pass between family members. No reply coming back, work frozen partway through: it is the layer that finds those dropped handovers and sees them through to the end.
 
-```mermaid
-flowchart TB
-  OS["Family OS<br/>the whole map"]
-
-  subgraph Family["The AI agent family"]
-    direction TB
-
-    subgraph Members["each agent holds a complete vertical axis of its own"]
-      direction LR
-      A["Agent A<br/>foundation + chosen growth loops"]
-      B["Agent B<br/>foundation + chosen growth loops"]
-      C["Agent C<br/>foundation + chosen growth loops"]
-    end
-
-    FMA["FMA<br/>sharing and coordination across the family"]
-    A --- FMA
-    B --- FMA
-    C --- FMA
-
-    subgraph Handoff["work that gets handed over"]
-      direction LR
-      Sub["delegated sub-agent work"]
-      Nudge["nudges between family members<br/>messages back and forth"]
-    end
-
-    Sitter["Sitter<br/>watches from outside for anything stalled"]
-    FMA -.->|"shared context"| Handoff
-    Sitter -.->|"watching / deadlines / escalation"| Handoff
-  end
-
-  OS -.-|"navigation only"| Family
-```
-
 Connecting them does not move the right to act. FMA shares information; it does not drive other agents. Sitter notices that something has stopped; it does not judge whether the work itself succeeded. Rules that apply to everything belong to the layer above, not this one. And those rules are a document, not a program.
+
+Detailed diagram: [docs/engineering.md](docs/engineering.md#horizontal-axis-detail).
 
 Now that you can see how it fits together, check whether it runs in your environment.
 
@@ -330,6 +323,8 @@ Go straight to the canonical page for what you want to read.
 | What you want | Canonical page |
 | --- | --- |
 | How it works, the layers, how it connects (for engineers) | [Engineering documentation](docs/engineering.md) |
+| The five-stage growth model and its complete belief-to-build correspondence | [Growth model](docs/growth-model.md) |
+| Claims, primary evidence, and what remains unknown | [Evidence](docs/evidence.md) |
 | The exact boundaries of authority, connection, and failure | [Full reference](docs/reference.md) |
 | Third-party parts that work well alongside this | [Recommended stack](docs/recommended-stack.md) |
 | The visual rules for this README and its images | [README visual system](docs/readme-visual-system.md) |
@@ -368,6 +363,8 @@ Every module on this map, with its current state — generated from the same reg
 Family OS is free MIT open source. We chose MIT because we want anyone to use it freely and reshape it for their own family.
 
 Family OS is not a project that hands out one finished, correct answer. We grow it together with people who also want to keep and grow their AI's relationships and ability rather than throw them away, bringing the failures and lessons we each hit in real use. If you find a bug, something confusing, or a case where this did not apply well, tell us in an [issue](https://github.com/caty-ai/family-os/issues). Even a small report is material that makes this map easier for the next person.
+
+[Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Code of Conduct](CODE_OF_CONDUCT.md)
 
 ---
 

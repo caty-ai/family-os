@@ -59,6 +59,18 @@ jobs:
           python3 -B tools/family_footer.py
           ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && 'check --require-reality' || 'lint' }}
 
+  publication-gate:
+    name: publication gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: check publication boundary
+        run: python3 -B tools/check_publication_gate.py
+
+      - name: selftest publication gate
+        run: python3 -B tools/check_publication_gate.py --selftest
+
   links:
     name: links resolve
     runs-on: ubuntu-latest
@@ -76,16 +88,246 @@ jobs:
             --no-progress
             --include-fragments
             --max-concurrency 8
-            --exclude 'github\.com/shojikumaru/family-memory-architecture'
-            --exclude 'github\.com/shojikumaru/self-growth-loop'
             --exclude 'github\.com/shojikumaru/persona-growth-loop'
             --exclude 'img\.shields\.io'
             './**/*.md'
 
+  evidence-freshness:
+    name: evidence freshness
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: check evidence freshness
+        run: |
+          python3 -B <<'PY'
+          from datetime import datetime, timezone
+          from pathlib import Path
+          import os
+          import re
+
+          required_fields = {
+              "claim-id",
+              "believe",
+              "built",
+              "actually happened",
+              "still don't know",
+              "state (delivery · visibility · evidence)",
+              "evidence",
+              "observed-at",
+              "last-reviewed",
+              "owner",
+              "counter-evidence",
+          }
+
+          def fail(message: str) -> None:
+              print(f"FAIL: {message}")
+              raise SystemExit(1)
+
+          evidence_path = Path("docs/evidence.md")
+          try:
+              text = evidence_path.read_text(encoding="utf-8")
+          except (OSError, UnicodeError) as error:
+              fail(f"could not read {evidence_path}: {error}")
+
+          heading_pattern = re.compile(r"^## (?P<claim_id>EV-\d{3})\b")
+          row_pattern = re.compile(r"^\|(?P<left>[^|]+)\|(?P<right>[^|]+)\|$")
+
+          def parse_entries(lines):
+              entries = []
+              current = None
+              for raw_line in lines:
+                  line = raw_line.strip()
+                  match = row_pattern.match(line)
+                  if not match:
+                      if current is not None:
+                          entries.append(current)
+                          current = None
+                      continue
+
+                  left = match.group("left").strip()
+                  right = match.group("right").strip()
+
+                  if left == "---" or left == "field":
+                      continue
+
+                  if left == "claim-id":
+                      if current is not None:
+                          entries.append(current)
+                      current = {"claim-id": right}
+                      continue
+
+                  if current is not None:
+                      current[left] = right
+
+              if current is not None:
+                  entries.append(current)
+              return entries
+
+          lines = text.splitlines()
+          headings = []
+          for index, raw_line in enumerate(lines):
+              match = heading_pattern.match(raw_line.strip())
+              if match:
+                  headings.append((index, match.group("claim_id")))
+
+          if not headings:
+              fail("parsed 0 evidence headings from docs/evidence.md")
+
+          heading_ids = [claim_id for _, claim_id in headings]
+          duplicate_headings = sorted(
+              claim_id for claim_id in set(heading_ids)
+              if heading_ids.count(claim_id) > 1
+          )
+          if duplicate_headings:
+              fail("duplicate evidence headings: " + ", ".join(duplicate_headings))
+
+          claim_entries = parse_entries(lines)
+          if not claim_entries:
+              fail("parsed 0 claim entries from docs/evidence.md")
+
+          claim_ids = [entry["claim-id"] for entry in claim_entries]
+          duplicate_claim_ids = sorted(
+              claim_id for claim_id in set(claim_ids)
+              if claim_ids.count(claim_id) > 1
+          )
+          if duplicate_claim_ids:
+              fail("duplicate claim-ids: " + ", ".join(duplicate_claim_ids))
+
+          heading_id_set = set(heading_ids)
+          for claim_id in claim_ids:
+              if claim_id not in heading_id_set:
+                  fail(f"{claim_id} has a claim entry but no matching heading")
+
+          for position, (start, heading_id) in enumerate(headings):
+              end = headings[position + 1][0] if position + 1 < len(headings) else len(lines)
+              section_entries = parse_entries(lines[start + 1:end])
+              if not section_entries:
+                  fail(f"{heading_id} heading has no well-formed claim table")
+              if len(section_entries) != 1:
+                  fail(
+                      f"{heading_id} heading has {len(section_entries)} claim entries; "
+                      "expected exactly 1"
+                  )
+              section_claim_id = section_entries[0]["claim-id"]
+              if section_claim_id != heading_id:
+                  fail(
+                      f"{heading_id} heading is paired with claim-id "
+                      f"{section_claim_id}"
+                  )
+
+          for entry in claim_entries:
+              missing = sorted(required_fields.difference(entry))
+              if missing:
+                  fail(
+                      f"{entry['claim-id']} is missing required fields: "
+                      + ", ".join(missing)
+                  )
+              empty = sorted(
+                  field for field in required_fields if not entry[field].strip()
+              )
+              if empty:
+                  fail(
+                      f"{entry['claim-id']} has empty required fields: "
+                      + ", ".join(empty)
+                  )
+
+              raw_state = entry["state (delivery · visibility · evidence)"]
+              state_tokens = []
+              for token in raw_state.split("·"):
+                  token = token.strip()
+                  emphasis = re.fullmatch(r"\*\*(?P<token>[^*]+)\*\*", token)
+                  state_tokens.append(
+                      emphasis.group("token").strip() if emphasis else token
+                  )
+              allowed_axes = (
+                  {"implemented", "planned", "unknown"},
+                  {"published", "preparing", "private"},
+                  {"observed", "unverified"},
+              )
+              if (
+                  len(state_tokens) != 3
+                  or any(
+                      token not in allowed
+                      for token, allowed in zip(state_tokens, allowed_axes)
+                  )
+              ):
+                  fail(
+                      f"{entry['claim-id']} has invalid state "
+                      f"{raw_state!r}; expected delivery · visibility · evidence"
+                  )
+
+          def parse_date(value: str, field: str, claim_id: str):
+              if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+                  fail(
+                      f"{claim_id} has invalid {field} date {value!r}; "
+                      "expected YYYY-MM-DD"
+                  )
+              try:
+                  return datetime.strptime(value, "%Y-%m-%d").date()
+              except ValueError:
+                  fail(
+                      f"{claim_id} has invalid {field} date {value!r}; "
+                      "expected YYYY-MM-DD"
+                  )
+
+          today_override = os.environ.get("EVIDENCE_FRESHNESS_TODAY")
+          if today_override and "GITHUB_ACTIONS" in os.environ:
+              print(
+                  "NOTE: ignoring EVIDENCE_FRESHNESS_TODAY in GitHub Actions; "
+                  "using the real UTC date"
+              )
+              today = datetime.now(timezone.utc).date()
+          elif today_override:
+              today = parse_date(
+                  today_override, "EVIDENCE_FRESHNESS_TODAY", "environment"
+              )
+          else:
+              today = datetime.now(timezone.utc).date()
+
+          stale = []
+          ages = []
+          for entry in claim_entries:
+              claim_id = entry["claim-id"]
+              observed = parse_date(entry["observed-at"], "observed-at", claim_id)
+              reviewed = parse_date(entry["last-reviewed"], "last-reviewed", claim_id)
+              if observed > today:
+                  fail(
+                      f"{claim_id}: observed-at {observed} is in the future "
+                      f"relative to {today}"
+                  )
+              age_days = (today - reviewed).days
+              if age_days < 0:
+                  fail(
+                      f"{claim_id}: last-reviewed {reviewed} is in the future "
+                      f"relative to {today}"
+                  )
+              ages.append((claim_id, entry["last-reviewed"], age_days))
+              if age_days > 90:
+                  stale.append((claim_id, entry["last-reviewed"], age_days))
+
+          if stale:
+              details = "\n".join(
+                  f"- {claim_id}: last-reviewed {reviewed} is {age_days} days old"
+                  for claim_id, reviewed, age_days in stale
+              )
+              fail(
+                  f"parsed {len(claim_entries)} evidence entries from "
+                  f"docs/evidence.md\n{details}"
+              )
+
+          print(
+              f"PASS: parsed {len(claim_entries)} evidence entries from "
+              "docs/evidence.md"
+          )
+          for claim_id, reviewed, age_days in ages:
+              print(f"- {claim_id}: last-reviewed {reviewed} ({age_days} days old)")
+          PY
+
   report:
     name: open an issue if the scheduled run failed
     runs-on: ubuntu-latest
-    needs: [registry, family-footer, links]
+    needs: [registry, family-footer, publication-gate, links, evidence-freshness]
     if: failure() && github.event_name == 'schedule'
     steps:
       # Both labels (stale-pointer and severity:high) are assumed to exist;
@@ -121,6 +363,7 @@ jobs:
           - a module was published or unpublished, and \`registry/modules.json\` still says otherwise
           - a repository moved to a fresh home, so the old URL now 404s
           - an external link died
+          - the evidence doc went stale (\`docs/evidence.md\` last-reviewed >90 days)
 
           Run: $RUN_URL
 

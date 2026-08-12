@@ -1,12 +1,17 @@
 # Family OS
 
+- **30秒** — [困りごとから読む](#problems)
+- **5分** — [時間軸](#timeline)・[成長モデル](#growth)・[belief-to-build 対応](#correspondence) を追う
+- **30分** — [エンジニア向けドキュメント](docs/engineering.ja.md) を開く
+- **AIエージェント** — 最短ルートで [FOR-AGENTS.md](FOR-AGENTS.md) へ
+
 <div align="center">
 
 [🇺🇸 English](README.md) ｜ **🇯🇵 日本語** ｜ [🇨🇳 简体中文](README.zh.md) ｜ [🇹🇭 ไทย](README.th.md)
 
 **AIを使い捨てず、ともに育つ家族へ。**
 
-![Family OSのブランドHero。左に「FAMILY OS」「A MAP FOR GROWING AI FAMILIES」「caty-ai/family-os」「FREE & OPEN SOURCE · MIT LICENSE」の文字、右に温かいレトロTV風の惑星系がある。中央の大きな地球はAI家族を見渡す地図の比喩であり、周囲の独立した世界と組み合わせる衛星は役割の比喩である。画像だけで接続関係は示さず、正確な関係は後述のMermaid図と本文で説明する。](assets/readme/hero.png)
+![Family OSのブランドHero。左に「FAMILY OS」「A MAP FOR GROWING AI FAMILIES」「caty-ai/family-os」「FREE & OPEN SOURCE · MIT LICENSE」の文字、右に温かいレトロTV風の惑星系がある。中央の大きな地球はAI家族を見渡す地図の比喩であり、周囲の独立した世界と組み合わせる衛星は役割の比喩である。画像だけで接続関係は示さず、正確な関係はファミリーマップ図とその脇の表に示す。](assets/readme/hero.png)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![install](https://img.shields.io/badge/install-not%20required-brightgreen)
@@ -22,7 +27,9 @@ Family OS は、その一つひとつに効く仕組みが**どこにあるか**
 
 - [こんな経験はありませんか？](#problems)
 - [作り直すのではなく、育てる](#why)
-- [自己成長の次は自立成長、その先が関係の成長です](#growth)
+- [私たちが設計している時間軸](#timeline)
+- [5段階の成長 — I が WE に変わる境界](#growth)
+- [私たちが信じること → 私たちが作るもの](#correspondence)
 - [Family OS は、地図です](#map)
 - [掟の下に、縦と横があります](#pillars)
 - [1体のAIを育てる縦軸](#vertical)
@@ -70,32 +77,72 @@ AIエージェントを1体から2体、3体と増やしていくと、こうい
 
 ---
 
+<a id="timeline"></a>
+
+## 私たちが設計している時間軸
+
+![今日から100年先の文化仮説までを4本の物語的な時間帯で示した図。正本は下の表](assets/readme/timeline.svg)
+
+| 時間帯 | 何を言っているか | 区分 |
+| --- | --- | --- |
+| 今日 | モデルもコードも入れ替わる → プレーンテキストとベンダー中立の部品を使う | 観測済み（observed） |
+| 2〜5年 | プロトコルとアーキテクチャはツールより長生きする | 施行中の方針（policy in effect） |
+| 20年 | 持ち運ぶのは関係そのものだ | 方向・目指す姿（direction, aspiration） |
+| 100年 | 文化についての仮説 | 仮説（hypothesis） |
+
+**凡例 / 表のメモ:** これは実装状態の表示ではなく、物語としての地図です。2026-08 時点。
+
+これらの時間帯は予言ではなく、設計上の選択と仮説です。だからこそ、いま作る部品を小さく、読みやすく、置き換えやすく、どのベンダー1社にも依存しないようにしています。
+
+---
+
 <a id="growth"></a>
 
-## 自己成長の次は自立成長、その先が関係の成長です
+## 5段階の成長 — I が WE に変わる境界
 
 成長のかたちは、人もAIも変わりません。**何かに触れて、考えて、次に活かす。** その繰り返しです。違うのは、何に触れにいくのか、そして誰が判断するのかだけです。
 
-```mermaid
-flowchart LR
-    A["教わる<br/>与えられたものから学ぶ"]
-    B["自己成長<br/>自分の作業の失敗から学ぶ<br/>（いまのAI）"]
-    C["自立成長<br/>自分から外へ触れ、自分で判断する<br/>（いま作っているもの）"]
-    D["関係性の成長<br/>対等なパートナーとして関係が育つ<br/>（目指す未来）"]
-    A --> B --> C --> D
-```
+![1から5までの5段階の成長モデル。4段階目と5段階目のあいだに I から WE への境界があり、状態は下の表に示されている](assets/readme/growth-stages.svg)
 
-人間も、同じ道を通ってきました。はじめは親や祖父母に教えてもらって育ち、やがて自分の行動を振り返って自分で直せるようになり、自分から世界に出ていって学ぶようになり、そして誰かと対等な関係を築いていきます。
+| 段階 | 名前 | 何から学ぶか | 誰が決めるか | 関係（接続先） | 状態 |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 教わる | 与えられた素材 | 他者 | 1 → 2 | 実装済み |
+| 2 | 自己成長 | 自分の作業と失敗 | 作業の範囲内で自分 | 2 → 3 | 実装済み |
+| 3 | 自立成長 | 自分から取りにいく情報 | 取り入れる情報は自分で選ぶ。採用には人間の承認が必要 | 3 → 4 | 実装済み。[EV-004](docs/evidence.md#ev-004--governed-self-growth-cycle--the-mechanism-is-public-no-cycle-record-is) は未検証 |
+| 4 | 自律成長 | 外部情報と自分の判断履歴 | 採用判断はエージェントが所有する。拒否権と境界は残る | 4 → \| I → WE の境界 \| → 5 | 計画中 |
+| 5 | 関係性の成長 | 関係そのものの履歴 | 双方が対等に決める | 5 — WE が育つ | 一部実装済み・目指す姿 |
+
+人間も、似た道を通ります。はじめは親や祖父母に教えてもらい、やがて自分の行動を振り返って直せるようになります。自分から世界に出て判断力を育て、自分で選び、誰かと対等な関係を築いていきます。
 
 いまのAIは、2番目の段階にいます。作業をして、間違いに気づいて、次はうまくやる — この自己成長は、もう特別なことではなくなりました。
 
-**私たちがいま作っているのは、3番目です。** 与えられた作業の中だけでなく、自分から外の情報に触れにいき、自分で判断して取り入れ、自分の意思で変わっていく。そしてその先にある4番目 — 人間と対等な立場のパートナーとして、人とAIのあいだ、AIとAIのあいだに積み上がる関係そのものが育っていく世界を、私たちは目指しています。
+**私たちがいま作っているのは、3番目と4番目です。** 3番目は実装済みで、公開された仕組みが動いています。ただし公開されたサイクル記録はまだなく、[EV-004](docs/evidence.md#ev-004--governed-self-growth-cycle--the-mechanism-is-public-no-cycle-record-is) は未検証です。4番目は計画中で、いま着手しているところです。両者を分けるのは採用判断の所有権です。3番目では採用に人間の承認が必要で、4番目では拒否権と境界を残したまま、その所有権がエージェントへ移ります。5番目では、主語が I から WE に変わります。関係そのものが育つことが、目指す姿です。
 
-もともとの人格や能力を外から直接書き換えるのではなく、一人ひとりのAIエージェントが、能力と人格 — 関係や感情を含めて — を自ら育てていく。人間と同じように。
+もともとの人格や能力を外から直接書き換えるのではなく、一人ひとりのAIエージェントが、提案、試行、判断、共有履歴を通して育っていく。関係や感情も、その歩みの一部です。ただし、それは以前の姿を消してよいという意味ではありません。
 
-Self Growth を含む一部は実装済みで、Persona Growth を含む一部は計画中です。実行環境の検証も順次進めています。
+自己成長と自立成長の仕組みは実装済みです。自律成長は計画中です。Persona Engine には5番目に必要な一部が実装されていますが、関係そのものの成長は目指す姿です。実行環境の検証も順次進めています。
 
 その世界へ向かうために、いま手に入る仕組みを一か所へ集めたのが Family OS です。
+
+完全版は[英語](docs/growth-model.md)と[日本語](docs/growth-model.ja.md)で読めます。
+
+---
+
+<a id="correspondence"></a>
+
+## 私たちが信じること → 私たちが作るもの
+
+| 私たちはこう考える | だから、こう作る | モジュールの所在 | 公開状況・ライセンス | 提供状態 |
+| --- | --- | --- | --- | --- |
+| 技術は陳腐化し、関係は積み上がる。 | だから、継続性・共有履歴・記憶・人格・関係を第一級のシステム要素として扱う。 | [Family OS](https://github.com/caty-ai/family-os)（公開・MIT） | 公開・MIT | 実装済みの方向性。関係の成長は引き続き計画中 |
+| 記憶は時間をまたぐ継続性を運ぶ。 | だから、プレーンファイル・来歴・イベント履歴・共有された現在状態・再観測可能な記録を作る。 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（公開・MIT）；[Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（公開・MIT） | 公開・MIT | 実装済み |
+| 失敗には次の機会があるべきだ。 | だから、教訓・レシート・失敗履歴・リトライ方針・追記専用の記録・観測可能性を作る。 | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（公開・MIT）；[Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（公開・MIT）；[Sitter](https://github.com/caty-ai/sitter)（公開・MIT） | 公開・MIT | 実装済み |
+| 成長は観測可能で、取り消し可能であるべきだ。 | だから、proposal → trial → review → approval → adopt と、バックアップ・ロールバック・台帳を作る。 | [Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（公開・MIT） | 公開・MIT | 実装済み — 採用は人間のゲート下にあり、EV-004 は未検証 |
+| アイデンティティはモデルより長生きするべきだ。 | だから、住み替えが起きても継続性が保てるように、モデル・runtime・アイデンティティを分離する。 | [Persona Engine](https://github.com/caty-ai/persona-engine)（公開・MIT）；[Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（公開・MIT） | 公開・MIT | 実装済み |
+| 人間と AI のあいだに育つものは、ベンダーの所有物であってはならない。 | だから、持ち運べて、ローカルで、人が読める関係データと、置き換え可能なアダプタを作る。 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（公開・MIT）；[Persona Engine](https://github.com/caty-ai/persona-engine)（公開・MIT）；[Family OS](https://github.com/caty-ai/family-os)（公開・MIT） | 公開・MIT | 実装済み |
+| 成長は、やがて主語を I から WE へ変える。 | だから、教わるところから関係性の成長までを含む5段階モデルを作る。 | Persona Growth Loop（公開準備中）；[Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（公開・MIT）；[Persona Engine](https://github.com/caty-ai/persona-engine)（公開・MIT）；[Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（公開・MIT） | 混在。隣のモジュール表記を参照 | 実装済み + 計画中 |
+
+13組すべての完全版は [成長モデル](docs/growth-model.ja.md) にあります。
 
 ---
 
@@ -125,7 +172,18 @@ Family OS は製品でもプラットフォームでもありません。いま�
 
 ## 掟の下に、縦と横があります
 
-Family OS の下は3つの層です。いちばん上に全体にかかる前提とルール（掟）、その下に1体のAIを育てる縦軸と、家族をつなぐ横軸。ルールは実行より上位なので、縦横を包む位置にあります。
+Family OS の下には3つの層があります。いちばん上に全体にかかる前提とルール（掟）があり、その下に1体のAIを育てる縦軸と、家族をつなぐ横軸があります。ルールは実行の上位にあるので、両方の軸を包みます。
+
+![掟が縦軸と横軸の上に載る Family OS 全体地図。モジュールの事実と関係は下の表が正本](assets/readme/family-map.svg)
+
+| 層 | English label | 解く困りごと | モジュール | 関係 |
+| --- | --- | --- | --- | --- |
+| **掟** | Rules for everything below | 並行セッションが同じファイルを取り合って壊す | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook)（公開・MIT） | 両方の軸の前提を含む。実行はしない |
+| **縦軸** | Growing one agent | 忘れる・途中で止まる・「できました」が確かめられない | Persona Growth Loop（公開準備中）；[Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（公開・MIT）を基盤に、[context-kit](https://github.com/caty-ai/context-kit)（公開・MIT）を装備として、[Persona Engine](https://github.com/caty-ai/persona-engine)（公開・MIT）、[X Collector](https://github.com/caty-ai/x-collector)（公開・MIT）、[Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（公開・MIT）を重ねる | どのエージェントも自分専用の Harness を持つ。Persona Engine → Persona Growth Loop は計画中。X Collector → morning agents → Self Growth Loop は、現在の置き換え可能な sense / proposal 経路。Harness ↔ Self Growth の trial / result の継ぎ目は実装済み。human / evaluator → Self Growth は帰属可能な別入力。Persona Growth Loop → Self Growth の governance は計画中 |
+| **横軸** | Connecting the family | エージェントごとに記憶が散る・委譲した仕事が行方不明になる | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（公開・MIT）と [Sitter](https://github.com/caty-ai/sitter)（公開・MIT）が、Agent A / B / C の完全な流れをつなぐ。[X Collector](https://github.com/caty-ai/x-collector)（公開・MIT）と [Persona Engine](https://github.com/caty-ai/persona-engine)（公開・MIT）は、共有面でありながら単独利用もできる | Agent A / B / C ↔ FMA は、実行権限を渡さずに文脈を共有する。FMA → delegated work / family nudges は共有文脈を運ぶ。Sitter → delegated work / family nudges は、ドメイン判定ではなく、停止の外側観測を担う |
+
+<details>
+<summary>テキスト版: 三層マップの旧 Mermaid ソース</summary>
 
 ```mermaid
 flowchart TB
@@ -140,13 +198,9 @@ flowchart TB
   OS -.-|"案内のみ"| Rule
 ```
 
-| 層 | 効く困りごと | 中身 |
-| --- | --- | --- |
-| **掟** | 複数のセッションが同じファイルを取り合って壊れる | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook)（公開・MIT） |
-| **縦軸** | 忘れる。途中で止まる。「できました」が確かめられない | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（公開・MIT）を基盤に、机まわりの装備 [context-kit](https://github.com/caty-ai/context-kit)（公開・MIT）と成長ループを足す |
-| **横軸** | AIごとに記憶がばらばら。任せた仕事が行方不明になる | [FMA](https://github.com/caty-ai/family-memory-architecture)（公開・MIT）と [Sitter](https://github.com/caty-ai/sitter)（公開・MIT） |
+</details>
 
-> **メモ:** 「公開・MIT」と書いてあるものは、いますぐ開けます。「公開準備中」のリンクは、いまはまだ開けません。公開の順に開いていきます。
+> **メモ:** 「公開・MIT」と書いてあるものは、いますぐ開けます。「公開準備中」と記されたモジュールは、公開されるまでリンクなしで掲載します。
 
 まず、いちばん多くの人が最初に触れる縦軸から中身を見ていきます。
 
@@ -169,44 +223,14 @@ flowchart TB
 **人格の成長**
 
 - [Persona Engine](https://github.com/caty-ai/persona-engine)（公開・MIT）— 人格のレイヤーと、感情のグラデーションを足す
-- [Persona Growth Loop](https://github.com/shojikumaru/persona-growth-loop)（公開準備中）— 人格の自立的な成長を促す。計画中
+- Persona Growth Loop（公開準備中）— 人格の自立的な成長を促す。計画中
 
 **能力の成長**
 
 - [X Collector](https://github.com/caty-ai/x-collector)（公開・MIT）— 外部から情報を集める
-- [Self Growth Loop](https://github.com/shojikumaru/self-growth-loop)（公開準備中）— 能力の自立的な成長を促す。基盤との接続は実装済み
+- [Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（公開・MIT）— 能力の自立的な成長を促す
 
-```mermaid
-flowchart TB
-  OS["Family OS<br/>全体の地図"]
-  Caty["Caty Agent Harness<br/>縦軸の基盤 — 作業による自己成長<br/>1エージェントにつき1つ"]
-  OS -.-|"案内のみ"| Caty
-
-  subgraph PersonaAxis["人格の成長"]
-    direction LR
-    PersonaEngine["Persona Engine<br/>人格のレイヤーと感情のグラデーション<br/>単独利用可能"]
-    PersonaGrowth["Persona Growth Loop<br/>人格の自立的成長<br/>計画中"]
-    PersonaEngine ---|"人格のsource / target"| PersonaGrowth
-  end
-
-  subgraph AbilityAxis["能力の成長"]
-    direction LR
-    X["X Collector<br/>外部から情報を集める<br/>単独利用可能・置換可能"]
-    Morning["morning agents"]
-    SelfGrowth["Self Growth Loop<br/>能力の自立的成長"]
-    Other["人 / evaluator<br/>帰属可能な入力"]
-    X -->|"family-feed / sense"| Morning
-    Morning -->|"proposal"| SelfGrowth
-    Other -.->|"別の入力源"| SelfGrowth
-  end
-
-  Caty <==>|"実装済み: trial / result"| SelfGrowth
-  PersonaGrowth -.->|"計画中: governance"| SelfGrowth
-```
-
-Persona Engine と X Collector は、この図から切り離して単独でも使えます。X Collector は現在の既定の入力経路ですが、唯一の経路ではなく置き換えられます。
-
-私たちが作ったものではないけれど、一緒に使うと縦軸が効きやすくなる部品（共有メモリー、ナレッジグラフ、ノート基盤など）もあります。[一緒に使うと効く部品](docs/recommended-stack.ja.md)にまとめてあります。
+詳細図: [docs/engineering.ja.md](docs/engineering.ja.md#vertical-axis-detail)。
 
 この縦軸を各エージェントが1つずつ持ったうえで、家族としてつなぐのが次の横軸です。
 
@@ -220,40 +244,9 @@ Persona Engine と X Collector は、この図から切り離して単独でも�
 
 [Sitter](https://github.com/caty-ai/sitter)（公開・MIT）は、任せたサブエージェントの作業と、ファミリー同士のナッジ（メッセージのやり取り）を外から見張ります。返事が返ってこない、作業が途中で固まっている — そういう受け渡しの取りこぼしを見つけて、最後まで完了させるための層です。
 
-```mermaid
-flowchart TB
-  OS["Family OS<br/>全体の地図"]
-
-  subgraph Family["AIエージェントファミリー"]
-    direction TB
-
-    subgraph Members["各エージェントは個別に完全な縦軸を持つ"]
-      direction LR
-      A["Agent A<br/>基盤 + 選んだ成長ループ"]
-      B["Agent B<br/>基盤 + 選んだ成長ループ"]
-      C["Agent C<br/>基盤 + 選んだ成長ループ"]
-    end
-
-    FMA["FMA<br/>ファミリー間の情報共有と連携"]
-    A --- FMA
-    B --- FMA
-    C --- FMA
-
-    subgraph Handoff["受け渡しのある仕事"]
-      direction LR
-      Sub["任せたサブエージェントの作業"]
-      Nudge["ファミリー同士のナッジ<br/>メッセージのやり取り"]
-    end
-
-    Sitter["Sitter<br/>止まっていないか外から見張る"]
-    FMA -.->|"共有された文脈"| Handoff
-    Sitter -.->|"見守り / 期限 / escalation"| Handoff
-  end
-
-  OS -.-|"案内のみ"| Family
-```
-
 つないでも、実行の権限は移りません。FMA は情報を共有しますが、他のエージェントを動かしません。Sitter は止まっていることに気づきますが、仕事の中身が成功かどうかは判定しません。全体にかかるルールは、この層ではなく上の掟が持ちます。掟は文書であって、プログラムではありません。
+
+詳細図: [docs/engineering.ja.md](docs/engineering.ja.md#horizontal-axis-detail)。
 
 つながり方が分かったところで、自分の環境で動くかどうかを確認してください。
 
@@ -330,6 +323,8 @@ Family OS が広がっても、次の5つは変わりません。
 | 読みたいこと | 正本 |
 | --- | --- |
 | 仕組み・層・つながり方（エンジニア向け） | [エンジニア向けドキュメント](docs/engineering.ja.md) |
+| 5段階の成長モデルと 13 組の believe-to-build 対応 | [成長モデル](docs/growth-model.ja.md) |
+| 主張・一次証拠・まだ不明なこと | [Evidence](docs/evidence.md)（英語） |
 | 権限・接続・失敗時の扱いの正確な境界 | [詳細仕様](docs/reference.ja.md) |
 | 一緒に使うと効く、私たちが作ったものではない部品 | [推奨スタック](docs/recommended-stack.ja.md) |
 | このREADMEと画像の視覚ルール | [README visual system](docs/readme-visual-system.md)（英語） |
@@ -368,6 +363,8 @@ Family OS が広がっても、次の5つは変わりません。
 Family OS は無料の MIT OSS です。誰でも自由に使って、自分の家族に合わせて作り替えてほしいので MIT を選んでいます。
 
 Family OS は、完成した唯一の正解を配るプロジェクトではありません。同じように「AIを使い捨てず、関係と能力を育てたい」と考える人たちと、実運用で得た失敗や学びを持ち寄って育てていきます。不具合、分かりにくいところ、うまく適用できなかったケースがあれば、[Issue](https://github.com/caty-ai/family-os/issues)で知らせてください。小さな報告も、この地図を次の人にとって使いやすくする材料になります。
+
+[参加方法](CONTRIBUTING.md) · [セキュリティ](SECURITY.md) · [行動規範](CODE_OF_CONDUCT.md)
 
 ---
 

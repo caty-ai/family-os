@@ -482,6 +482,11 @@
       "repo": "shojikumaru/family-os",
       "superseded_by": "caty-ai/family-os",
       "reason": "republished under caty-ai as a fresh repository, so GitHub does not redirect"
+    },
+    {
+      "repo": "shojikumaru/self-growth-loop",
+      "superseded_by": "caty-ai/self-growth-loop",
+      "reason": "republished under caty-ai as a fresh repository, so GitHub does not redirect"
     }
   ]
 }

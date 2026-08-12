@@ -75,6 +75,118 @@ Persona Engine and X Collector are usable on their own and are not required by a
 
 ---
 
+<a id="detailed-diagrams"></a>
+
+## Detailed diagrams
+
+The figures below move the README's detailed topology into the engineering view. Their adjacent tables are the semantic source of truth for nodes and relations; module visibility and license facts still come from `registry/modules.json`.
+
+<a id="vertical-axis-detail"></a>
+
+### Vertical axis detail
+
+![Vertical-axis topology for one agent, with a harness foundation and separate persona and ability growth branches; the table below is the source of truth](../assets/readme/vertical-axis.svg)
+
+| Node | Role | Relations | State |
+| --- | --- | --- | --- |
+| Family OS | non-runtime map | dotted navigation-only route to the agent's vertical axis | published, MIT |
+| [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) (published, MIT) | one-per-agent vertical foundation; owns completion | exchanges trial requests and terminal results with Self Growth Loop | implemented |
+| [context-kit](https://github.com/caty-ai/context-kit) (published, MIT) | independently usable desk equipment | equips the agent without becoming completion authority | implemented |
+| [Persona Engine](https://github.com/caty-ai/persona-engine) (published, MIT) | independently usable persona source and target | connects to Persona Growth Loop | implemented |
+| Persona Growth Loop (publication in preparation) | independent persona-growth loop | planned persona source/target relation with Persona Engine; planned governance path to Self Growth Loop | planned |
+| [X Collector](https://github.com/caty-ai/x-collector) (published, MIT) | independently usable, replaceable outside-information source | supplies `family-feed` / sense to morning agents | implemented |
+| morning agents | current/default sense bridge | turns collected material into proposals for Self Growth Loop | implemented |
+| human / evaluator | attributable alternative input | may provide another input to Self Growth Loop | implemented input shape |
+| [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) (published, MIT) | ability-growth loop | receives proposals; uses the harness for the implemented trial/result seam; remains the governance path for planned persona growth | implemented |
+
+<details>
+<summary>Text equivalent: retired Mermaid source for the vertical axis</summary>
+
+```mermaid
+flowchart TB
+  OS["Family OS<br/>the whole map"]
+  Caty["Caty Agent Harness<br/>vertical foundation — self growth from the work<br/>one per agent"]
+  OS -.-|"navigation only"| Caty
+
+  subgraph PersonaAxis["Growth of personality"]
+    direction LR
+    PersonaEngine["Persona Engine<br/>persona layers and a gradation of feeling<br/>usable on its own"]
+    PersonaGrowth["Persona Growth Loop<br/>independent growth of personality<br/>planned"]
+    PersonaEngine ---|"persona source / target"| PersonaGrowth
+  end
+
+  subgraph AbilityAxis["Growth of ability"]
+    direction LR
+    X["X Collector<br/>gathers information from outside<br/>usable on its own · replaceable"]
+    Morning["morning agents"]
+    SelfGrowth["Self Growth Loop<br/>independent growth of ability"]
+    Other["human / evaluator<br/>attributable input"]
+    X -->|"family-feed / sense"| Morning
+    Morning -->|"proposal"| SelfGrowth
+    Other -.->|"another input source"| SelfGrowth
+  end
+
+  Caty <==>|"implemented: trial / result"| SelfGrowth
+  PersonaGrowth -.->|"planned: governance"| SelfGrowth
+```
+
+</details>
+
+<a id="horizontal-axis-detail"></a>
+
+### Horizontal axis detail
+
+![Horizontal-axis topology connecting complete agent flows through FMA while Sitter watches handoffs from outside; the table below is the source of truth](../assets/readme/horizontal-axis.svg)
+
+| Node | Role | Relations | State |
+| --- | --- | --- | --- |
+| Family OS | non-runtime map | dotted navigation-only route to the family view | published, MIT |
+| Agent A / B / C | complete independent vertical flows | each connects to FMA without giving it execution authority | representative topology |
+| [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) (published, MIT) | shared memory and coordination information | connects complete agent flows; supplies shared context to handoffs | implemented |
+| delegated sub-agent work | work handed outside a member's main flow | carries shared context; observed by Sitter for stalls | implemented work shape |
+| family nudges | messages exchanged between members | carry shared context; observed by Sitter for missing replies | implemented work shape |
+| [Sitter](https://github.com/caty-ai/sitter) (published, MIT) | independent external observer | watches deadlines and escalates stalled handoffs; never judges domain success | implemented |
+
+<details>
+<summary>Text equivalent: retired Mermaid source for the horizontal axis</summary>
+
+```mermaid
+flowchart TB
+  OS["Family OS<br/>the whole map"]
+
+  subgraph Family["The AI agent family"]
+    direction TB
+
+    subgraph Members["each agent holds a complete vertical axis of its own"]
+      direction LR
+      A["Agent A<br/>foundation + chosen growth loops"]
+      B["Agent B<br/>foundation + chosen growth loops"]
+      C["Agent C<br/>foundation + chosen growth loops"]
+    end
+
+    FMA["FMA<br/>sharing and coordination across the family"]
+    A --- FMA
+    B --- FMA
+    C --- FMA
+
+    subgraph Handoff["work that gets handed over"]
+      direction LR
+      Sub["delegated sub-agent work"]
+      Nudge["nudges between family members<br/>messages back and forth"]
+    end
+
+    Sitter["Sitter<br/>watches from outside for anything stalled"]
+    FMA -.->|"shared context"| Handoff
+    Sitter -.->|"watching / deadlines / escalation"| Handoff
+  end
+
+  OS -.-|"navigation only"| Family
+```
+
+</details>
+
+---
+
 <a id="edges"></a>
 
 ## How the pieces connect
@@ -176,5 +288,6 @@ Reading the map needs nothing but a Markdown viewer. The table below covers the 
 | You want | Go to |
 | --- | --- |
 | The exact contract — authorities, edges, failure postures | [Full reference](reference.md) |
+| The five-stage growth model and its belief-to-build correspondence | [Growth model](growth-model.md) |
 | Third-party parts that work well alongside these | [Recommended stack](recommended-stack.md) |
 | The visual rules for the README and its images | [README visual system](readme-visual-system.md) |

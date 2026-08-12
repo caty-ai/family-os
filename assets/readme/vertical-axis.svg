@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 650" role="img" aria-labelledby="title desc">
+  <title id="title">Vertical axis topology for one agent</title>
+  <desc id="desc">A Caty Agent Harness foundation supports separate persona and ability growth branches, context equipment, and an implemented Self Growth trial and result seam.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#57606a"/>
+    </marker>
+    <style>
+      .zone { fill: none; stroke: #57606a; stroke-width: 2; }
+      .node { fill: #eaeef2; stroke: #57606a; stroke-width: 3; }
+      .planned { stroke-dasharray: 10 7; }
+      .focus { stroke: #d97706; stroke-width: 4; }
+      .solid { fill: none; stroke: #57606a; stroke-width: 3; marker-end: url(#arrow); }
+      .both { fill: none; stroke: #57606a; stroke-width: 3; marker-start: url(#arrow); marker-end: url(#arrow); }
+      .dashed { fill: none; stroke: #57606a; stroke-width: 3; stroke-dasharray: 10 7; marker-end: url(#arrow); }
+      .aux { fill: none; stroke: #57606a; stroke-width: 3; stroke-dasharray: 2 7; marker-end: url(#arrow); }
+      .dotted { fill: none; stroke: #57606a; stroke-width: 2; stroke-dasharray: 2 7; }
+      .heading { fill: #24292f; font: 700 18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .label { fill: #24292f; font: 600 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; text-anchor: middle; }
+      .small { fill: #24292f; font: 14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; text-anchor: middle; }
+      .legend { fill: #24292f; font: 14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+  </defs>
+
+  <rect width="1280" height="650" rx="16" fill="#f6f8fa"/>
+
+  <rect class="node" x="525" y="28" width="230" height="58" rx="12"/>
+  <text class="label" x="640" y="64">Family OS</text>
+  <path class="dotted" d="M640 86 V120"/>
+
+  <rect class="zone" x="45" y="125" width="555" height="300" rx="16"/>
+  <text class="heading" x="70" y="158">Growth of personality</text>
+  <rect class="node" x="95" y="210" width="210" height="82" rx="12"/>
+  <text class="label" x="200" y="246">Persona Engine</text>
+  <text class="small" x="200" y="271">persona source / target</text>
+  <rect class="node planned focus" x="350" y="210" width="210" height="82" rx="12"/>
+  <text class="label" x="455" y="246">Persona Growth Loop</text>
+  <text class="small" x="455" y="271">persona growth</text>
+  <path class="dashed" d="M305 251 H350"/>
+
+  <rect class="zone" x="630" y="125" width="605" height="300" rx="16"/>
+  <text class="heading" x="655" y="158">Growth of ability</text>
+  <rect class="node" x="665" y="190" width="175" height="72" rx="12"/>
+  <text class="label" x="752" y="221">X Collector</text>
+  <text class="small" x="752" y="244">replaceable input</text>
+  <rect class="node" x="880" y="190" width="175" height="72" rx="12"/>
+  <text class="label" x="967" y="231">morning agents</text>
+  <rect class="node focus" x="1015" y="320" width="185" height="72" rx="12"/>
+  <text class="label" x="1107" y="351">Self Growth Loop</text>
+  <text class="small" x="1107" y="374">ability growth</text>
+  <rect class="node" x="680" y="320" width="190" height="72" rx="12"/>
+  <text class="label" x="775" y="351">human / evaluator</text>
+  <text class="small" x="775" y="374">attributable input</text>
+  <path class="solid" d="M840 226 H880"/>
+  <path class="solid" d="M967 262 V285 H1107 V320"/>
+  <path class="aux" d="M870 356 H1015"/>
+
+  <rect class="node" x="95" y="465" width="220" height="72" rx="12"/>
+  <text class="label" x="205" y="506">context-kit</text>
+  <rect class="node" x="450" y="455" width="380" height="92" rx="12"/>
+  <text class="label" x="640" y="493">Caty Agent Harness</text>
+  <text class="small" x="640" y="520">one per agent · completion owner</text>
+  <path class="solid" d="M315 501 H450"/>
+  <path class="both" d="M830 501 H1107 V392"/>
+  <path class="dashed" d="M455 292 V410 H980 V300 H1093 V320"/>
+
+  <line x1="55" y1="590" x2="105" y2="590" stroke="#57606a" stroke-width="3"/>
+  <text class="legend" x="120" y="595">solid = implemented / published</text>
+  <line x1="365" y1="590" x2="415" y2="590" stroke="#57606a" stroke-width="3" stroke-dasharray="10 7"/>
+  <text class="legend" x="430" y="595">dashed = planned / preparing</text>
+  <line x1="725" y1="590" x2="775" y2="590" stroke="#d97706" stroke-width="4"/>
+  <text class="legend" x="790" y="595">orange = focus, not a state</text>
+  <text class="legend" x="55" y="625">dotted = navigation / alternative input, not authority · complete relations and states: see the table below</text>
+</svg>
