@@ -56,6 +56,18 @@ jobs:
           python3 -B tools/family_footer.py
           ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && 'check --require-reality' || 'lint' }}
 
+  publication-gate:
+    name: publication gate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: check publication boundary
+        run: python3 -B tools/check_publication_gate.py
+
+      - name: selftest publication gate
+        run: python3 -B tools/check_publication_gate.py --selftest
+
   links:
     name: links resolve
     runs-on: ubuntu-latest
@@ -73,8 +85,6 @@ jobs:
             --no-progress
             --include-fragments
             --max-concurrency 8
-            --exclude 'github\.com/shojikumaru/family-memory-architecture'
-            --exclude 'github\.com/shojikumaru/self-growth-loop'
             --exclude 'github\.com/shojikumaru/persona-growth-loop'
             --exclude 'img\.shields\.io'
             './**/*.md'
@@ -82,7 +92,7 @@ jobs:
   report:
     name: open an issue if the scheduled run failed
     runs-on: ubuntu-latest
-    needs: [registry, family-footer, links]
+    needs: [registry, family-footer, publication-gate, links]
     if: failure() && github.event_name == 'schedule'
     steps:
       # Both labels (stale-pointer and severity:high) are assumed to exist;

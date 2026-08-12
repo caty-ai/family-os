@@ -169,12 +169,12 @@ flowchart TB
 **人格的成长**
 
 - [Persona Engine](https://github.com/caty-ai/persona-engine)（已公开・MIT）— 加上人格的层次与情感的渐变
-- [Persona Growth Loop](https://github.com/shojikumaru/persona-growth-loop)（准备公开中）— 推动人格的自主成长。计划中
+- Persona Growth Loop（准备公开中）— 推动人格的自主成长。计划中
 
 **能力的成长**
 
 - [X Collector](https://github.com/caty-ai/x-collector)（已公开・MIT）— 从外部收集信息
-- [Self Growth Loop](https://github.com/shojikumaru/self-growth-loop)（准备公开中）— 推动能力的自主成长。与基础的连接已实现
+- [Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（已公开・MIT）— 推动能力的自主成长
 
 ```mermaid
 flowchart TB

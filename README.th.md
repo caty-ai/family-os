@@ -169,12 +169,12 @@ flowchart TB
 **การเติบโตของบุคลิก**
 
 - [Persona Engine](https://github.com/caty-ai/persona-engine) (เปิดแล้ว・MIT) — เพิ่มชั้นของบุคลิกและการไล่ระดับของอารมณ์
-- [Persona Growth Loop](https://github.com/shojikumaru/persona-growth-loop) (กำลังเตรียมเปิด) — ผลักดันการเติบโตอย่างเป็นอิสระของบุคลิก อยู่ในแผน
+- Persona Growth Loop (กำลังเตรียมเปิด) — ผลักดันการเติบโตอย่างเป็นอิสระของบุคลิก อยู่ในแผน
 
 **การเติบโตของความสามารถ**
 
 - [X Collector](https://github.com/caty-ai/x-collector) (เปิดแล้ว・MIT) — เก็บข้อมูลจากภายนอก
-- [Self Growth Loop](https://github.com/shojikumaru/self-growth-loop) (กำลังเตรียมเปิด) — ผลักดันการเติบโตอย่างเป็นอิสระของความสามารถ การเชื่อมกับฐานทำเสร็จแล้ว
+- [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) (เปิดแล้ว・MIT) — ผลักดันการเติบโตอย่างเป็นอิสระของความสามารถ
 
 ```mermaid
 flowchart TB
