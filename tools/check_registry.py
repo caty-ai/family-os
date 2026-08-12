@@ -77,9 +77,11 @@ def github_is_public(repo: str, timeout: float = 20.0):
     followed so repository renames become detectable drift.
 
     Returns True for a public repository, False for private/absent, a
-    ``("moved", location)`` tuple for a redirect, and None when GitHub could not
-    be reached. Push and pull-request runs intentionally leave that last case
-    non-fatal, so a flaky network never reads as a confirmed mismatch.
+    ``("moved", location)`` tuple for any redirect, an
+    ``("unexpected", status)`` tuple for any other HTTP status, and None when
+    GitHub could not be reached. Push and pull-request runs intentionally leave
+    that last case non-fatal, so a flaky network never reads as a confirmed
+    mismatch.
     """
     request = urllib.request.Request(
         "https://github.com/%s" % repo,
@@ -93,13 +95,13 @@ def github_is_public(repo: str, timeout: float = 20.0):
                 return True
             return None
     except urllib.error.HTTPError as exc:
-        if exc.code in (301, 302, 307, 308):
+        if 300 <= exc.code <= 399:
             return "moved", exc.headers.get("Location")
         if exc.code == 404:
             return False
         if exc.code in (403, 429) or 500 <= exc.code <= 599:
             return None
-        raise
+        return "unexpected", exc.code
     except (urllib.error.URLError, TimeoutError):
         return None
 
@@ -120,6 +122,13 @@ def _append_reality_result(
             "moved: %s redirects to %s. Update registry/modules.json with "
             "the current repository name and re-run tools/render.py."
             % (repo, public[1] or "an unspecified location")
+        )
+        return
+    if isinstance(public, tuple) and public[0] == "unexpected":
+        degraded.skip(
+            repo,
+            "degraded: %s: unexpected HTTP status %s, reality check skipped"
+            % (repo, public[1]),
         )
         return
     if public != expected_public:
