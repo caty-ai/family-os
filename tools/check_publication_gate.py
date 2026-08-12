@@ -12,11 +12,14 @@ Python 3.9+, standard library only.
 import argparse
 import html
 import json
+import os
 import pathlib
 import re
+import stat
 import subprocess
 import sys
-from typing import Dict, Iterable, List, Mapping, Set, Tuple
+import urllib.parse
+from typing import Dict, FrozenSet, Iterable, List, Mapping, Set, Tuple
 
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -24,17 +27,24 @@ SCANNED_SUFFIXES = frozenset((".md", ".json", ".py", ".yml", ".yaml", ".svg", ".
 ACCOUNT_SLUG = "sho" + "jikumaru"
 ACCOUNT_MASK = "_account_slug_"
 
+# Sensitive literals are split so the gate does not trip on its own source when self-scanned.
 # Changes to these fail-closed policy rules require owner approval.
 DENYLIST_PATTERNS = (
     (
         "personal real name",
         re.compile(r"\b(?:" + "Sho" + "ji|Ku" + "maru" + r")\b", re.IGNORECASE),
     ),
-    ("personal real name", re.compile("翔" + "さん|翔" + "士", re.IGNORECASE)),
+    (
+        "personal real name",
+        re.compile("翔" + "さん|翔" + "士|翔" + "どん", re.IGNORECASE),
+    ),
     (
         "approval record",
         re.compile(
-            "承認" + "記録|オーナー" + "承認|approved" + r"\s+by|CP-\d+\s*(?:GO|承認)",
+            "承認"
+            + "記録|オーナー"
+            + "承認|approved"
+            + r"\s+by|CP-\d+[A-Za-z]{0,2}\s*(?:GO|承認)",
             re.IGNORECASE,
         ),
     ),
@@ -44,6 +54,7 @@ DENYLIST_PATTERNS = (
         re.compile(r"\b100\.(?:6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\.\d+\.\d+\b"),
     ),
     ("local service address", re.compile("local" + r"host:\d+", re.IGNORECASE)),
+    ("local service address", re.compile(r"\b(?:127\.0\.0\.1|0\.0\.0\.0)\b")),
     (
         "email address",
         re.compile(r"\b[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}\b", re.IGNORECASE),
@@ -65,11 +76,8 @@ DENYLIST_PATTERNS = (
 # prose / axis-description tables where the label lives elsewhere. Any change
 # to these lines breaks the whitelist match and must come back through owner
 # approval; that breakage is intended fail-closed behavior.
-MISSING_LABEL_WHITELIST: Tuple[Tuple[str, str], ...] = (
-    (
-        "README.ja.md",
-        "迷ったら、縦軸の [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) から始めてください。1体のAIが失敗から学び、長い作業を証拠つきで最後まで進められるようになります。無料の MIT で、導入手順はそのリポジトリの README にあります。いちばん困っているのが「黙って止まる作業」なら、[Sitter](https://github.com/caty-ai/sitter) へ直接どうぞ — こちらも公開済み・MIT です。",
-    ),
+MISSING_LABEL_WHITELIST: FrozenSet[Tuple[str, str]] = frozenset(
+    {
     (
         "README.ja.md",
         "横軸の [FMA](https://github.com/caty-ai/family-memory-architecture) も公開済み（MIT）です。いちばん困っているのが「記憶がばらばら」なら、そちらから始めてください。",
@@ -77,10 +85,6 @@ MISSING_LABEL_WHITELIST: Tuple[Tuple[str, str], ...] = (
     (
         "README.ja.md",
         "迷ったら、縦軸の [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) から始めてください。1体のAIが失敗から学び、長い作業を証拠つきで最後まで進められるようになります。無料の MIT で、導入手順はそのリポジトリの README にあります。いちばん困っているのが「黙って止まる作業」なら、[Sitter](https://github.com/caty-ai/sitter) へ直接どうぞ — こちらも公開済み・MIT です。",
-    ),
-    (
-        "README.md",
-        "If you are unsure, start with [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) on the vertical axis. It lets one agent learn from failure and carry long work through to the end with evidence behind it. It is free under MIT, and the setup steps are in that repository's README. If the thing that hurts most is work that stops without telling you, go straight to [Sitter](https://github.com/caty-ai/sitter) instead — it is also open and also MIT.",
     ),
     (
         "README.md",
@@ -92,19 +96,11 @@ MISSING_LABEL_WHITELIST: Tuple[Tuple[str, str], ...] = (
     ),
     (
         "README.th.md",
-        "ถ้าไม่แน่ใจว่าจะเริ่มตรงไหน ให้เริ่มจาก [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) บนแกนตั้ง มันทำให้ AI หนึ่งตัวเรียนรู้จากความล้มเหลว และเดินงานยาว ๆ ไปจนจบพร้อมหลักฐาน เป็น MIT ที่ใช้ฟรี และขั้นตอนการติดตั้งอยู่ใน README ของรีโปนั้น ถ้าสิ่งที่เจ็บที่สุดคืองานที่หยุดไปเงียบ ๆ โดยไม่บอก ให้ตรงไปที่ [Sitter](https://github.com/caty-ai/sitter) ได้เลย — เปิดแล้วเช่นกันและเป็น MIT เช่นกัน",
-    ),
-    (
-        "README.th.md",
         "[FMA](https://github.com/caty-ai/family-memory-architecture) บนแกนนอนก็เปิดแล้วเช่นกัน (MIT) ถ้าสิ่งที่ปวดหัวที่สุดคือความทรงจำที่กระจัดกระจาย เริ่มจากตัวนั้นได้เลย",
     ),
     (
         "README.th.md",
         "ถ้าไม่แน่ใจว่าจะเริ่มตรงไหน ให้เริ่มจาก [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) บนแกนตั้ง มันทำให้ AI หนึ่งตัวเรียนรู้จากความล้มเหลว และเดินงานยาว ๆ ไปจนจบพร้อมหลักฐาน เป็น MIT ที่ใช้ฟรี และขั้นตอนการติดตั้งอยู่ใน README ของรีโปนั้น ถ้าสิ่งที่เจ็บที่สุดคืองานที่หยุดไปเงียบ ๆ โดยไม่บอก ให้ตรงไปที่ [Sitter](https://github.com/caty-ai/sitter) ได้เลย — เปิดแล้วเช่นกันและเป็น MIT เช่นกัน",
-    ),
-    (
-        "README.zh.md",
-        "如果不知从何入手，就从纵轴的 [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) 开始。它能让一个 AI 从失败中学习，并带着证据把长时间的工作做到最后。它是免费的 MIT，安装步骤在那个仓库的 README 里。如果最让你头疼的是「悄无声息就停住的工作」，那就直接去 [Sitter](https://github.com/caty-ai/sitter) —— 它同样已经公开，同样是 MIT。",
     ),
     (
         "README.zh.md",
@@ -127,10 +123,6 @@ MISSING_LABEL_WHITELIST: Tuple[Tuple[str, str], ...] = (
         "| 横軸 | 複数のAIが記憶を共有し、仕事を渡す方法 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) と [Sitter](https://github.com/caty-ai/sitter) |",
     ),
     (
-        "docs/engineering.ja.md",
-        "| 横軸 | 複数のAIが記憶を共有し、仕事を渡す方法 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) と [Sitter](https://github.com/caty-ai/sitter) |",
-    ),
-    (
         "docs/engineering.md",
         "| Rules | how parallel work stays safe — issues, branches, worktrees, handoffs | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook) |",
     ),
@@ -142,19 +134,22 @@ MISSING_LABEL_WHITELIST: Tuple[Tuple[str, str], ...] = (
         "docs/engineering.md",
         "| Horizontal | how several agents share memory and hand work over | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) and [Sitter](https://github.com/caty-ai/sitter) |",
     ),
-    (
-        "docs/engineering.md",
-        "| Horizontal | how several agents share memory and hand work over | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) and [Sitter](https://github.com/caty-ai/sitter) |",
-    ),
+    }
 )
 
 LANG_SUFFIX = re.compile(r"\.(?P<lang>[a-z]{2}(?:-[A-Z]{2})?)\.md$")
 PERSONAL_GITHUB_URL = re.compile(
-    r"github\.com/" + re.escape(ACCOUNT_SLUG) + r"/(?P<repo>[A-Za-z0-9_.-]+)",
+    r"(?<![A-Za-z0-9.-])github\.com/"
+    + re.escape(ACCOUNT_SLUG)
+    + r"(?:/(?P<repo>[A-Za-z0-9_.-]*[A-Za-z0-9_-])(?=$|[^A-Za-z0-9_-])|/?(?=$|[?#]))",
     re.IGNORECASE,
 )
 SVG_TEXT_ELEMENT = re.compile(
     r"<(text|title|desc|metadata)\b[^>]*>(.*?)</\1\s*>", re.IGNORECASE | re.DOTALL
+)
+SVG_TEXT_ATTRIBUTE = re.compile(
+    r"\b(?:title|aria-label|alt)\s*=\s*(?P<quote>['\"])(?P<value>.*?)(?P=quote)",
+    re.IGNORECASE | re.DOTALL,
 )
 
 
@@ -180,7 +175,7 @@ def iter_source_paths(root: pathlib.Path) -> Iterable[pathlib.Path]:
     for relative_bytes in sorted(filter(None, result.stdout.split(b"\0"))):
         relative = relative_bytes.decode("utf-8")
         path = root / relative
-        if not path.is_file() or path.suffix.lower() not in SCANNED_SUFFIXES:
+        if path.suffix.lower() not in SCANNED_SUFFIXES:
             continue
         yield path
 
@@ -190,6 +185,12 @@ def read_sources(root: pathlib.Path, failures: List[str]) -> Dict[str, str]:
     for path in iter_source_paths(root):
         relative = path.relative_to(root).as_posix()
         try:
+            if path.is_symlink():
+                documents[relative] = os.readlink(path)
+                continue
+            if not stat.S_ISREG(os.lstat(path).st_mode):
+                failures.append("source-read: %s is not a regular file" % relative)
+                continue
             documents[relative] = path.read_text(encoding="utf-8")
         except (OSError, UnicodeError) as exc:
             failures.append("source-read: %s could not be read as UTF-8: %s" % (relative, exc))
@@ -197,7 +198,12 @@ def read_sources(root: pathlib.Path, failures: List[str]) -> Dict[str, str]:
 
 
 def mask_account_slug(text: str) -> str:
-    return text.replace(ACCOUNT_SLUG, ACCOUNT_MASK)
+    return re.sub(re.escape(ACCOUNT_SLUG), ACCOUNT_MASK, text, flags=re.IGNORECASE)
+
+
+def scan_views(text: str) -> Tuple[str, ...]:
+    """Return the raw, HTML-decoded, and percent-decoded source views once each."""
+    return tuple(dict.fromkeys((text, html.unescape(text), urllib.parse.unquote(text))))
 
 
 def line_number(text: str, offset: int) -> int:
@@ -207,13 +213,20 @@ def line_number(text: str, offset: int) -> int:
 def check_denylist(documents: Mapping[str, str], failures: List[str]) -> int:
     checked = 0
     for path, text in documents.items():
-        masked = mask_account_slug(text)
-        for description, pattern in DENYLIST_PATTERNS:
-            for match in pattern.finditer(masked):
-                failures.append(
-                    "denylist: %s:%d contains %s" % (path, line_number(masked, match.start()), description)
-                )
-                checked += 1
+        reported: Set[Tuple[int, str]] = set()
+        for view in scan_views(text):
+            masked = mask_account_slug(view)
+            for description, pattern in DENYLIST_PATTERNS:
+                for match in pattern.finditer(masked):
+                    number = line_number(masked, match.start())
+                    finding = (number, description)
+                    if finding in reported:
+                        continue
+                    reported.add(finding)
+                    failures.append(
+                        "denylist: %s:%d contains %s" % (path, number, description)
+                    )
+                    checked += 1
     return checked
 
 
@@ -226,19 +239,33 @@ def registry_allowlist(registry: dict) -> Set[str]:
 
 
 def check_personal_urls(
-    markdown: Mapping[str, str], registry: dict, failures: List[str]
+    documents: Mapping[str, str], registry: dict, failures: List[str]
 ) -> int:
     allowlist = registry_allowlist(registry)
+    normalized_allowlist = {repo.casefold() for repo in allowlist}
     checked = 0
-    for path, text in markdown.items():
-        for match in PERSONAL_GITHUB_URL.finditer(text):
-            repo = "%s/%s" % (ACCOUNT_SLUG, match.group("repo"))
-            checked += 1
-            if repo not in allowlist:
-                failures.append(
-                    "personal-url: %s:%d references unknown repository %s"
-                    % (path, line_number(text, match.start()), repo)
-                )
+    for path, text in documents.items():
+        reported: Set[Tuple[int, str]] = set()
+        for view in scan_views(text):
+            for match in PERSONAL_GITHUB_URL.finditer(view):
+                number = line_number(view, match.start())
+                repo_name = match.group("repo")
+                repo = "%s/%s" % (ACCOUNT_SLUG, repo_name) if repo_name else ACCOUNT_SLUG
+                finding = (number, repo.casefold())
+                if finding in reported:
+                    continue
+                reported.add(finding)
+                checked += 1
+                if repo_name is None:
+                    failures.append(
+                        "personal-url: %s:%d references personal account profile %s"
+                        % (path, number, ACCOUNT_SLUG)
+                    )
+                elif repo.casefold() not in normalized_allowlist:
+                    failures.append(
+                        "personal-url: %s:%d references unknown repository %s"
+                        % (path, number, repo)
+                    )
     return checked
 
 
@@ -255,9 +282,39 @@ def module_names(module: dict) -> Set[str]:
 
 
 def repo_home_pattern(repo: str) -> re.Pattern:
-    base = r"(?:https?://)?github\.com/" + re.escape(repo)
-    terminator = r"""[\s`'<>,.)"#?]"""
-    return re.compile(base + r"/?(?=$|" + terminator + r")", re.IGNORECASE)
+    base = (
+        r"(?<![A-Za-z0-9.-])(?:https?://)?github\.com/" + re.escape(repo)
+    )
+    extension = r"(?![A-Za-z0-9_.-])"
+    home_terminator = r"(?:/(?![A-Za-z0-9_.~%-])|(?!/)(?![A-Za-z0-9_.~%-]))"
+    return re.compile(base + extension + home_terminator, re.IGNORECASE)
+
+
+def check_whitelist_staleness(
+    documents: Mapping[str, str],
+    failures: List[str],
+    whitelist: Iterable[Tuple[str, str]] = MISSING_LABEL_WHITELIST,
+) -> int:
+    stale = 0
+    for path, expected_line in sorted(whitelist):
+        source = documents.get(path)
+        current_lines = source.encode("utf-8").split(b"\n") if source is not None else ()
+        if expected_line.encode("utf-8") in current_lines:
+            continue
+        failures.append("stale-whitelist: %s no longer contains the exact approved line" % path)
+        stale += 1
+    return stale
+
+
+def check_corpus_floor(documents: Mapping[str, str], failures: List[str]) -> int:
+    failed = 0
+    if not documents:
+        failures.append("corpus-floor: no publication source documents were scanned")
+        failed += 1
+    if "registry/modules.json" not in documents:
+        failures.append("corpus-floor: registry/modules.json was not among scanned documents")
+        failed += 1
+    return failed
 
 
 def check_missing_labels(
@@ -307,7 +364,9 @@ def svg_visible_text(source: str) -> str:
     for match in SVG_TEXT_ELEMENT.finditer(source):
         without_tags = re.sub(r"<[^>]+>", " ", match.group(2))
         chunks.append(html.unescape(without_tags))
-    return "\n".join(chunks)
+    for match in SVG_TEXT_ATTRIBUTE.finditer(source):
+        chunks.append(html.unescape(match.group("value")))
+    return re.sub(r"\s+", " ", " ".join(chunks)).strip()
 
 
 def markdown_status_evidence(markdown: Mapping[str, str], registry: dict) -> Dict[str, bool]:
@@ -371,46 +430,129 @@ def fixture_registry() -> dict:
     }
 
 
-def selftest_denylist() -> None:
-    failures: List[str] = []
-    clean = {"clean.md": "https://github.com/%s/retired-module\n" % ACCOUNT_SLUG}
-    assert check_denylist(clean, failures) == 0 and failures == []
+def selftest_check(condition: bool, message: str) -> None:
+    if not condition:
+        raise RuntimeError("selftest failed: %s" % message)
 
-    violations = (
-        "Sho" + "ji",
-        "承認" + "記録",
-        "/" + "Users" + "/person/project",
-        "100." + "64.1.2",
-        "local" + "host:8080",
-        "person" + "@example.com",
-        "alpha-" + "loom",
+
+def selftest_denylist() -> None:
+    clean = {"clean.md": "https://github.com/%s/retired-module\n" % ACCOUNT_SLUG.upper()}
+    failures: List[str] = []
+    selftest_check(check_denylist(clean, failures) == 0 and not failures, "clean denylist")
+
+    cases = (
+        ("Sho" + "ji", "Shogi"),
+        ("翔" + "さん", "翔" + "くん"),
+        ("翔" + "士", "翔" + "太"),
+        ("承認" + "記録", "確認" + "記録"),
+        ("オーナー" + "承認", "オーナー" + "確認"),
+        ("approved" + " by", "approved for"),
+        ("CP-" + "3a GO", "CP-3a HOLD"),
+        ("/" + "Users" + "/person/project", "/opt/person/project"),
+        ("100." + "64.1.2", "100.63.1.2"),
+        ("local" + "host:8080", "example.test:8080"),
+        ("127." + "0.0.1", "127.0.0.2"),
+        ("0." + "0.0.0", "0.0.0.1"),
+        ("person" + "@example.com", "person at example.com"),
+        ("alpha-" + "loom", "alpha-public"),
+        ("&#32724;" + "&#12373;" + "&#12435;", "&#32724;" + "&#12367;" + "&#12435;"),
+        ("&#32724;" + "&#12393;" + "&#12435;", "&#32724;" + "&#12367;" + "&#12435;"),
+        ("alpha%2D" + "loom", "alpha%2Dpublic"),
+        (urllib.parse.quote("翔" + "さん"), urllib.parse.quote("翔" + "くん")),
     )
-    for index, violation in enumerate(violations):
+    for index, (violation, clean_twin) in enumerate(cases):
         caught: List[str] = []
-        assert check_denylist({"negative-%d.md" % index: violation}, caught) >= 1
-        assert caught
+        selftest_check(
+            check_denylist({"negative-%d.md" % index: violation}, caught) >= 1 and bool(caught),
+            "denylist negative fixture %d" % index,
+        )
+        twin_failures: List[str] = []
+        selftest_check(
+            check_denylist({"clean-%d.md" % index: clean_twin}, twin_failures) == 0
+            and not twin_failures,
+            "denylist clean twin %d" % index,
+        )
 
 
 def selftest_personal_urls() -> None:
     registry = fixture_registry()
-    failures: List[str] = []
-    clean = {"README.md": "https://github.com/%s/retired-module" % ACCOUNT_SLUG}
-    assert check_personal_urls(clean, registry, failures) == 1 and failures == []
+    clean_cases = (
+        ("https://github.com/%s/retired-module" % ACCOUNT_SLUG, 1),
+        ("https://github.com/%s/retired-module." % ACCOUNT_SLUG.upper(), 1),
+        (r"github\.com/" + ACCOUNT_SLUG + "/workflow-pattern", 0),
+        ("https://notgithub.com/%s/unknown-module" % ACCOUNT_SLUG, 0),
+        ("https://x.github.com/%s/unknown-module" % ACCOUNT_SLUG, 0),
+        ("https%3A%2F%2Fgithub%2Ecom%2F" + ACCOUNT_SLUG + "%2Fretired-module", 1),
+    )
+    for index, (source, expected_count) in enumerate(clean_cases):
+        failures: List[str] = []
+        checked = check_personal_urls({"clean-%d.yml" % index: source}, registry, failures)
+        selftest_check(
+            checked == expected_count and not failures,
+            "personal URL clean twin %d" % index,
+        )
 
-    caught: List[str] = []
-    negative = {"README.md": "https://github.com/%s/unknown-module" % ACCOUNT_SLUG}
-    assert check_personal_urls(negative, registry, caught) == 1 and caught
+    negative_cases = (
+        "https://github.com/%s/unknown-module" % ACCOUNT_SLUG,
+        "github.com/%s" % ACCOUNT_SLUG,
+        "github.com/%s?tab=repositories" % ACCOUNT_SLUG,
+        "github%2Ecom%2F" + ACCOUNT_SLUG + "%2Funknown-module",
+        "https://github.com/%s/unknown-module." % ACCOUNT_SLUG,
+    )
+    for index, source in enumerate(negative_cases):
+        caught: List[str] = []
+        selftest_check(
+            check_personal_urls({"negative-%d.svg" % index: source}, registry, caught) == 1
+            and bool(caught),
+            "personal URL negative fixture %d" % index,
+        )
+    selftest_check("unknown-module." not in "\n".join(caught), "trailing URL period capture")
 
 
 def selftest_missing_labels() -> None:
     registry = fixture_registry()
     pattern = repo_home_pattern("caty-ai/alpha-module")
-    for terminator in (" ", "\t", "`", "'", "<", ">", ",", ".", ")", '"', "#", "?", ""):
-        assert pattern.search("https://github.com/caty-ai/alpha-module" + terminator)
-        assert pattern.search("https://github.com/caty-ai/alpha-module/" + terminator)
-    assert not pattern.search("https://github.com/caty-ai/alpha-module/issues/3")
+    terminators = (
+        "。",
+        "（",
+        "）",
+        "、",
+        "]",
+        ";",
+        ":",
+        "!",
+        "|",
+        "{",
+        "}",
+        " ",
+        "\t",
+        "\n",
+        "",
+    )
+    for terminator in terminators:
+        selftest_check(
+            bool(pattern.search("https://github.com/caty-ai/alpha-module" + terminator)),
+            "home-link terminator %r" % terminator,
+        )
+        selftest_check(
+            bool(pattern.search("https://github.com/caty-ai/alpha-module/" + terminator)),
+            "slash home-link terminator %r" % terminator,
+        )
+    for extension in ("-wip", ".draft", "_copy", "9"):
+        selftest_check(
+            not pattern.search("https://github.com/caty-ai/alpha-module" + extension),
+            "extended repository name %r" % extension,
+        )
+    for segment in ("issues/3", "_data", ".config", "~user", "%2F", "-branch"):
+        selftest_check(
+            not pattern.search("https://github.com/caty-ai/alpha-module/" + segment),
+            "deep link %r" % segment,
+        )
+    selftest_check(
+        not pattern.search("https://notgithub.com/caty-ai/alpha-module"),
+        "left URL boundary",
+    )
 
-    failures: List[str] = []
     clean = {
         "README.md": "- [Alpha](https://github.com/caty-ai/alpha-module) (published, MIT)\n"
         "https://github.com/caty-ai/alpha-module/issues/3\n"
@@ -419,34 +561,29 @@ def selftest_missing_labels() -> None:
         "| --- | --- |\n"
         "| [Alpha](https://github.com/caty-ai/alpha-module) | 公開・MIT |\n",
     }
-    assert check_missing_labels(clean, registry, failures) == 2 and failures == []
+    failures: List[str] = []
+    selftest_check(
+        check_missing_labels(clean, registry, failures) == 2 and not failures,
+        "clean missing-label fixtures",
+    )
 
-    caught: List[str] = []
-    negative = {"README.md": "- [Alpha](https://github.com/caty-ai/alpha-module)"}
-    assert check_missing_labels(negative, registry, caught) == 1 and caught
-
-    prose_caught: List[str] = []
-    negative_prose = {
-        "README.md": "See [Alpha](https://github.com/caty-ai/alpha-module) for details."
-    }
-    assert check_missing_labels(negative_prose, registry, prose_caught) == 1
-    assert prose_caught
-
-    bare_space_caught: List[str] = []
-    negative_bare_space = {
-        "README.md": "See https://github.com/caty-ai/alpha-module for details."
-    }
-    assert check_missing_labels(negative_bare_space, registry, bare_space_caught) == 1
-    assert bare_space_caught
-
-    table_caught: List[str] = []
-    negative_table = {
-        "README.ja.md": "| モジュール | 状態 |\n"
-        "| --- | --- |\n"
-        "| [Alpha](https://github.com/caty-ai/alpha-module) | 不明 |\n"
-    }
-    assert check_missing_labels(negative_table, registry, table_caught) == 1
-    assert table_caught
+    negative_cases = (
+        {"README.md": "- [Alpha](https://github.com/caty-ai/alpha-module)"},
+        {"README.md": "See [Alpha](https://github.com/caty-ai/alpha-module) for details."},
+        {"README.md": "See https://github.com/caty-ai/alpha-module for details."},
+        {"README.md": "最新は https://github.com/caty-ai/alpha-module。"},
+        {
+            "README.ja.md": "| モジュール | 状態 |\n"
+            "| --- | --- |\n"
+            "| [Alpha](https://github.com/caty-ai/alpha-module) | 不明 |\n"
+        },
+    )
+    for index, source in enumerate(negative_cases):
+        caught: List[str] = []
+        selftest_check(
+            check_missing_labels(source, registry, caught) == 1 and bool(caught),
+            "missing-label negative fixture %d" % index,
+        )
 
     whitelisted_line = next(
         line
@@ -458,37 +595,111 @@ def selftest_missing_labels() -> None:
         {"name": "Caty Agent Harness", "repo": "caty-ai/caty-agent-harness"}
     )
     whitelist_failures: List[str] = []
-    assert check_missing_labels(
-        {"README.md": whitelisted_line}, whitelist_registry, whitelist_failures
-    ) == 1
-    assert whitelist_failures == []
-
-    deep_link_failures: List[str] = []
-    deep_link = {
-        "README.md": "See https://github.com/caty-ai/alpha-module/issues/3 for details."
-    }
-    assert check_missing_labels(deep_link, registry, deep_link_failures) == 0
-    assert deep_link_failures == []
+    selftest_check(
+        check_missing_labels(
+            {"README.md": whitelisted_line}, whitelist_registry, whitelist_failures
+        )
+        == 1
+        and not whitelist_failures,
+        "exact missing-label whitelist",
+    )
 
 
 def selftest_svg_state_sources() -> None:
     registry = fixture_registry()
-    clean_svg = {"assets/map.svg": "<svg><text>Alpha Module</text></svg>"}
     clean_md = {
         "README.md": "Alpha Module — https://github.com/caty-ai/alpha-module — published, MIT"
     }
-    failures: List[str] = []
-    assert check_denylist(clean_svg, failures) == 0
-    assert check_svg_state_sources(clean_svg, clean_md, registry, failures) == 1
-    assert failures == []
-
-    caught: List[str] = []
-    assert check_svg_state_sources(clean_svg, {"README.md": "Alpha Module"}, registry, caught) == 1
-    assert caught
+    svg_cases = (
+        "<svg><text>Alpha Module</text></svg>",
+        "<svg><text>Alpha <tspan>Module</tspan></text></svg>",
+        "<svg><text>Alpha</text>\n<text>Module</text></svg>",
+        '<svg><g title="Alpha Module"/></svg>',
+        "<svg><g aria-label='Alpha Module'/><image alt='diagram'/></svg>",
+    )
+    for index, source in enumerate(svg_cases):
+        clean_failures: List[str] = []
+        clean_svg = {"assets/clean-%d.svg" % index: source}
+        selftest_check(
+            check_svg_state_sources(clean_svg, clean_md, registry, clean_failures) == 1
+            and not clean_failures,
+            "SVG clean twin %d" % index,
+        )
+        caught: List[str] = []
+        selftest_check(
+            check_svg_state_sources(
+                clean_svg, {"README.md": "Alpha Module"}, registry, caught
+            )
+            == 1
+            and bool(caught),
+            "SVG negative fixture %d" % index,
+        )
 
     denylist_caught: List[str] = []
     private_svg = {"assets/private.svg": "<metadata>local" + "host:9000</metadata>"}
-    assert check_denylist(private_svg, denylist_caught) == 1 and denylist_caught
+    selftest_check(
+        check_denylist(private_svg, denylist_caught) == 1 and bool(denylist_caught),
+        "SVG denylist fixture",
+    )
+
+
+def selftest_whitelist_and_corpus() -> None:
+    whitelist = frozenset((("fixture.md", "approved full line"),))
+    clean_failures: List[str] = []
+    selftest_check(
+        check_whitelist_staleness(
+            {"fixture.md": "approved full line\n"}, clean_failures, whitelist
+        )
+        == 0
+        and not clean_failures,
+        "current whitelist entry",
+    )
+    for index, source in enumerate(("approved full Line\n", "prefix approved full line suffix\n")):
+        stale_failures: List[str] = []
+        selftest_check(
+            check_whitelist_staleness({"fixture.md": source}, stale_failures, whitelist) == 1
+            and bool(stale_failures),
+            "stale whitelist fixture %d" % index,
+        )
+
+    empty_failures: List[str] = []
+    selftest_check(
+        check_corpus_floor({}, empty_failures) == 2 and len(empty_failures) == 2,
+        "empty corpus fixture",
+    )
+    corpus_failures: List[str] = []
+    selftest_check(
+        check_corpus_floor({"registry/modules.json": "{}"}, corpus_failures) == 0
+        and not corpus_failures,
+        "complete corpus twin",
+    )
+
+
+def selftest_partitions_and_scope() -> None:
+    registry = fixture_registry()
+    documents = {
+        "README.MD": "github.com/%s/unknown-module" % ACCOUNT_SLUG,
+        "assets/MAP.SVG": "<svg/>",
+    }
+    markdown, svg_documents = partition_documents(documents)
+    selftest_check("README.MD" in markdown, "uppercase Markdown partition")
+    selftest_check("assets/MAP.SVG" in svg_documents, "uppercase SVG partition")
+    caught: List[str] = []
+    selftest_check(
+        check_personal_urls(documents, registry, caught) == 1 and bool(caught),
+        "personal URL check covers all documents",
+    )
+    escaped_failures: List[str] = []
+    selftest_check(
+        check_personal_urls(
+            {"workflow.yml": r"github\.com/" + ACCOUNT_SLUG + "/unknown-module"},
+            registry,
+            escaped_failures,
+        )
+        == 0
+        and not escaped_failures,
+        "escaped workflow regex remains exempt",
+    )
 
 
 def run_selftests() -> int:
@@ -497,6 +708,8 @@ def run_selftests() -> int:
         selftest_personal_urls,
         selftest_missing_labels,
         selftest_svg_state_sources,
+        selftest_whitelist_and_corpus,
+        selftest_partitions_and_scope,
     )
     for test in tests:
         test()
@@ -515,6 +728,18 @@ def load_registry(root: pathlib.Path) -> dict:
     return registry
 
 
+def partition_documents(
+    documents: Mapping[str, str]
+) -> Tuple[Dict[str, str], Dict[str, str]]:
+    markdown = {
+        path: text for path, text in documents.items() if path.lower().endswith(".md")
+    }
+    svg_documents = {
+        path: text for path, text in documents.items() if path.lower().endswith(".svg")
+    }
+    return markdown, svg_documents
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--selftest", action="store_true", help="run embedded gate fixtures")
@@ -530,21 +755,26 @@ def main() -> int:
 
     root = args.root.expanduser().resolve()
     failures: List[str] = []
+    documents: Dict[str, str] = {}
+    denylist_hits = 0
+    personal_urls = 0
+    root_links = 0
+    svg_names = 0
     try:
-        registry = load_registry(root)
         documents = read_sources(root, failures)
-        markdown = {path: text for path, text in documents.items() if path.endswith(".md")}
-        svg_documents = {path: text for path, text in documents.items() if path.endswith(".svg")}
+        check_corpus_floor(documents, failures)
+        check_whitelist_staleness(documents, failures)
+        registry = load_registry(root)
+        markdown, svg_documents = partition_documents(documents)
 
         denylist_hits = check_denylist(documents, failures)
-        personal_urls = check_personal_urls(markdown, registry, failures)
+        personal_urls = check_personal_urls(documents, registry, failures)
         root_links = check_missing_labels(markdown, registry, failures)
         svg_names = check_svg_state_sources(svg_documents, markdown, registry, failures)
     except (KeyError, OSError, UnicodeError, ValueError, json.JSONDecodeError) as exc:
         failures.append("gate-error: publication checks could not complete: %s" % exc)
-        denylist_hits = personal_urls = root_links = svg_names = 0
 
-    print("source files scanned : %d" % len(locals().get("documents", {})))
+    print("source files scanned : %d" % len(documents))
     print("denylist matches     : %d" % denylist_hits)
     print("personal URLs checked: %d" % personal_urls)
     print("module links checked : %d" % root_links)
