@@ -169,12 +169,12 @@ flowchart TB
 **人格の成長**
 
 - [Persona Engine](https://github.com/caty-ai/persona-engine)（公開・MIT）— 人格のレイヤーと、感情のグラデーションを足す
-- [Persona Growth Loop](https://github.com/shojikumaru/persona-growth-loop)（公開準備中）— 人格の自立的な成長を促す。計画中
+- Persona Growth Loop（公開準備中）— 人格の自立的な成長を促す。計画中
 
 **能力の成長**
 
 - [X Collector](https://github.com/caty-ai/x-collector)（公開・MIT）— 外部から情報を集める
-- [Self Growth Loop](https://github.com/shojikumaru/self-growth-loop)（公開準備中）— 能力の自立的な成長を促す。基盤との接続は実装済み
+- [Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（公開・MIT）— 能力の自立的な成長を促す
 
 ```mermaid
 flowchart TB

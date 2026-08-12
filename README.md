@@ -169,12 +169,12 @@ On top of that foundation come one set of equipment and two kinds of growth. Eac
 **Growth of personality**
 
 - [Persona Engine](https://github.com/caty-ai/persona-engine) (published, MIT) — adds persona layers and a gradation of feeling
-- [Persona Growth Loop](https://github.com/shojikumaru/persona-growth-loop) (publication in preparation) — drives independent growth of personality. Planned
+- Persona Growth Loop (publication in preparation) — drives independent growth of personality. Planned
 
 **Growth of ability**
 
 - [X Collector](https://github.com/caty-ai/x-collector) (published, MIT) — gathers information from outside
-- [Self Growth Loop](https://github.com/shojikumaru/self-growth-loop) (publication in preparation) — drives independent growth of ability. The link to the foundation is implemented
+- [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) (published, MIT) — drives independent growth of ability
 
 ```mermaid
 flowchart TB
