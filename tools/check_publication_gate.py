@@ -137,11 +137,11 @@ MISSING_LABEL_WHITELIST: FrozenSet[Tuple[str, str]] = frozenset(
     }
 )
 
-LANG_SUFFIX = re.compile(r"\.(?P<lang>[a-z]{2}(?:-[A-Z]{2})?)\.md$")
+LANG_SUFFIX = re.compile(r"\.(?P<lang>[a-z]{2}(?:-[a-z]{2})?)\.md$")
 PERSONAL_GITHUB_URL = re.compile(
-    r"(?<![A-Za-z0-9.-])github\.com/"
+    r"(?<![A-Za-z0-9.-])(?:www\.)?github\.com/"
     + re.escape(ACCOUNT_SLUG)
-    + r"(?:/(?P<repo>[A-Za-z0-9_.-]*[A-Za-z0-9_-])(?=$|[^A-Za-z0-9_-])|/?(?=$|[?#]))",
+    + r"(?:/(?P<repo>[A-Za-z0-9_.-]*[A-Za-z0-9_-])(?=$|[^A-Za-z0-9_-])|/?(?![A-Za-z0-9_.-]))",
     re.IGNORECASE,
 )
 SVG_TEXT_ELEMENT = re.compile(
@@ -151,11 +151,12 @@ SVG_TEXT_ATTRIBUTE = re.compile(
     r"\b(?:title|aria-label|alt)\s*=\s*(?P<quote>['\"])(?P<value>.*?)(?P=quote)",
     re.IGNORECASE | re.DOTALL,
 )
+SVG_CDATA = re.compile(r"<!\[CDATA\[(.*?)\]\]>", re.DOTALL)
 
 
 def language_of(path: pathlib.Path) -> str:
     """Match the Markdown suffix convention used by check_registry.py."""
-    match = LANG_SUFFIX.search(path.name)
+    match = LANG_SUFFIX.search(path.name.lower())
     return match.group("lang") if match else "en"
 
 
@@ -202,8 +203,20 @@ def mask_account_slug(text: str) -> str:
 
 
 def scan_views(text: str) -> Tuple[str, ...]:
-    """Return the raw, HTML-decoded, and percent-decoded source views once each."""
-    return tuple(dict.fromkeys((text, html.unescape(text), urllib.parse.unquote(text))))
+    """Return raw plus iterative percent/HTML-decoded views until stable or capped."""
+    views = [text]
+    current = text
+    for _ in range(3):
+        unquoted = urllib.parse.unquote(current)
+        if unquoted not in views:
+            views.append(unquoted)
+        unescaped = html.unescape(unquoted)
+        if unescaped not in views:
+            views.append(unescaped)
+        if unescaped == current:
+            break
+        current = unescaped
+    return tuple(views)
 
 
 def line_number(text: str, offset: int) -> int:
@@ -283,11 +296,12 @@ def module_names(module: dict) -> Set[str]:
 
 def repo_home_pattern(repo: str) -> re.Pattern:
     base = (
-        r"(?<![A-Za-z0-9.-])(?:https?://)?github\.com/" + re.escape(repo)
+        r"(?<![A-Za-z0-9.-])(?:https?://)?(?:www\.)?github\.com/" + re.escape(repo)
     )
-    extension = r"(?![A-Za-z0-9_.-])"
-    home_terminator = r"(?:/(?![A-Za-z0-9_.~%-])|(?!/)(?![A-Za-z0-9_.~%-]))"
-    return re.compile(base + extension + home_terminator, re.IGNORECASE)
+    home_terminator = (
+        r"(?:/(?=$|[^A-Za-z0-9_.~%-])|(?=$|[^/A-Za-z0-9_.-]|\.(?![A-Za-z0-9_-])))"
+    )
+    return re.compile(base + home_terminator, re.IGNORECASE)
 
 
 def check_whitelist_staleness(
@@ -359,10 +373,19 @@ def name_pattern(name: str) -> re.Pattern:
     )
 
 
+def remove_svg_markup(text: str) -> str:
+    preserved_cdata = SVG_CDATA.sub(lambda match: match.group(1), text)
+    return re.sub(r"<[^>]+>", " ", preserved_cdata)
+
+
+def squash_whitespace(text: str) -> str:
+    return re.sub(r"\s+", "", text)
+
+
 def svg_visible_text(source: str) -> str:
     chunks = []
     for match in SVG_TEXT_ELEMENT.finditer(source):
-        without_tags = re.sub(r"<[^>]+>", " ", match.group(2))
+        without_tags = remove_svg_markup(match.group(2))
         chunks.append(html.unescape(without_tags))
     for match in SVG_TEXT_ATTRIBUTE.finditer(source):
         chunks.append(html.unescape(match.group("value")))
@@ -398,9 +421,14 @@ def check_svg_state_sources(
     checked = 0
     for path, source in svg_documents.items():
         visible = svg_visible_text(source)
+        visible_compact = squash_whitespace(visible).casefold()
         for module in registry["modules"]:
             for name in sorted(module_names(module)):
-                if not name_pattern(name).search(visible):
+                matched = bool(name_pattern(name).search(visible))
+                if not matched:
+                    compact_name = squash_whitespace(name).casefold()
+                    matched = bool(compact_name) and compact_name in visible_compact
+                if not matched:
                     continue
                 checked += 1
                 if not evidence[module["repo"]]:
@@ -458,6 +486,7 @@ def selftest_denylist() -> None:
         ("&#32724;" + "&#12373;" + "&#12435;", "&#32724;" + "&#12367;" + "&#12435;"),
         ("&#32724;" + "&#12393;" + "&#12435;", "&#32724;" + "&#12367;" + "&#12435;"),
         ("alpha%2D" + "loom", "alpha%2Dpublic"),
+        ("alpha%26%2345%3B" + "loom", "alpha%26%2345%3Bpublic"),
         (urllib.parse.quote("翔" + "さん"), urllib.parse.quote("翔" + "くん")),
     )
     for index, (violation, clean_twin) in enumerate(cases):
@@ -478,11 +507,13 @@ def selftest_personal_urls() -> None:
     registry = fixture_registry()
     clean_cases = (
         ("https://github.com/%s/retired-module" % ACCOUNT_SLUG, 1),
+        ("https://www.github.com/%s/retired-module" % ACCOUNT_SLUG, 1),
         ("https://github.com/%s/retired-module." % ACCOUNT_SLUG.upper(), 1),
         (r"github\.com/" + ACCOUNT_SLUG + "/workflow-pattern", 0),
         ("https://notgithub.com/%s/unknown-module" % ACCOUNT_SLUG, 0),
         ("https://x.github.com/%s/unknown-module" % ACCOUNT_SLUG, 0),
         ("https%3A%2F%2Fgithub%2Ecom%2F" + ACCOUNT_SLUG + "%2Fretired-module", 1),
+        ("https://github.com/%s.git" % ACCOUNT_SLUG, 0),
     )
     for index, (source, expected_count) in enumerate(clean_cases):
         failures: List[str] = []
@@ -494,9 +525,13 @@ def selftest_personal_urls() -> None:
 
     negative_cases = (
         "https://github.com/%s/unknown-module" % ACCOUNT_SLUG,
+        "Visit (github.com/%s)" % ACCOUNT_SLUG,
+        "Profile: [me](https://github.com/%s) in the middle" % ACCOUNT_SLUG,
         "github.com/%s" % ACCOUNT_SLUG,
         "github.com/%s?tab=repositories" % ACCOUNT_SLUG,
+        "https://www.github.com/%s/unknown" % ACCOUNT_SLUG,
         "github%2Ecom%2F" + ACCOUNT_SLUG + "%2Funknown-module",
+        "https%3A%2F%2Fgithub&#46;com%2F" + ACCOUNT_SLUG + "%2Funknown-module",
         "https://github.com/%s/unknown-module." % ACCOUNT_SLUG,
     )
     for index, source in enumerate(negative_cases):
@@ -538,11 +573,23 @@ def selftest_missing_labels() -> None:
             bool(pattern.search("https://github.com/caty-ai/alpha-module/" + terminator)),
             "slash home-link terminator %r" % terminator,
         )
+    selftest_check(
+        bool(pattern.search("https://github.com/caty-ai/alpha-module.")),
+        "home-link sentence period",
+    )
+    selftest_check(
+        bool(pattern.search("https://github.com/caty-ai/alpha-module.)")),
+        "home-link parenthesized period",
+    )
     for extension in ("-wip", ".draft", "_copy", "9"):
         selftest_check(
             not pattern.search("https://github.com/caty-ai/alpha-module" + extension),
             "extended repository name %r" % extension,
         )
+    selftest_check(
+        not pattern.search("https://github.com/caty-ai/alpha-module.git"),
+        "extended repository name '.git'",
+    )
     for segment in ("issues/3", "_data", ".config", "~user", "%2F", "-branch"):
         selftest_check(
             not pattern.search("https://github.com/caty-ai/alpha-module/" + segment),
@@ -552,18 +599,27 @@ def selftest_missing_labels() -> None:
         not pattern.search("https://notgithub.com/caty-ai/alpha-module"),
         "left URL boundary",
     )
+    selftest_check(
+        bool(pattern.search("https://www.github.com/caty-ai/alpha-module")),
+        "optional www home link",
+    )
+    selftest_check(
+        not pattern.search("https://x.github.com/caty-ai/alpha-module"),
+        "exclude subdomain home link",
+    )
 
     clean = {
         "README.md": "- [Alpha](https://github.com/caty-ai/alpha-module) (published, MIT)\n"
         "https://github.com/caty-ai/alpha-module/issues/3\n"
         "- [Family OS](https://github.com/caty-ai/family-os)\n",
+        "README.EN.MD": "- [Alpha](https://www.github.com/caty-ai/alpha-module.) (published, MIT)\n",
         "README.ja.md": "| モジュール | 状態 |\n"
         "| --- | --- |\n"
         "| [Alpha](https://github.com/caty-ai/alpha-module) | 公開・MIT |\n",
     }
     failures: List[str] = []
     selftest_check(
-        check_missing_labels(clean, registry, failures) == 2 and not failures,
+        check_missing_labels(clean, registry, failures) == 3 and not failures,
         "clean missing-label fixtures",
     )
 
@@ -583,6 +639,32 @@ def selftest_missing_labels() -> None:
         selftest_check(
             check_missing_labels(source, registry, caught) == 1 and bool(caught),
             "missing-label negative fixture %d" % index,
+        )
+    language_caught: List[str] = []
+    selftest_check(
+        check_missing_labels(
+            {
+                "README.ja.MD": "| モジュール | 状態 |\n"
+                "| --- | --- |\n"
+                "| [Alpha](https://github.com/caty-ai/alpha-module) | published, MIT |\n"
+            },
+            registry,
+            language_caught,
+        )
+        == 1
+        and any("公開・MIT" in failure for failure in language_caught),
+        "missing-label Japanese uppercase suffix fixture",
+    )
+
+    clean_non_matches = (
+        {"README.md": "Latest is https://github.com/caty-ai/alpha-module.draft (published, MIT)"},
+        {"README.md": "Clone via https://github.com/caty-ai/alpha-module.git"},
+    )
+    for index, source in enumerate(clean_non_matches):
+        clean_failures: List[str] = []
+        selftest_check(
+            check_missing_labels(source, registry, clean_failures) == 0 and not clean_failures,
+            "missing-label clean non-match %d" % index,
         )
 
     whitelisted_line = next(
@@ -614,8 +696,14 @@ def selftest_svg_state_sources() -> None:
         "<svg><text>Alpha Module</text></svg>",
         "<svg><text>Alpha <tspan>Module</tspan></text></svg>",
         "<svg><text>Alpha</text>\n<text>Module</text></svg>",
+        "<svg><text><![CDATA[Alpha Module]]></text></svg>",
+        "<svg><text>Alpha    Module</text></svg>",
+        "<svg><text>Alpha\nModule</text></svg>",
+        "<svg><text>Alpha    \n    Module</text></svg>",
+        "<svg><text>Alpha Module</text><text>Alpha   Module</text></svg>",
         '<svg><g title="Alpha Module"/></svg>',
         "<svg><g aria-label='Alpha Module'/><image alt='diagram'/></svg>",
+        "<svg><text>AlphaModule</text></svg>",
     )
     for index, source in enumerate(svg_cases):
         clean_failures: List[str] = []
@@ -700,6 +788,8 @@ def selftest_partitions_and_scope() -> None:
         and not escaped_failures,
         "escaped workflow regex remains exempt",
     )
+    selftest_check(language_of(pathlib.Path("README.JA.MD")) == "ja", "uppercase language suffix")
+    selftest_check(language_of(pathlib.Path("guide.en.md")) == "en", "lowercase language suffix")
 
 
 def run_selftests() -> int:
