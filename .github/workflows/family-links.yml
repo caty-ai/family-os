@@ -26,6 +26,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: selftest registry checker
+        run: python3 -B tools/selftest_check_registry.py
+
       # Deliberately unauthenticated. A token can see private repositories and
       # would report the exact drift this check exists to catch as healthy.
       # The weekly run is the primary guard and requires a complete reality
