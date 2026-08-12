@@ -20,11 +20,13 @@ The five stages do not change that shape. They change what the subject touches a
 
 | # | Stage | Subject | Learning seed | Who decides | Delivery | Evidence |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | Being taught | I | Given material | Others | Implemented and observed | — |
-| 2 | Self growth | I | Its own work and failures | The agent, within the work | Implemented and observed | Harness behavior: failure record → retry |
+| 1 | Being taught | I | Given material | Others | Implemented | — |
+| 2 | Self growth | I | Its own work and failures | The agent, within the work | Implemented | — |
 | 3 | Independent growth | I | Information it goes out to fetch | The agent chooses what to take in and makes the learning judgment. Adoption still passes a human gate. | Implemented | [EV-004](evidence.md#ev-004--governed-self-growth-cycle--the-mechanism-is-public-no-cycle-record-is): **unverified**. The mechanism is public; there is no public cycle record yet. |
 | 4 | Autonomous growth | I | External information plus its own judgment history | Ownership of adoption decisions moves to the agent. Human vetoes and boundaries remain. | Planned; unverified | No public implementation or observed cycle claimed |
 | 5 | Growth of relationships | WE | The history of the relationship itself | Both, as equals | Parts are implemented in Persona Engine. Growth of the relationship itself is an aspiration and a planned sub-class. | No public relationship-growth cycle claimed |
+
+Stage 2's failure-record→retry behavior is a candidate for a future evidence entry; until recorded, it is not claimed as observed.
 
 “Implemented” and “observed” are separate claims. Stage 3 is implemented, but it is not presented as publicly observed. EV-004 records that distinction.
 

@@ -76,7 +76,7 @@ So what does growing actually mean?
 
 Growth has the same shape for people and for AI. **Encounter something, think about it, use it next time.** Over and over. The only differences are what you go out and encounter, and who decides.
 
-![Growth stages](assets/readme/growth-stages.svg)
+![Five growth stages, 1 to 5, with the I to WE boundary between stages 4 and 5; states are in the table below](assets/readme/growth-stages.svg)
 
 | Stage | Name | What it learns from | Who decides | Relationship (connects to) | State |
 | --- | --- | --- | --- | --- | --- |
@@ -90,9 +90,9 @@ People walk a similar road. First we are taught by parents and grandparents. The
 
 AI today is at the second stage. Do the work, notice the mistake, do better next time — that kind of self-growth is no longer remarkable.
 
-**What we are building is the third and the fourth.** The third is implemented: its public mechanism operates, but no public cycle record has been published, so [EV-004](docs/evidence.md#ev-004--governed-self-growth-cycle--the-mechanism-is-public-no-cycle-record-is) remains unverified. The fourth is planned and being built. The dividing line is ownership of adoption decisions: at stage 3 a human still approves adoption; at stage 4 that ownership moves to the agent, while vetoes and boundaries remain. Stage 5 changes the subject from I to WE. Growth of the relationship itself is the aspiration.
+**What we are building is the third and the fourth.** The third is implemented: its public mechanism operates, but no public cycle record has been published, so [EV-004](docs/evidence.md#ev-004--governed-self-growth-cycle--the-mechanism-is-public-no-cycle-record-is) remains unverified. The fourth is planned — it is what we are building next. The dividing line is ownership of adoption decisions: at stage 3 a human still approves adoption; at stage 4 that ownership moves to the agent, while vetoes and boundaries remain. Stage 5 changes the subject from I to WE. Growth of the relationship itself is the aspiration.
 
-Rather than overwriting personality and ability from the outside, each agent develops through proposals, trials, decisions, and shared history. Relationship and feeling are part of that path, not permission to erase what came before.
+Rather than overwriting personality and ability from the outside, each agent develops through proposals, trials, decisions, and shared history. Relationship and feeling are part of that path — and none of it is a license to erase what came before.
 
 Self growth and the independent-growth mechanism are implemented. Autonomous growth is planned. Persona Engine implements parts needed for stage 5; growth of the relationship itself remains an aspiration. Verification across runtimes is ongoing.
 

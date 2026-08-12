@@ -23,12 +23,11 @@
   <path class="arrow" d="M240 120 H275"/>
   <path class="arrow" d="M480 120 H515"/>
   <path class="arrow" d="M720 120 H755"/>
-  <path class="arrow" d="M960 120 H975"/>
-  <path class="arrow" d="M985 120 H995"/>
+  <path class="arrow" d="M960 120 H1000"/>
 
   <rect class="box" x="40" y="75" width="200" height="90" rx="12"/>
   <text class="stage" x="140" y="108">1</text>
-  <text class="name" x="140" y="138">Taught</text>
+  <text class="name" x="140" y="138">Being taught</text>
 
   <rect class="box" x="280" y="75" width="200" height="90" rx="12"/>
   <text class="stage" x="380" y="108">2</text>
@@ -42,6 +41,7 @@
   <text class="stage" x="860" y="108">4</text>
   <text class="name" x="860" y="138">Autonomous growth</text>
 
+  <line x1="980" y1="108" x2="980" y2="132" stroke="#f6f8fa" stroke-width="7"/>
   <line class="boundary" x1="980" y1="48" x2="980" y2="195"/>
   <text class="label" x="950" y="34">I → WE</text>
 
@@ -54,7 +54,7 @@
   <text class="legend" x="120" y="233">solid = implemented</text>
 
   <line x1="55" y1="263" x2="105" y2="263" stroke="#57606a" stroke-width="3" stroke-dasharray="10 7"/>
-  <text class="legend" x="120" y="268">dashed = planned</text>
+  <text class="legend" x="120" y="268">dashed = not yet fully implemented (planned; stage 5 partly implemented — see the table)</text>
 
   <line x1="55" y1="298" x2="105" y2="298" stroke="#d97706" stroke-width="4"/>
   <text class="legend" x="120" y="303">orange = what we are building now (focus, not a state)</text>

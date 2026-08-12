@@ -76,7 +76,7 @@ Family OS 是一张地图，告诉你解决每一个问题的部件**在哪里**
 
 成长的形态，人和 AI 并无不同。**接触到什么，思考它，下一次用上它。** 如此反复。不同的只是：你主动去接触什么，以及由谁来判断。
 
-![成长的五个阶段](assets/readme/growth-stages.svg)
+![五个成长阶段，从1到5，4与5之间有一条从 I 到 WE 的分界线；状态见下表](assets/readme/growth-stages.svg)
 
 | 阶段 | 名称 | 从什么学习 | 谁来决定 | 关系（连接到） | 状态 |
 | --- | --- | --- | --- | --- | --- |
@@ -172,12 +172,12 @@ flowchart TB
 **人格的成长**
 
 - [Persona Engine](https://github.com/caty-ai/persona-engine)（已公开・MIT）— 加上人格的层次与情感的渐变
-- Persona Growth Loop（准备公开中）— 推动人格的自主成长。计划中
+- Persona Growth Loop（准备公开中）— 推动人格的独立成长。计划中
 
 **能力的成长**
 
 - [X Collector](https://github.com/caty-ai/x-collector)（已公开・MIT）— 从外部收集信息
-- [Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（已公开・MIT）— 推动能力的自主成长
+- [Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（已公开・MIT）— 推动能力的独立成长
 
 ```mermaid
 flowchart TB
@@ -188,7 +188,7 @@ flowchart TB
   subgraph PersonaAxis["人格的成长"]
     direction LR
     PersonaEngine["Persona Engine<br/>人格的层次与情感的渐变<br/>可独立使用"]
-    PersonaGrowth["Persona Growth Loop<br/>人格的自主成长<br/>计划中"]
+    PersonaGrowth["Persona Growth Loop<br/>人格的独立成长<br/>计划中"]
     PersonaEngine ---|"人格的 source / target"| PersonaGrowth
   end
 
@@ -196,7 +196,7 @@ flowchart TB
     direction LR
     X["X Collector<br/>从外部收集信息<br/>可独立使用・可替换"]
     Morning["morning agents"]
-    SelfGrowth["Self Growth Loop<br/>能力的自主成长"]
+    SelfGrowth["Self Growth Loop<br/>能力的独立成长"]
     Other["人 / evaluator<br/>可归属的输入"]
     X -->|"family-feed / sense"| Morning
     Morning -->|"proposal"| SelfGrowth
