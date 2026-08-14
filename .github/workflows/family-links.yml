@@ -41,6 +41,26 @@ jobs:
       - name: check generated blocks are up to date
         run: python3 -B tools/render.py --check
 
+  # Same registry tooling on macOS (family-dev-handbook#54): these tools also
+  # run locally on dev machines, which are all macOS. Not on the schedule
+  # trigger (the weekly reality check stays single-sourced on ubuntu) and not
+  # in the report job's `needs`, so it can never double-file the weekly issue.
+  registry-macos:
+    name: registry matches reality (macOS)
+    if: github.event_name != 'schedule'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: selftest registry checker
+        run: python3 -B tools/selftest_check_registry.py
+
+      - name: check registry against GitHub
+        run: python3 -B tools/check_registry.py
+
+      - name: check generated blocks are up to date
+        run: python3 -B tools/render.py --check
+
   family-footer:
     name: family footer
     runs-on: ubuntu-latest
