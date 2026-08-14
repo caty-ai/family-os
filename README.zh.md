@@ -13,6 +13,7 @@
 
 ![Family OS 品牌主视觉。左侧是「FAMILY OS」「A MAP FOR GROWING AI FAMILIES」「caty-ai/family-os」「FREE & OPEN SOURCE · MIT LICENSE」等文字，右侧是暖色复古电视风格的行星系。中央的大地球是「俯瞰 AI 家族的地图」的比喻，周围各自独立的世界与可组合的卫星是「角色」的比喻。图像本身不表示连接关系，准确的关系见家族地图图示及其旁边的表格。](assets/readme/hero.png)
 
+[![family links](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml/badge.svg)](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![install](https://img.shields.io/badge/install-not%20required-brightgreen)
 

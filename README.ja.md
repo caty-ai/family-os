@@ -13,6 +13,7 @@
 
 ![Family OSのブランドHero。左に「FAMILY OS」「A MAP FOR GROWING AI FAMILIES」「caty-ai/family-os」「FREE & OPEN SOURCE · MIT LICENSE」の文字、右に温かいレトロTV風の惑星系がある。中央の大きな地球はAI家族を見渡す地図の比喩であり、周囲の独立した世界と組み合わせる衛星は役割の比喩である。画像だけで接続関係は示さず、正確な関係はファミリーマップ図とその脇の表に示す。](assets/readme/hero.png)
 
+[![family links](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml/badge.svg)](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![install](https://img.shields.io/badge/install-not%20required-brightgreen)
 

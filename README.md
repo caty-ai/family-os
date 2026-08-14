@@ -13,6 +13,7 @@
 
 ![Family OS brand hero. On the left, the words "FAMILY OS", "A MAP FOR GROWING AI FAMILIES", "caty-ai/family-os", and "FREE & OPEN SOURCE · MIT LICENSE"; on the right, a warm retro-TV planetary system. The large central globe is a metaphor for a map that overlooks an AI family, and the independent worlds and composable satellites around it are a metaphor for roles. The image encodes no connections on its own; the exact relationships are shown in the family map figure and the tables beside it.](assets/readme/hero.png)
 
+[![family links](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml/badge.svg)](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![install](https://img.shields.io/badge/install-not%20required-brightgreen)
 
