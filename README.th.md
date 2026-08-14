@@ -13,6 +13,7 @@
 
 ![ภาพแบรนด์ฮีโร่ของ Family OS ด้านซ้ายมีข้อความ "FAMILY OS", "A MAP FOR GROWING AI FAMILIES", "caty-ai/family-os" และ "FREE & OPEN SOURCE · MIT LICENSE" ด้านขวาเป็นระบบดาวเคราะห์สไตล์ทีวีย้อนยุคโทนอบอุ่น โลกใบใหญ่ตรงกลางเป็นอุปมาของแผนที่ที่มองเห็นครอบครัว AI ทั้งหมด ส่วนโลกอิสระและดาวเทียมที่ประกอบเข้าด้วยกันรอบ ๆ เป็นอุปมาของบทบาท ภาพนี้ไม่ได้แสดงความสัมพันธ์ในการเชื่อมต่อด้วยตัวเอง ความสัมพันธ์ที่ถูกต้องแสดงอยู่ในภาพแผนที่ครอบครัวและตารางข้างภาพ](assets/readme/hero.png)
 
+[![family links](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml/badge.svg)](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![install](https://img.shields.io/badge/install-not%20required-brightgreen)
 
