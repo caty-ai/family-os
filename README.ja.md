@@ -261,6 +261,7 @@ Family OS の地図そのものを読むのに、特別な準備は要りませ�
 | 観点 | 対応 |
 | --- | --- |
 | この地図を読む | ✅ macOS ／ ✅ Windows ／ ✅ Linux（Markdown が読めれば足ります） |
+| レジストリ・リンク検査ツール | ✅ Linux ／ ✅ macOS（変更のたびに両OSのCIで実走） |
 | 実運用が確認できているAIエージェント環境 | ✅ Claude Code ／ ✅ Hermes Agent ／ ✅ OpenClaw |
 | 対応検証を予定している環境 | ⚠️ Kimi Code ／ ⚠️ Codex |
 

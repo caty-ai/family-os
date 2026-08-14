@@ -261,6 +261,7 @@ flowchart TB
 | 观察点 | 支持情况 |
 | --- | --- |
 | 阅读这张地图 | ✅ macOS ／ ✅ Windows ／ ✅ Linux（能看 Markdown 就够了） |
+| 注册表与链接检查工具 | ✅ Linux ／ ✅ macOS（每次变更都在两个系统的 CI 上运行） |
 | 已在实际运行中确认的 AI 智能体环境 | ✅ Claude Code ／ ✅ Hermes Agent ／ ✅ OpenClaw |
 | 计划进行适配验证的环境 | ⚠️ Kimi Code ／ ⚠️ Codex |
 

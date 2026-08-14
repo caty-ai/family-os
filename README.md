@@ -261,6 +261,7 @@ Reading the Family OS map itself takes no preparation at all.
 | Aspect | Support |
 | --- | --- |
 | Reading this map | ✅ macOS ／ ✅ Windows ／ ✅ Linux (anything that renders Markdown) |
+| Registry & link-check tools | ✅ Linux ／ ✅ macOS (both run in CI on every change) |
 | Agent environments in real use | ✅ Claude Code ／ ✅ Hermes Agent ／ ✅ OpenClaw |
 | Agent environments planned for verification | ⚠️ Kimi Code ／ ⚠️ Codex |
 
