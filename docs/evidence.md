@@ -69,3 +69,21 @@ Weekly CI flags stale evidence, humans edit this file, and CI never edits it.
 | last-reviewed | 2026-08-12 |
 | owner | maintainers |
 | counter-evidence | none |
+
+<!-- EV-005 (harness effect measurement) and EV-006 (multi-environment install verification) are reserved by the lanes of https://github.com/caty-ai/family-os/issues/43 and will be added when those lanes complete. Claim-ids are identifiers, not file order. -->
+
+## EV-007 — The shared-memory horizontal layer ran across three environments and two runtimes, and the newest adoption was accepted on artifacts, not self-report
+
+| field | value |
+| --- | --- |
+| claim-id | EV-007 |
+| believe | A family of agents is only a family if what one member does is visible to the others without a human relaying it — across machines and across runtimes. |
+| built | `caty-ai/family-memory-architecture` ships the horizontal layer: an append-only hot-inbox (helper-only posting with schema validation and a secrets scan), a deterministic digest generator, and a session-start read protocol. Per-member adoption is issue-tracked in `caty-ai/family-dev-handbook`. |
+| actually happened | Three members on distinct environment/runtime combinations adopted the layer and their participation events round-tripped into the generated digest: Doc (OpenClaw, Linux VPS, 2026-07-26), Alec (Hermes, Mac mini, 2026-08-12), Caty (OpenClaw, Mac mini, 2026-08-14 — the product's mascot joining her own product). The Caty adoption was executed by the agent herself from a written brief, and acceptance used only independently read artifacts: event attribution in the posted JSON (`owner: caty`), the digest line regenerated on a different machine than the one that posted it, the config wiring itself, and persona files verified untouched. During the same run she reported that her own change worsened a pre-existing config-size budget overage and proposed a separately scoped fix rather than silently trimming unrelated content to hide it. |
+| still don't know | All three adopters are the author's own family agents on author-controlled machines — independence is cross-model and cross-runtime, not cross-owner. Doc's adoption record predates the public handbook and lives in a private repo, so one of the three trails is not externally inspectable. The event files and the generated digest live in a private shared vault; what is public is the issue trail with the acceptance evidence quoted, not the artifacts themselves. |
+| state (delivery · visibility · evidence) | implemented · published · observed |
+| evidence | primary: https://github.com/caty-ai/family-dev-handbook/issues/50 (acceptance with cross-machine round-trip verification) and https://github.com/caty-ai/family-dev-handbook/issues/49 ; adoption trail: https://github.com/caty-ai/family-dev-handbook/issues/48 , https://github.com/caty-ai/family-dev-handbook/issues/36 , https://github.com/caty-ai/family-dev-handbook/issues/38 (Alec) ; mechanism: https://github.com/caty-ai/family-memory-architecture (published, MIT) |
+| observed-at | 2026-08-14 |
+| last-reviewed | 2026-08-14 |
+| owner | maintainers |
+| counter-evidence | none |
