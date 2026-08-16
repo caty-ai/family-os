@@ -68,6 +68,13 @@ class FetchResult:
     text: str = ""
 
 
+class NoRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """Expose redirects so moved footer targets cannot look current."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        return None
+
+
 def load_registry(path: pathlib.Path = REGISTRY) -> dict:
     def reject_duplicate_keys(pairs):
         result = {}
@@ -708,19 +715,43 @@ def fetch_readme(repo: str, filename: str, timeout: float = 20.0) -> FetchResult
         method="GET",
         headers={"User-Agent": "family-os-registry-check"},
     )
+    opener = urllib.request.build_opener(NoRedirectHandler())
     try:
-        with urllib.request.urlopen(request, timeout=timeout) as response:
+        with opener.open(request, timeout=timeout) as response:
             if response.status != 200:
                 return FetchResult("skip")
             return FetchResult("ok", response.read().decode("utf-8"))
     except urllib.error.HTTPError as exc:
+        if 300 <= exc.code <= 399:
+            return FetchResult("moved", exc.headers.get("Location", ""))
         if exc.code == 404:
             return FetchResult("missing")
+        if exc.code in (410, 451):
+            return FetchResult("hard", "HTTP status %d" % exc.code)
         if exc.code in (403, 429) or 500 <= exc.code <= 599:
             return FetchResult("skip")
-        raise
+        return FetchResult("skip", "unexpected HTTP status %d" % exc.code)
     except (urllib.error.URLError, TimeoutError):
         return FetchResult("skip")
+
+
+def record_fetch_problem(
+    fetched: FetchResult,
+    label: str,
+    unit: str,
+    skip_message: str,
+    failures: List[str],
+    degraded: DegradedReality,
+) -> None:
+    if fetched.status == "moved":
+        destination = fetched.text or "(missing Location header)"
+        failures.append("moved: %s -> %s" % (label, destination))
+        return
+    if fetched.status == "hard":
+        failures.append("%s: %s" % (label, fetched.text))
+        return
+    detail = " (%s)" % fetched.text if fetched.text else ""
+    degraded.skip(unit, skip_message + detail)
 
 
 def assert_org_svg(registry: dict, lang: str, text: str, label: str) -> List[str]:
@@ -789,8 +820,13 @@ def check_registry_footers(
                 module_complete = False
                 continue
             if fetched.status != "ok":
-                degraded.skip(
-                    module["repo"], "%s: could not reach GitHub, footer check skipped" % label
+                record_fetch_problem(
+                    fetched,
+                    label,
+                    module["repo"],
+                    "%s: could not reach GitHub, footer check skipped" % label,
+                    failures,
+                    degraded,
                 )
                 module_complete = False
                 continue
@@ -837,8 +873,13 @@ def check_registry_footers(
             failures.append("%s: declared org profile file returned 404" % label)
             continue
         if fetched.status != "ok":
-            degraded.skip(
-                label, "%s: could not reach GitHub, org profile check skipped" % label
+            record_fetch_problem(
+                fetched,
+                label,
+                label,
+                "%s: could not reach GitHub, org profile check skipped" % label,
+                failures,
+                degraded,
             )
             continue
         try:
@@ -870,7 +911,14 @@ def check_registry_footers(
             failures.append("%s: committed SVG artifact returned 404" % label)
             continue
         if fetched.status != "ok":
-            degraded.skip(label, "%s: could not reach GitHub, SVG check skipped" % label)
+            record_fetch_problem(
+                fetched,
+                label,
+                label,
+                "%s: could not reach GitHub, SVG check skipped" % label,
+                failures,
+                degraded,
+            )
             continue
         failures.extend(assert_org_svg(registry, lang, fetched.text, label))
 

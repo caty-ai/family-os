@@ -7,6 +7,9 @@ import copy
 import json
 import pathlib
 import tempfile
+import urllib.error
+from typing import Optional
+from unittest import mock
 
 from family_common import FamilyCommonError, MarkerError, iter_marker_lines, language_of
 from family_footer import (
@@ -21,6 +24,7 @@ from family_footer import (
     FooterError,
     assert_org_svg,
     check_registry_footers,
+    fetch_readme,
     find_footer_regions,
     lint_registry,
     load_registry,
@@ -31,6 +35,42 @@ from family_footer import (
     render_repo_to_target,
     resolve_declared_readmes,
 )
+
+
+class Response:
+    def __init__(self, status: int, text: bytes = b"") -> None:
+        self.status = status
+        self._text = text
+
+    def read(self) -> bytes:
+        return self._text
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
+        return None
+
+
+class Opener:
+    def __init__(self, result) -> None:
+        self.result = result
+
+    def open(self, request, timeout):
+        if isinstance(self.result, BaseException):
+            raise self.result
+        return self.result
+
+
+def http_error(code: int, location: Optional[str] = None) -> urllib.error.HTTPError:
+    headers = {"Location": location} if location else {}
+    return urllib.error.HTTPError(
+        "https://raw.githubusercontent.com/caty-ai/example/HEAD/README.md",
+        code,
+        "test",
+        headers,
+        None,
+    )
 
 
 def base_registry():
@@ -496,6 +536,73 @@ def test_check_rules():
     )
     assert any("degraded: could not verify" in failure for failure in failures)
     assert any("footer check skipped" in note for note in notes)
+
+
+def test_fetch_readme_status_contract():
+    cases = [
+        (Response(200, b"# README\n"), FetchResult("ok", "# README\n")),
+        (
+            http_error(301, "https://raw.githubusercontent.com/caty-ai/moved/HEAD/README.md"),
+            FetchResult(
+                "moved", "https://raw.githubusercontent.com/caty-ai/moved/HEAD/README.md"
+            ),
+        ),
+        (http_error(399), FetchResult("moved")),
+        (http_error(404), FetchResult("missing")),
+        (http_error(410), FetchResult("hard", "HTTP status 410")),
+        (http_error(451), FetchResult("hard", "HTTP status 451")),
+        (http_error(403), FetchResult("skip")),
+        (http_error(429), FetchResult("skip")),
+        (http_error(500), FetchResult("skip")),
+        (http_error(599), FetchResult("skip")),
+        (http_error(401), FetchResult("skip", "unexpected HTTP status 401")),
+        (http_error(405), FetchResult("skip", "unexpected HTTP status 405")),
+    ]
+    for result, expected in cases:
+        with mock.patch(
+            "family_footer.urllib.request.build_opener", return_value=Opener(result)
+        ) as build_opener, mock.patch(
+            "family_footer.urllib.request.urlopen", side_effect=[result]
+        ):
+            actual = fetch_readme("caty-ai/example", "README.md")
+        assert actual == expected, (result, expected, actual)
+        handler = build_opener.call_args.args[0]
+        assert type(handler).__name__ == "NoRedirectHandler", handler
+        assert handler.redirect_request(None, None, 301, None, {}, None) is None
+
+
+def test_fetch_readme_results_are_recorded_by_footer_check():
+    registry = base_registry()
+
+    failures, notes = check_registry_footers(
+        registry,
+        fetcher=lambda repo, filename: FetchResult(
+            "moved", "https://raw.githubusercontent.com/caty-ai/moved/HEAD/README.md"
+        ),
+    )
+    assert any(failure.startswith("moved: caty-ai/alpha:README.md ->") for failure in failures)
+    assert notes == []
+
+    failures, notes = check_registry_footers(
+        registry, fetcher=lambda repo, filename: FetchResult("moved")
+    )
+    assert any("-> (missing Location header)" in failure for failure in failures)
+    assert notes == []
+
+    failures, notes = check_registry_footers(
+        registry, fetcher=lambda repo, filename: FetchResult("hard", "HTTP status 410")
+    )
+    assert any("caty-ai/alpha:README.md: HTTP status 410" in failure for failure in failures)
+    assert notes == []
+
+    failures, notes = check_registry_footers(
+        registry,
+        fetcher=lambda repo, filename: FetchResult(
+            "skip", "unexpected HTTP status 405"
+        ),
+    )
+    assert failures == [], failures
+    assert any("unexpected HTTP status 405" in note for note in notes)
 
 
 def test_render_idempotency_and_listing():
@@ -979,6 +1086,8 @@ def main() -> int:
         test_module_table_map_rendering,
         test_table_lint_failures,
         test_check_rules,
+        test_fetch_readme_status_contract,
+        test_fetch_readme_results_are_recorded_by_footer_check,
         test_render_idempotency_and_listing,
         test_org_required_and_enforcement_fail_closed,
         test_org_ordered_fetch_and_per_file_failures,
