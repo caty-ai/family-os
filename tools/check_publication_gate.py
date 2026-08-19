@@ -1,149 +1,42 @@
 #!/usr/bin/env python3
 """Fail closed when publication sources expose private context or stale state.
 
-The public repository is copied and rendered in places where comments, metadata,
-and source-only text remain visible. This gate therefore checks raw source, ties
-personal repository URLs to the registry, requires state labels beside module
-home links, and keeps SVG decorations subordinate to Markdown state claims.
+The denylist is repository policy, not checker source.  Normal runs require an
+account slug so personal-account URLs are always checked.  Registry-backed
+label, SVG, allowlist, and whitelist-staleness checks are optional.
 
 Python 3.9+, standard library only.
 """
 
 import argparse
+from contextlib import redirect_stdout
 import html
+import io
 import json
 import os
-import pathlib
+from pathlib import Path
 import re
+import shutil
 import stat
 import subprocess
 import sys
+import tempfile
 import urllib.parse
-from typing import Dict, FrozenSet, Iterable, List, Mapping, Set, Tuple
 
 
-REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
-SCANNED_SUFFIXES = frozenset((".md", ".json", ".py", ".yml", ".yaml", ".svg", ".sh"))
-ACCOUNT_SLUG = "sho" + "jikumaru"
-ACCOUNT_MASK = "_account_slug_"
-
-# Sensitive literals are split so the gate does not trip on its own source when self-scanned.
-# Changes to these fail-closed policy rules require owner approval.
-DENYLIST_PATTERNS = (
-    (
-        "personal real name",
-        re.compile(r"\b(?:" + "Sho" + "ji|Ku" + "maru" + r")\b", re.IGNORECASE),
-    ),
-    (
-        "personal real name",
-        re.compile("翔" + "さん|翔" + "士|翔" + "どん", re.IGNORECASE),
-    ),
-    (
-        "approval record",
-        re.compile(
-            "承認"
-            + "記録|オーナー"
-            + "承認|approved"
-            + r"\s+by|CP-\d+[A-Za-z]{0,2}\s*(?:GO|承認)",
-            re.IGNORECASE,
-        ),
-    ),
-    ("absolute personal path", re.compile(re.escape("/" + "Users" + "/"))),
-    (
-        "private network address",
-        re.compile(r"\b100\.(?:6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\.\d+\.\d+\b"),
-    ),
-    ("local service address", re.compile("local" + r"host:\d+", re.IGNORECASE)),
-    ("local service address", re.compile(r"\b(?:127\.0\.0\.1|0\.0\.0\.0)\b")),
-    (
-        "email address",
-        re.compile(r"\b[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}\b", re.IGNORECASE),
-    ),
-    (
-        "private repository reference",
-        re.compile(
-            r"\b(?:"
-            + "alpha-" + "loom|alpha-" + "wiki|alpha-" + "mission-control|"
-            + "family-" + "vault|wip-" + "caty-talk|sitter-" + "private|claude-" + "workspace"
-            + r")\b",
-            re.IGNORECASE,
-        ),
-    ),
+EXCLUDED_DIRS = frozenset(
+    (".git", ".omc", ".omx", ".venv", "venv", "node_modules", "__pycache__")
 )
-
-# Exact (repository-relative path, full line text) additions require owner approval.
-# The initial population ships with issue #26 for review. These are navigation
-# prose / axis-description tables where the label lives elsewhere. Any change
-# to these lines breaks the whitelist match and must come back through owner
-# approval; that breakage is intended fail-closed behavior.
-MISSING_LABEL_WHITELIST: FrozenSet[Tuple[str, str]] = frozenset(
-    {
-    (
-        "README.ja.md",
-        "横軸の [FMA](https://github.com/caty-ai/family-memory-architecture) も公開済み（MIT）です。いちばん困っているのが「記憶がばらばら」なら、そちらから始めてください。",
-    ),
-    (
-        "README.ja.md",
-        "迷ったら、縦軸の [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) から始めてください。1体のAIが失敗から学び、長い作業を証拠つきで最後まで進められるようになります。無料の MIT で、導入手順はそのリポジトリの README にあります。いちばん困っているのが「黙って止まる作業」なら、[Sitter](https://github.com/caty-ai/sitter) へ直接どうぞ — こちらも公開済み・MIT です。",
-    ),
-    (
-        "README.md",
-        "FMA on the horizontal axis is published too (MIT). If scattered memory is what hurts most, start with [FMA](https://github.com/caty-ai/family-memory-architecture).",
-    ),
-    (
-        "README.md",
-        "If you are unsure, start with [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) on the vertical axis. It lets one agent learn from failure and carry long work through to the end with evidence behind it. It is free under MIT, and the setup steps are in that repository's README. If the thing that hurts most is work that stops without telling you, go straight to [Sitter](https://github.com/caty-ai/sitter) instead — it is also open and also MIT.",
-    ),
-    (
-        "README.th.md",
-        "[FMA](https://github.com/caty-ai/family-memory-architecture) บนแกนนอนก็เปิดแล้วเช่นกัน (MIT) ถ้าสิ่งที่ปวดหัวที่สุดคือความทรงจำที่กระจัดกระจาย เริ่มจากตัวนั้นได้เลย",
-    ),
-    (
-        "README.th.md",
-        "ถ้าไม่แน่ใจว่าจะเริ่มตรงไหน ให้เริ่มจาก [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) บนแกนตั้ง มันทำให้ AI หนึ่งตัวเรียนรู้จากความล้มเหลว และเดินงานยาว ๆ ไปจนจบพร้อมหลักฐาน เป็น MIT ที่ใช้ฟรี และขั้นตอนการติดตั้งอยู่ใน README ของรีโปนั้น ถ้าสิ่งที่เจ็บที่สุดคืองานที่หยุดไปเงียบ ๆ โดยไม่บอก ให้ตรงไปที่ [Sitter](https://github.com/caty-ai/sitter) ได้เลย — เปิดแล้วเช่นกันและเป็น MIT เช่นกัน",
-    ),
-    (
-        "README.zh.md",
-        "横轴的 [FMA](https://github.com/caty-ai/family-memory-architecture) 也已公开（MIT）。如果你最头疼的是记忆各自为政，就从它开始。",
-    ),
-    (
-        "README.zh.md",
-        "如果不知从何入手，就从纵轴的 [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) 开始。它能让一个 AI 从失败中学习，并带着证据把长时间的工作做到最后。它是免费的 MIT，安装步骤在那个仓库的 README 里。如果最让你头疼的是「悄无声息就停住的工作」，那就直接去 [Sitter](https://github.com/caty-ai/sitter) —— 它同样已经公开，同样是 MIT。",
-    ),
-    (
-        "docs/engineering.ja.md",
-        "| 掟 | 並行作業を壊さない進め方 — Issue・ブランチ・worktree・受け渡し | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook) |",
-    ),
-    (
-        "docs/engineering.ja.md",
-        "| 縦軸 | 1体のAIが、覚え・やり切り・育つ方法 | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) と成長ループ |",
-    ),
-    (
-        "docs/engineering.ja.md",
-        "| 横軸 | 複数のAIが記憶を共有し、仕事を渡す方法 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) と [Sitter](https://github.com/caty-ai/sitter) |",
-    ),
-    (
-        "docs/engineering.md",
-        "| Rules | how parallel work stays safe — issues, branches, worktrees, handoffs | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook) |",
-    ),
-    (
-        "docs/engineering.md",
-        "| Vertical | how one agent remembers, finishes, and grows | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) plus growth loops |",
-    ),
-    (
-        "docs/engineering.md",
-        "| Horizontal | how several agents share memory and hand work over | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) and [Sitter](https://github.com/caty-ai/sitter) |",
-    ),
-    }
-)
-
-LANG_SUFFIX = re.compile(r"\.(?P<lang>[a-z]{2}(?:-[a-z]{2})?)\.md$")
-PERSONAL_GITHUB_URL = re.compile(
-    r"(?<![A-Za-z0-9.-])(?:www\.)?github\.com/"
-    + re.escape(ACCOUNT_SLUG)
-    + r"(?:/(?P<repo>[A-Za-z0-9_.-]*[A-Za-z0-9_-])(?=$|[^A-Za-z0-9_-])|/?(?![A-Za-z0-9_.-]))",
+DENYLIST_NAME = ".publication-denylist"
+WHITELIST_NAME = ".publication-label-whitelist"
+ACCOUNT_SLUG = re.compile(r"^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37})$")
+URL_CANDIDATE = re.compile(
+    r"(?<![A-Za-z0-9@._-])(?:https?://(?:[A-Za-z0-9._~!$&'()*+,;=:%-]+@)?)?"
+    r"(?:[A-Za-z0-9-]+\.)+[A-Za-z0-9-]+\.?(?::[0-9]+)?"
+    r"(?:/[^\s<>'\"`()\[\]{}]*)?",
     re.IGNORECASE,
 )
+LANG_SUFFIX = re.compile(r"\.(?P<lang>[a-z]{2}(?:-[a-z]{2})?)\.md$")
 SVG_TEXT_ELEMENT = re.compile(
     r"<(text|title|desc|metadata)\b[^>]*>(.*?)</\1\s*>", re.IGNORECASE | re.DOTALL
 )
@@ -154,56 +47,17 @@ SVG_TEXT_ATTRIBUTE = re.compile(
 SVG_CDATA = re.compile(r"<!\[CDATA\[(.*?)\]\]>", re.DOTALL)
 
 
-def language_of(path: pathlib.Path) -> str:
-    """Match the Markdown suffix convention used by check_registry.py."""
+class GateConfigurationError(ValueError):
+    """A fail-closed policy or command configuration error."""
+
+
+def language_of(path):
     match = LANG_SUFFIX.search(path.name.lower())
     return match.group("lang") if match else "en"
 
 
-def iter_source_paths(root: pathlib.Path) -> Iterable[pathlib.Path]:
-    result = subprocess.run(
-        ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
-        cwd=str(root),
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=False,
-    )
-    if result.returncode != 0:
-        raise OSError(
-            "could not enumerate repository sources: %s"
-            % result.stderr.decode("utf-8", errors="replace").strip()
-        )
-    for relative_bytes in sorted(filter(None, result.stdout.split(b"\0"))):
-        relative = relative_bytes.decode("utf-8")
-        path = root / relative
-        if path.suffix.lower() not in SCANNED_SUFFIXES:
-            continue
-        yield path
-
-
-def read_sources(root: pathlib.Path, failures: List[str]) -> Dict[str, str]:
-    documents: Dict[str, str] = {}
-    for path in iter_source_paths(root):
-        relative = path.relative_to(root).as_posix()
-        try:
-            if path.is_symlink():
-                documents[relative] = os.readlink(path)
-                continue
-            if not stat.S_ISREG(os.lstat(path).st_mode):
-                failures.append("source-read: %s is not a regular file" % relative)
-                continue
-            documents[relative] = path.read_text(encoding="utf-8")
-        except (OSError, UnicodeError) as exc:
-            failures.append("source-read: %s could not be read as UTF-8: %s" % (relative, exc))
-    return documents
-
-
-def mask_account_slug(text: str) -> str:
-    return re.sub(re.escape(ACCOUNT_SLUG), ACCOUNT_MASK, text, flags=re.IGNORECASE)
-
-
-def scan_views(text: str) -> Tuple[str, ...]:
-    """Return raw plus iterative percent/HTML-decoded views until stable or capped."""
+def scan_views(text):
+    """Return raw plus iterative percent/HTML-decoded views."""
     views = [text]
     current = text
     for _ in range(3):
@@ -219,70 +73,350 @@ def scan_views(text: str) -> Tuple[str, ...]:
     return tuple(views)
 
 
-def line_number(text: str, offset: int) -> int:
+def line_number(text, offset):
     return text.count("\n", 0, offset) + 1
 
 
-def check_denylist(documents: Mapping[str, str], failures: List[str]) -> int:
+def _read_utf8(path, display_name):
+    try:
+        return path.read_text(encoding="utf-8")
+    except (OSError, UnicodeError) as exc:
+        raise GateConfigurationError(
+            "gate-error: %s could not be read as UTF-8: %s" % (display_name, exc)
+        ) from exc
+
+
+def _denylist_error_name(root, path):
+    try:
+        return path.relative_to(root).as_posix()
+    except ValueError:
+        return str(path)
+
+
+def denylist_path(root, denylist_argument=None):
+    if denylist_argument is None:
+        return root / DENYLIST_NAME
+    path = Path(denylist_argument).expanduser()
+    if not path.is_absolute():
+        path = root / path
+    return Path(os.path.abspath(str(path)))
+
+
+def load_denylist(root, denylist_argument=None):
+    """Load NAME<TAB>REGEX policy, failing closed on absence or zero rules."""
+    path = denylist_path(root, denylist_argument)
+    display_name = _denylist_error_name(root, path)
+    if not path.is_file():
+        raise GateConfigurationError(
+            "gate-error: %s missing/empty — a publication gate with no denylist proves nothing (fail-closed)"
+            % display_name
+        )
+    text = _read_utf8(path, display_name)
+    if text.startswith("\ufeff"):
+        text = text[1:]
+    rules = []
+    for number, line in enumerate(text.splitlines(), 1):
+        if not line.strip() or line.startswith("#"):
+            continue
+        if "\t" not in line:
+            raise GateConfigurationError(
+                "gate-error: %s:%d malformed rule: expected NAME<TAB>REGEX"
+                % (display_name, number)
+            )
+        name, expression = line.split("\t", 1)
+        if not name or name.isspace() or any(character.isspace() for character in name):
+            raise GateConfigurationError(
+                "gate-error: %s:%d malformed rule: NAME must be non-empty and contain no whitespace"
+                % (display_name, number)
+            )
+        if not expression:
+            raise GateConfigurationError(
+                "gate-error: %s:%d malformed rule: REGEX must be non-empty"
+                % (display_name, number)
+            )
+        if "\t" in expression:
+            raise GateConfigurationError(
+                "gate-error: %s:%d malformed rule: extra TAB fields are not allowed; write \\t explicitly in REGEX"
+                % (display_name, number)
+            )
+        if expression != expression.strip():
+            raise GateConfigurationError(
+                "gate-error: %s:%d malformed rule: REGEX must not have leading/trailing whitespace; write \\s or [ ] explicitly"
+                % (display_name, number)
+            )
+        try:
+            pattern = re.compile(expression, re.IGNORECASE)
+        except re.error as exc:
+            raise GateConfigurationError(
+                "gate-error: %s:%d invalid regex for %s: %s"
+                % (display_name, number, name, exc)
+            ) from exc
+        rules.append((name, pattern))
+    if not rules:
+        raise GateConfigurationError(
+            "gate-error: %s missing/empty — a publication gate with no denylist proves nothing (fail-closed)"
+            % display_name
+        )
+    return tuple(rules)
+
+
+def load_label_whitelist(root):
+    """Load optional PATH<TAB>EXACT_LINE label exemptions."""
+    path = root / WHITELIST_NAME
+    if not path.exists():
+        return frozenset()
+    if not path.is_file():
+        raise GateConfigurationError("gate-error: %s is not a regular file" % WHITELIST_NAME)
+    text = _read_utf8(path, WHITELIST_NAME)
+    entries = set()
+    for number, line in enumerate(text.splitlines(), 1):
+        if not line.strip() or line.startswith("#"):
+            continue
+        if "\t" not in line:
+            raise GateConfigurationError(
+                "gate-error: %s:%d malformed entry: expected PATH<TAB>EXACT_LINE"
+                % (WHITELIST_NAME, number)
+            )
+        path_text, exact_line = line.split("\t", 1)
+        if not path_text or not exact_line:
+            raise GateConfigurationError(
+                "gate-error: %s:%d malformed entry: PATH and EXACT_LINE must be non-empty"
+                % (WHITELIST_NAME, number)
+            )
+        entries.add((Path(path_text).as_posix(), exact_line))
+    return frozenset(entries)
+
+
+def _git_paths(root):
+    try:
+        result = subprocess.run(
+            ["git", "ls-files", "--cached", "--others", "--exclude-standard", "-z"],
+            cwd=str(root),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+        )
+    except OSError as exc:
+        raise GateConfigurationError(
+            "gate-error: git enumeration failed for a root containing .git: %s" % exc
+        ) from exc
+    if result.returncode != 0:
+        detail = result.stderr.decode("utf-8", errors="replace").strip()
+        raise GateConfigurationError(
+            "gate-error: git enumeration failed for a root containing .git: %s"
+            % (detail or "git ls-files exited %d" % result.returncode)
+        )
+    paths = []
+    for relative_bytes in filter(None, result.stdout.split(b"\0")):
+        try:
+            relative = relative_bytes.decode("utf-8")
+        except UnicodeError as exc:
+            raise GateConfigurationError(
+                "gate-error: git enumeration returned a non-UTF-8 path: %s" % exc
+            ) from exc
+        paths.append(root / relative)
+    return paths
+
+
+def _contains_git_entry(root):
+    return os.path.lexists(str(root / ".git"))
+
+
+def iter_source_paths(root, excluded_policy_path):
+    """Return (paths, mode); only the non-git fallback applies EXCLUDED_DIRS."""
+    git_mode = _contains_git_entry(root)
+    paths = _git_paths(root) if git_mode else root.rglob("*")
+    policy_key = os.path.abspath(str(excluded_policy_path))
+    selected = []
+    for path in paths:
+        try:
+            relative = path.relative_to(root)
+        except ValueError:
+            continue
+        if not git_mode and any(part in EXCLUDED_DIRS for part in relative.parts[:-1]):
+            continue
+        if os.path.abspath(str(path)) == policy_key:
+            continue
+        selected.append(path)
+    ordered = sorted(selected, key=lambda candidate: candidate.relative_to(root).as_posix())
+    return ordered, "git" if git_mode else "rglob-fallback"
+
+
+def read_sources(root, failures, excluded_policy_path):
+    documents = {}
+    binary_skipped = 0
+    symlinks_skipped = 0
+    paths, enumeration_mode = iter_source_paths(root, excluded_policy_path)
+    for path in paths:
+        relative = path.relative_to(root).as_posix()
+        try:
+            if path.is_symlink():
+                if enumeration_mode == "git":
+                    documents[relative] = os.readlink(path)
+                else:
+                    symlinks_skipped += 1
+                continue
+            mode = os.lstat(path).st_mode
+            if stat.S_ISDIR(mode):
+                continue
+            if not stat.S_ISREG(mode):
+                failures.append("source-read: %s is not a regular file" % relative)
+                continue
+            try:
+                documents[relative] = path.read_bytes().decode("utf-8")
+            except UnicodeDecodeError:
+                binary_skipped += 1
+        except OSError as exc:
+            failures.append("source-read: %s could not be read: %s" % (relative, exc))
+    return documents, enumeration_mode, binary_skipped, symlinks_skipped
+
+
+def check_denylist(documents, rules, failures):
     checked = 0
     for path, text in documents.items():
-        reported: Set[Tuple[int, str]] = set()
-        for view in scan_views(text):
-            masked = mask_account_slug(view)
-            for description, pattern in DENYLIST_PATTERNS:
-                for match in pattern.finditer(masked):
-                    number = line_number(masked, match.start())
-                    finding = (number, description)
+        reported = set()
+        for view_index, view in enumerate(scan_views(text)):
+            for description, pattern in rules:
+                for match in pattern.finditer(view):
+                    finding = (line_number(view, match.start()), description)
                     if finding in reported:
                         continue
                     reported.add(finding)
                     failures.append(
-                        "denylist: %s:%d contains %s" % (path, number, description)
+                        "denylist: %s:%d contains %s%s"
+                        % (
+                            path,
+                            finding[0],
+                            description,
+                            "" if view_index == 0 else " (decoded view)",
+                        )
                     )
                     checked += 1
     return checked
 
 
-def registry_allowlist(registry: dict) -> Set[str]:
+def _personal_url(candidate, account_slug):
+    candidate = candidate.rstrip(".,;:!?")
+    parsed = urllib.parse.urlsplit(candidate if "://" in candidate else "//" + candidate)
+    host = (parsed.hostname or "").casefold()
+    if host.endswith("."):
+        host = host[:-1]
+    if host.startswith("www."):
+        host = host[4:]
+    segments = [urllib.parse.unquote(segment) for segment in parsed.path.split("/") if segment]
+    folded_slug = account_slug.casefold()
+    if host == "github.com" and segments and segments[0].casefold() == folded_slug:
+        return segments[1] if len(segments) > 1 else None
+    if host == "gist.github.com" and segments and segments[0].casefold() == folded_slug:
+        return None
+    if host == folded_slug + ".github.io":
+        return account_slug + ".github.io"
+    return False
+
+
+def registry_allowlist(registry):
     repos = {module["repo"] for module in registry["modules"]}
     repos.update(entry["repo"] for entry in registry.get("retired_repos", []))
     if not all(isinstance(repo, str) and "/" in repo for repo in repos):
         raise ValueError("module and retired repository names must be owner/repository strings")
-    return repos
+    return {repo.casefold() for repo in repos}
 
 
-def check_personal_urls(
-    documents: Mapping[str, str], registry: dict, failures: List[str]
-) -> int:
-    allowlist = registry_allowlist(registry)
-    normalized_allowlist = {repo.casefold() for repo in allowlist}
+def check_personal_urls(documents, account_slug, registry, failures):
+    allowlist = registry_allowlist(registry) if registry is not None else None
     checked = 0
     for path, text in documents.items():
-        reported: Set[Tuple[int, str]] = set()
-        for view in scan_views(text):
-            for match in PERSONAL_GITHUB_URL.finditer(view):
+        reported = set()
+        for view_index, view in enumerate(scan_views(text)):
+            for match in URL_CANDIDATE.finditer(view):
+                repo_name = _personal_url(match.group(0), account_slug)
+                if repo_name is False:
+                    continue
                 number = line_number(view, match.start())
-                repo_name = match.group("repo")
-                repo = "%s/%s" % (ACCOUNT_SLUG, repo_name) if repo_name else ACCOUNT_SLUG
+                repo = "%s/%s" % (account_slug, repo_name) if repo_name else account_slug
                 finding = (number, repo.casefold())
                 if finding in reported:
                     continue
                 reported.add(finding)
                 checked += 1
+                view_marker = "" if view_index == 0 else " (decoded view)"
                 if repo_name is None:
                     failures.append(
-                        "personal-url: %s:%d references personal account profile %s"
-                        % (path, number, ACCOUNT_SLUG)
+                        "personal-url: %s:%d references personal account profile %s%s"
+                        % (path, number, account_slug, view_marker)
                     )
-                elif repo.casefold() not in normalized_allowlist:
+                elif allowlist is None:
                     failures.append(
-                        "personal-url: %s:%d references unknown repository %s"
-                        % (path, number, repo)
+                        "personal-url: %s:%d references personal account repository %s%s"
+                        % (path, number, repo, view_marker)
+                    )
+                elif repo.casefold() not in allowlist:
+                    failures.append(
+                        "personal-url: %s:%d references unknown repository %s%s"
+                        % (path, number, repo, view_marker)
                     )
     return checked
 
 
-def module_names(module: dict) -> Set[str]:
+def check_corpus_floor(documents, anchor, failures):
+    failed = 0
+    if not documents:
+        failures.append("corpus-floor: no publication source documents were scanned")
+        failed += 1
+    if anchor is not None and anchor not in documents:
+        failures.append("corpus-floor: %s was not among scanned documents" % anchor)
+        failed += 1
+    return failed
+
+
+def repo_home_pattern(repo):
+    base = r"(?<![A-Za-z0-9.-])(?:https?://)?(?:www\.)?github\.com/" + re.escape(repo)
+    terminator = r"(?:/(?=$|[^A-Za-z0-9_.~%-])|(?=$|[^/A-Za-z0-9_.-]|\.(?![A-Za-z0-9_-])))"
+    return re.compile(base + terminator, re.IGNORECASE)
+
+
+def check_whitelist_staleness(documents, whitelist, failures):
+    stale = 0
+    for path, expected_line in sorted(whitelist):
+        source = documents.get(path)
+        if source is not None and expected_line in source.split("\n"):
+            continue
+        failures.append("stale-whitelist: %s no longer contains the exact approved line" % path)
+        stale += 1
+    return stale
+
+
+def check_missing_labels(markdown, registry, whitelist, failures):
+    labels = registry["status_labels"]
+    map_repo = registry.get("map_repo")
+    checked = 0
+    for path_text, text in markdown.items():
+        language = language_of(Path(path_text))
+        for module in registry["modules"]:
+            if module["repo"] == map_repo:
+                continue
+            try:
+                label = labels[module["status"]][language]
+            except (KeyError, TypeError) as exc:
+                failures.append(
+                    "missing-label: registry has no label for %s status=%s language=%s (%s)"
+                    % (module.get("repo", "<unknown>"), module.get("status", "<unknown>"), language, exc)
+                )
+                continue
+            pattern = repo_home_pattern(module["repo"])
+            for number, line in enumerate(text.splitlines(), 1):
+                if not pattern.search(line):
+                    continue
+                checked += 1
+                if label not in line and (path_text, line) not in whitelist:
+                    failures.append(
+                        "missing-label: %s:%d links to %s without '%s' on the same line"
+                        % (path_text, number, module["repo"], label)
+                    )
+    return checked
+
+
+def module_names(module):
     name = module["name"]
     if isinstance(name, str):
         names = {name}
@@ -294,140 +428,52 @@ def module_names(module: dict) -> Set[str]:
     return {value for value in names if value}
 
 
-def repo_home_pattern(repo: str) -> re.Pattern:
-    base = (
-        r"(?<![A-Za-z0-9.-])(?:https?://)?(?:www\.)?github\.com/" + re.escape(repo)
-    )
-    home_terminator = (
-        r"(?:/(?=$|[^A-Za-z0-9_.~%-])|(?=$|[^/A-Za-z0-9_.-]|\.(?![A-Za-z0-9_-])))"
-    )
-    return re.compile(base + home_terminator, re.IGNORECASE)
+def name_pattern(name):
+    return re.compile(r"(?<![A-Za-z0-9])" + re.escape(name) + r"(?![A-Za-z0-9])", re.IGNORECASE)
 
 
-def check_whitelist_staleness(
-    documents: Mapping[str, str],
-    failures: List[str],
-    whitelist: Iterable[Tuple[str, str]] = MISSING_LABEL_WHITELIST,
-) -> int:
-    stale = 0
-    for path, expected_line in sorted(whitelist):
-        source = documents.get(path)
-        current_lines = source.encode("utf-8").split(b"\n") if source is not None else ()
-        if expected_line.encode("utf-8") in current_lines:
-            continue
-        failures.append("stale-whitelist: %s no longer contains the exact approved line" % path)
-        stale += 1
-    return stale
-
-
-def check_corpus_floor(documents: Mapping[str, str], failures: List[str]) -> int:
-    failed = 0
-    if not documents:
-        failures.append("corpus-floor: no publication source documents were scanned")
-        failed += 1
-    if "registry/modules.json" not in documents:
-        failures.append("corpus-floor: registry/modules.json was not among scanned documents")
-        failed += 1
-    return failed
-
-
-def check_missing_labels(
-    markdown: Mapping[str, str], registry: dict, failures: List[str]
-) -> int:
-    labels = registry["status_labels"]
-    map_repo = registry.get("map_repo")
-    checked = 0
-
-    for path_text, text in markdown.items():
-        path = pathlib.Path(path_text)
-        lang = language_of(path)
-        lines = text.splitlines()
-        for module in registry["modules"]:
-            if module["repo"] == map_repo:
-                continue
-            try:
-                label = labels[module["status"]][lang]
-            except (KeyError, TypeError) as exc:
-                failures.append(
-                    "missing-label: registry has no label for %s status=%s language=%s (%s)"
-                    % (module.get("repo", "<unknown>"), module.get("status", "<unknown>"), lang, exc)
-                )
-                continue
-
-            pattern = repo_home_pattern(module["repo"])
-            for number, line in enumerate(lines, 1):
-                if not pattern.search(line):
-                    continue
-                checked += 1
-                if label not in line and (path_text, line) not in MISSING_LABEL_WHITELIST:
-                    failures.append(
-                        "missing-label: %s:%d links to %s without '%s' on the same line"
-                        % (path_text, number, module["repo"], label)
-                    )
-    return checked
-
-
-def name_pattern(name: str) -> re.Pattern:
-    return re.compile(
-        r"(?<![A-Za-z0-9])" + re.escape(name) + r"(?![A-Za-z0-9])", re.IGNORECASE
-    )
-
-
-def remove_svg_markup(text: str) -> str:
-    preserved_cdata = SVG_CDATA.sub(lambda match: match.group(1), text)
-    return re.sub(r"<[^>]+>", " ", preserved_cdata)
-
-
-def squash_whitespace(text: str) -> str:
-    return re.sub(r"\s+", "", text)
-
-
-def svg_visible_text(source: str) -> str:
+def svg_visible_text(source):
     chunks = []
     for match in SVG_TEXT_ELEMENT.finditer(source):
-        without_tags = remove_svg_markup(match.group(2))
-        chunks.append(html.unescape(without_tags))
+        preserved = SVG_CDATA.sub(lambda item: item.group(1), match.group(2))
+        chunks.append(html.unescape(re.sub(r"<[^>]+>", " ", preserved)))
     for match in SVG_TEXT_ATTRIBUTE.finditer(source):
         chunks.append(html.unescape(match.group("value")))
     return re.sub(r"\s+", " ", " ".join(chunks)).strip()
 
 
-def markdown_status_evidence(markdown: Mapping[str, str], registry: dict) -> Dict[str, bool]:
+def markdown_status_evidence(markdown, registry):
     labels = registry["status_labels"]
     evidence = {module["repo"]: False for module in registry["modules"]}
     for path_text, text in markdown.items():
-        lang = language_of(pathlib.Path(path_text))
+        language = language_of(Path(path_text))
         for module in registry["modules"]:
             try:
-                label = labels[module["status"]][lang]
+                label = labels[module["status"]][language]
             except (KeyError, TypeError):
                 continue
             markers = module_names(module)
             markers.add("github.com/%s" % module["repo"])
-            for line in text.splitlines():
-                if label in line and any(name_pattern(marker).search(line) for marker in markers):
-                    evidence[module["repo"]] = True
-                    break
+            if any(
+                label in line and any(name_pattern(marker).search(line) for marker in markers)
+                for line in text.splitlines()
+            ):
+                evidence[module["repo"]] = True
     return evidence
 
 
-def check_svg_state_sources(
-    svg_documents: Mapping[str, str],
-    markdown: Mapping[str, str],
-    registry: dict,
-    failures: List[str],
-) -> int:
+def check_svg_state_sources(svg_documents, markdown, registry, failures):
     evidence = markdown_status_evidence(markdown, registry)
     checked = 0
     for path, source in svg_documents.items():
         visible = svg_visible_text(source)
-        visible_compact = squash_whitespace(visible).casefold()
+        compact_visible = re.sub(r"\s+", "", visible).casefold()
         for module in registry["modules"]:
             for name in sorted(module_names(module)):
                 matched = bool(name_pattern(name).search(visible))
                 if not matched:
-                    compact_name = squash_whitespace(name).casefold()
-                    matched = bool(compact_name) and compact_name in visible_compact
+                    compact_name = re.sub(r"\s+", "", name).casefold()
+                    matched = bool(compact_name) and compact_name in compact_visible
                 if not matched:
                     continue
                 checked += 1
@@ -439,449 +485,735 @@ def check_svg_state_sources(
     return checked
 
 
-def fixture_registry() -> dict:
-    return {
-        "languages": ["en", "ja"],
-        "map_repo": "caty-ai/family-os",
-        "status_labels": {
-            "published": {"en": "published, MIT", "ja": "公開・MIT"}
-        },
-        "footer_text": {"table_state": {"en": "State", "ja": "状態"}},
-        "modules": [
-            {
-                "name": "Alpha Module",
-                "repo": "caty-ai/alpha-module",
-                "status": "published",
-            }
-        ],
-        "retired_repos": [{"repo": ACCOUNT_SLUG + "/retired-module"}],
-    }
-
-
-def selftest_check(condition: bool, message: str) -> None:
-    if not condition:
-        raise RuntimeError("selftest failed: %s" % message)
-
-
-def selftest_denylist() -> None:
-    clean = {"clean.md": "https://github.com/%s/retired-module\n" % ACCOUNT_SLUG.upper()}
-    failures: List[str] = []
-    selftest_check(check_denylist(clean, failures) == 0 and not failures, "clean denylist")
-
-    cases = (
-        ("Sho" + "ji", "Shogi"),
-        ("翔" + "さん", "翔" + "くん"),
-        ("翔" + "士", "翔" + "太"),
-        ("承認" + "記録", "確認" + "記録"),
-        ("オーナー" + "承認", "オーナー" + "確認"),
-        ("approved" + " by", "approved for"),
-        ("CP-" + "3a GO", "CP-3a HOLD"),
-        ("/" + "Users" + "/person/project", "/opt/person/project"),
-        ("100." + "64.1.2", "100.63.1.2"),
-        ("local" + "host:8080", "example.test:8080"),
-        ("127." + "0.0.1", "127.0.0.2"),
-        ("0." + "0.0.0", "0.0.0.1"),
-        ("person" + "@example.com", "person at example.com"),
-        ("alpha-" + "loom", "alpha-public"),
-        ("&#32724;" + "&#12373;" + "&#12435;", "&#32724;" + "&#12367;" + "&#12435;"),
-        ("&#32724;" + "&#12393;" + "&#12435;", "&#32724;" + "&#12367;" + "&#12435;"),
-        ("alpha%2D" + "loom", "alpha%2Dpublic"),
-        ("alpha%26%2345%3B" + "loom", "alpha%26%2345%3Bpublic"),
-        (urllib.parse.quote("翔" + "さん"), urllib.parse.quote("翔" + "くん")),
-    )
-    for index, (violation, clean_twin) in enumerate(cases):
-        caught: List[str] = []
-        selftest_check(
-            check_denylist({"negative-%d.md" % index: violation}, caught) >= 1 and bool(caught),
-            "denylist negative fixture %d" % index,
-        )
-        twin_failures: List[str] = []
-        selftest_check(
-            check_denylist({"clean-%d.md" % index: clean_twin}, twin_failures) == 0
-            and not twin_failures,
-            "denylist clean twin %d" % index,
-        )
-
-
-def selftest_personal_urls() -> None:
-    registry = fixture_registry()
-    clean_cases = (
-        ("https://github.com/%s/retired-module" % ACCOUNT_SLUG, 1),
-        ("https://www.github.com/%s/retired-module" % ACCOUNT_SLUG, 1),
-        ("https://github.com/%s/retired-module." % ACCOUNT_SLUG.upper(), 1),
-        (r"github\.com/" + ACCOUNT_SLUG + "/workflow-pattern", 0),
-        ("https://notgithub.com/%s/unknown-module" % ACCOUNT_SLUG, 0),
-        ("https://x.github.com/%s/unknown-module" % ACCOUNT_SLUG, 0),
-        ("https%3A%2F%2Fgithub%2Ecom%2F" + ACCOUNT_SLUG + "%2Fretired-module", 1),
-        ("https://github.com/%s.git" % ACCOUNT_SLUG, 0),
-    )
-    for index, (source, expected_count) in enumerate(clean_cases):
-        failures: List[str] = []
-        checked = check_personal_urls({"clean-%d.yml" % index: source}, registry, failures)
-        selftest_check(
-            checked == expected_count and not failures,
-            "personal URL clean twin %d" % index,
-        )
-
-    negative_cases = (
-        "https://github.com/%s/unknown-module" % ACCOUNT_SLUG,
-        "Visit (github.com/%s)" % ACCOUNT_SLUG,
-        "Profile: [me](https://github.com/%s) in the middle" % ACCOUNT_SLUG,
-        "github.com/%s" % ACCOUNT_SLUG,
-        "github.com/%s?tab=repositories" % ACCOUNT_SLUG,
-        "https://www.github.com/%s/unknown" % ACCOUNT_SLUG,
-        "github%2Ecom%2F" + ACCOUNT_SLUG + "%2Funknown-module",
-        "https%3A%2F%2Fgithub&#46;com%2F" + ACCOUNT_SLUG + "%2Funknown-module",
-        "https://github.com/%s/unknown-module." % ACCOUNT_SLUG,
-    )
-    for index, source in enumerate(negative_cases):
-        caught: List[str] = []
-        selftest_check(
-            check_personal_urls({"negative-%d.svg" % index: source}, registry, caught) == 1
-            and bool(caught),
-            "personal URL negative fixture %d" % index,
-        )
-    selftest_check("unknown-module." not in "\n".join(caught), "trailing URL period capture")
-
-
-def selftest_missing_labels() -> None:
-    registry = fixture_registry()
-    pattern = repo_home_pattern("caty-ai/alpha-module")
-    terminators = (
-        "。",
-        "（",
-        "）",
-        "、",
-        "]",
-        ";",
-        ":",
-        "!",
-        "|",
-        "{",
-        "}",
-        " ",
-        "\t",
-        "\n",
-        "",
-    )
-    for terminator in terminators:
-        selftest_check(
-            bool(pattern.search("https://github.com/caty-ai/alpha-module" + terminator)),
-            "home-link terminator %r" % terminator,
-        )
-        selftest_check(
-            bool(pattern.search("https://github.com/caty-ai/alpha-module/" + terminator)),
-            "slash home-link terminator %r" % terminator,
-        )
-    selftest_check(
-        bool(pattern.search("https://github.com/caty-ai/alpha-module.")),
-        "home-link sentence period",
-    )
-    selftest_check(
-        bool(pattern.search("https://github.com/caty-ai/alpha-module.)")),
-        "home-link parenthesized period",
-    )
-    for extension in ("-wip", ".draft", "_copy", "9"):
-        selftest_check(
-            not pattern.search("https://github.com/caty-ai/alpha-module" + extension),
-            "extended repository name %r" % extension,
-        )
-    selftest_check(
-        not pattern.search("https://github.com/caty-ai/alpha-module.git"),
-        "extended repository name '.git'",
-    )
-    for segment in ("issues/3", "_data", ".config", "~user", "%2F", "-branch"):
-        selftest_check(
-            not pattern.search("https://github.com/caty-ai/alpha-module/" + segment),
-            "deep link %r" % segment,
-        )
-    selftest_check(
-        not pattern.search("https://notgithub.com/caty-ai/alpha-module"),
-        "left URL boundary",
-    )
-    selftest_check(
-        bool(pattern.search("https://www.github.com/caty-ai/alpha-module")),
-        "optional www home link",
-    )
-    selftest_check(
-        not pattern.search("https://x.github.com/caty-ai/alpha-module"),
-        "exclude subdomain home link",
-    )
-
-    clean = {
-        "README.md": "- [Alpha](https://github.com/caty-ai/alpha-module) (published, MIT)\n"
-        "https://github.com/caty-ai/alpha-module/issues/3\n"
-        "- [Family OS](https://github.com/caty-ai/family-os)\n",
-        "README.EN.MD": "- [Alpha](https://www.github.com/caty-ai/alpha-module.) (published, MIT)\n",
-        "README.ja.md": "| モジュール | 状態 |\n"
-        "| --- | --- |\n"
-        "| [Alpha](https://github.com/caty-ai/alpha-module) | 公開・MIT |\n",
-    }
-    failures: List[str] = []
-    selftest_check(
-        check_missing_labels(clean, registry, failures) == 3 and not failures,
-        "clean missing-label fixtures",
-    )
-
-    negative_cases = (
-        {"README.md": "- [Alpha](https://github.com/caty-ai/alpha-module)"},
-        {"README.md": "See [Alpha](https://github.com/caty-ai/alpha-module) for details."},
-        {"README.md": "See https://github.com/caty-ai/alpha-module for details."},
-        {"README.md": "最新は https://github.com/caty-ai/alpha-module。"},
-        {
-            "README.ja.md": "| モジュール | 状態 |\n"
-            "| --- | --- |\n"
-            "| [Alpha](https://github.com/caty-ai/alpha-module) | 不明 |\n"
-        },
-    )
-    for index, source in enumerate(negative_cases):
-        caught: List[str] = []
-        selftest_check(
-            check_missing_labels(source, registry, caught) == 1 and bool(caught),
-            "missing-label negative fixture %d" % index,
-        )
-    language_caught: List[str] = []
-    selftest_check(
-        check_missing_labels(
-            {
-                "README.ja.MD": "| モジュール | 状態 |\n"
-                "| --- | --- |\n"
-                "| [Alpha](https://github.com/caty-ai/alpha-module) | published, MIT |\n"
-            },
-            registry,
-            language_caught,
-        )
-        == 1
-        and any("公開・MIT" in failure for failure in language_caught),
-        "missing-label Japanese uppercase suffix fixture",
-    )
-
-    clean_non_matches = (
-        {"README.md": "Latest is https://github.com/caty-ai/alpha-module.draft (published, MIT)"},
-        {"README.md": "Clone via https://github.com/caty-ai/alpha-module.git"},
-    )
-    for index, source in enumerate(clean_non_matches):
-        clean_failures: List[str] = []
-        selftest_check(
-            check_missing_labels(source, registry, clean_failures) == 0 and not clean_failures,
-            "missing-label clean non-match %d" % index,
-        )
-
-    whitelisted_line = next(
-        line
-        for path, line in MISSING_LABEL_WHITELIST
-        if path == "README.md" and "caty-ai/caty-agent-harness" in line
-    )
-    whitelist_registry = fixture_registry()
-    whitelist_registry["modules"][0].update(
-        {"name": "Caty Agent Harness", "repo": "caty-ai/caty-agent-harness"}
-    )
-    whitelist_failures: List[str] = []
-    selftest_check(
-        check_missing_labels(
-            {"README.md": whitelisted_line}, whitelist_registry, whitelist_failures
-        )
-        == 1
-        and not whitelist_failures,
-        "exact missing-label whitelist",
-    )
-
-
-def selftest_svg_state_sources() -> None:
-    registry = fixture_registry()
-    clean_md = {
-        "README.md": "Alpha Module — https://github.com/caty-ai/alpha-module — published, MIT"
-    }
-    svg_cases = (
-        "<svg><text>Alpha Module</text></svg>",
-        "<svg><text>Alpha <tspan>Module</tspan></text></svg>",
-        "<svg><text>Alpha</text>\n<text>Module</text></svg>",
-        "<svg><text><![CDATA[Alpha Module]]></text></svg>",
-        "<svg><text>Alpha    Module</text></svg>",
-        "<svg><text>Alpha\nModule</text></svg>",
-        "<svg><text>Alpha    \n    Module</text></svg>",
-        "<svg><text>Alpha Module</text><text>Alpha   Module</text></svg>",
-        '<svg><g title="Alpha Module"/></svg>',
-        "<svg><g aria-label='Alpha Module'/><image alt='diagram'/></svg>",
-        "<svg><text>AlphaModule</text></svg>",
-    )
-    for index, source in enumerate(svg_cases):
-        clean_failures: List[str] = []
-        clean_svg = {"assets/clean-%d.svg" % index: source}
-        selftest_check(
-            check_svg_state_sources(clean_svg, clean_md, registry, clean_failures) == 1
-            and not clean_failures,
-            "SVG clean twin %d" % index,
-        )
-        caught: List[str] = []
-        selftest_check(
-            check_svg_state_sources(
-                clean_svg, {"README.md": "Alpha Module"}, registry, caught
-            )
-            == 1
-            and bool(caught),
-            "SVG negative fixture %d" % index,
-        )
-
-    denylist_caught: List[str] = []
-    private_svg = {"assets/private.svg": "<metadata>local" + "host:9000</metadata>"}
-    selftest_check(
-        check_denylist(private_svg, denylist_caught) == 1 and bool(denylist_caught),
-        "SVG denylist fixture",
-    )
-
-
-def selftest_whitelist_and_corpus() -> None:
-    whitelist = frozenset((("fixture.md", "approved full line"),))
-    clean_failures: List[str] = []
-    selftest_check(
-        check_whitelist_staleness(
-            {"fixture.md": "approved full line\n"}, clean_failures, whitelist
-        )
-        == 0
-        and not clean_failures,
-        "current whitelist entry",
-    )
-    for index, source in enumerate(("approved full Line\n", "prefix approved full line suffix\n")):
-        stale_failures: List[str] = []
-        selftest_check(
-            check_whitelist_staleness({"fixture.md": source}, stale_failures, whitelist) == 1
-            and bool(stale_failures),
-            "stale whitelist fixture %d" % index,
-        )
-
-    empty_failures: List[str] = []
-    selftest_check(
-        check_corpus_floor({}, empty_failures) == 2 and len(empty_failures) == 2,
-        "empty corpus fixture",
-    )
-    corpus_failures: List[str] = []
-    selftest_check(
-        check_corpus_floor({"registry/modules.json": "{}"}, corpus_failures) == 0
-        and not corpus_failures,
-        "complete corpus twin",
-    )
-
-
-def selftest_partitions_and_scope() -> None:
-    registry = fixture_registry()
-    documents = {
-        "README.MD": "github.com/%s/unknown-module" % ACCOUNT_SLUG,
-        "assets/MAP.SVG": "<svg/>",
-    }
-    markdown, svg_documents = partition_documents(documents)
-    selftest_check("README.MD" in markdown, "uppercase Markdown partition")
-    selftest_check("assets/MAP.SVG" in svg_documents, "uppercase SVG partition")
-    caught: List[str] = []
-    selftest_check(
-        check_personal_urls(documents, registry, caught) == 1 and bool(caught),
-        "personal URL check covers all documents",
-    )
-    escaped_failures: List[str] = []
-    selftest_check(
-        check_personal_urls(
-            {"workflow.yml": r"github\.com/" + ACCOUNT_SLUG + "/unknown-module"},
-            registry,
-            escaped_failures,
-        )
-        == 0
-        and not escaped_failures,
-        "escaped workflow regex remains exempt",
-    )
-    selftest_check(language_of(pathlib.Path("README.JA.MD")) == "ja", "uppercase language suffix")
-    selftest_check(language_of(pathlib.Path("guide.en.md")) == "en", "lowercase language suffix")
-
-
-def run_selftests() -> int:
-    tests = (
-        selftest_denylist,
-        selftest_personal_urls,
-        selftest_missing_labels,
-        selftest_svg_state_sources,
-        selftest_whitelist_and_corpus,
-        selftest_partitions_and_scope,
-    )
-    for test in tests:
-        test()
-        print("ok: %s" % test.__name__)
-    print("OK — publication gate selftest passed; all negative fixtures were caught.")
-    return 0
-
-
-def load_registry(root: pathlib.Path) -> dict:
-    path = root / "registry" / "modules.json"
-    registry = json.loads(path.read_text(encoding="utf-8"))
+def load_registry(path):
+    try:
+        registry = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise GateConfigurationError(
+            "gate-error: registry could not be read as UTF-8 JSON: %s" % exc
+        ) from exc
+    if not isinstance(registry, dict):
+        raise GateConfigurationError("gate-error: registry must be a JSON object")
     if not isinstance(registry.get("modules"), list) or not registry["modules"]:
-        raise ValueError("registry modules must be a non-empty list")
+        raise GateConfigurationError("gate-error: registry modules must be a non-empty list")
     if not isinstance(registry.get("status_labels"), dict):
-        raise ValueError("registry status_labels must be an object")
+        raise GateConfigurationError("gate-error: registry status_labels must be an object")
     return registry
 
 
-def partition_documents(
-    documents: Mapping[str, str]
-) -> Tuple[Dict[str, str], Dict[str, str]]:
-    markdown = {
-        path: text for path, text in documents.items() if path.lower().endswith(".md")
-    }
-    svg_documents = {
-        path: text for path, text in documents.items() if path.lower().endswith(".svg")
-    }
+def partition_documents(documents):
+    markdown = {path: text for path, text in documents.items() if path.lower().endswith(".md")}
+    svg_documents = {path: text for path, text in documents.items() if path.lower().endswith(".svg")}
     return markdown, svg_documents
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--selftest", action="store_true", help="run embedded gate fixtures")
-    parser.add_argument(
-        "--root",
-        type=pathlib.Path,
-        default=REPO_ROOT,
-        help="repository checkout to inspect (default: the checkout containing this script)",
-    )
-    args = parser.parse_args()
-    if args.selftest:
-        return run_selftests()
+SKIP_NOTICES = (
+    "notice: registry allowlist check skipped (--registry not provided)",
+    "notice: missing-label check skipped (--registry not provided)",
+    "notice: SVG-state check skipped (--registry not provided)",
+    "notice: whitelist-staleness check skipped (--registry not provided)",
+)
 
-    root = args.root.expanduser().resolve()
-    failures: List[str] = []
-    documents: Dict[str, str] = {}
+
+def run_gate(root, account_slug, registry_argument=None, denylist_argument=None):
+    root = Path(root).expanduser().resolve()
+    failures = []
+    documents = {}
+    rules = ()
+    whitelist = frozenset()
+    registry = None
+    registry_relative = None
+    corpus_anchor = "README.md"
     denylist_hits = 0
     personal_urls = 0
     root_links = 0
     svg_names = 0
-    try:
-        documents = read_sources(root, failures)
-        check_corpus_floor(documents, failures)
-        check_whitelist_staleness(documents, failures)
-        registry = load_registry(root)
-        markdown, svg_documents = partition_documents(documents)
+    enumeration_mode = "git" if _contains_git_entry(root) else "rglob-fallback"
+    binary_skipped = 0
+    symlinks_skipped = 0
+    policy_path = denylist_path(root, denylist_argument)
 
-        denylist_hits = check_denylist(documents, failures)
-        personal_urls = check_personal_urls(documents, registry, failures)
-        root_links = check_missing_labels(markdown, registry, failures)
-        svg_names = check_svg_state_sources(svg_documents, markdown, registry, failures)
-    except (KeyError, OSError, UnicodeError, ValueError, json.JSONDecodeError) as exc:
+    normalized_slug = account_slug.strip() if account_slug is not None else ""
+    if not normalized_slug:
+        failures.append("gate-error: --account-slug is required for publication URL checks (fail-closed)")
+    elif not ACCOUNT_SLUG.fullmatch(normalized_slug):
+        failures.append(
+            "gate-error: --account-slug must match ^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37})$ (fail-closed)"
+        )
+        normalized_slug = ""
+
+    try:
+        rules = load_denylist(root, denylist_argument)
+    except GateConfigurationError as exc:
+        failures.append(str(exc))
+    try:
+        whitelist = load_label_whitelist(root)
+    except GateConfigurationError as exc:
+        failures.append(str(exc))
+
+    registry_path = None
+    if registry_argument is not None:
+        registry_path = Path(registry_argument).expanduser()
+        if not registry_path.is_absolute():
+            registry_path = root / registry_path
+        registry_path = registry_path.resolve()
+        try:
+            registry_relative = registry_path.relative_to(root).as_posix()
+        except ValueError:
+            failures.append(
+                "gate-error: --registry must resolve inside --root (fail-closed)"
+            )
+            corpus_anchor = None
+        else:
+            corpus_anchor = registry_relative
+            try:
+                registry = load_registry(registry_path)
+            except GateConfigurationError as exc:
+                failures.append(str(exc))
+
+    try:
+        documents, enumeration_mode, binary_skipped, symlinks_skipped = read_sources(
+            root, failures, policy_path
+        )
+        check_corpus_floor(documents, corpus_anchor, failures)
+        if rules:
+            denylist_hits = check_denylist(documents, rules, failures)
+        if normalized_slug:
+            personal_urls = check_personal_urls(documents, normalized_slug, registry, failures)
+        if registry is not None:
+            markdown, svg_documents = partition_documents(documents)
+            check_whitelist_staleness(documents, whitelist, failures)
+            root_links = check_missing_labels(markdown, registry, whitelist, failures)
+            svg_names = check_svg_state_sources(svg_documents, markdown, registry, failures)
+    except GateConfigurationError as exc:
+        failures.append(str(exc))
+    except (KeyError, OSError, UnicodeError, ValueError) as exc:
         failures.append("gate-error: publication checks could not complete: %s" % exc)
 
+    print("enumeration: %s" % enumeration_mode)
     print("source files scanned : %d" % len(documents))
+    print("binary files skipped: %d" % binary_skipped)
+    if enumeration_mode == "rglob-fallback":
+        print("symlinks skipped: %d" % symlinks_skipped)
+    print("denylist rules loaded : %d" % len(rules))
     print("denylist matches     : %d" % denylist_hits)
     print("personal URLs checked: %d" % personal_urls)
     print("module links checked : %d" % root_links)
     print("SVG names checked    : %d" % svg_names)
-    print("label whitelist      : %d" % len(MISSING_LABEL_WHITELIST))
+    print("label whitelist      : %d" % len(whitelist))
+    if registry_argument is None:
+        for notice in SKIP_NOTICES:
+            print(notice)
 
     if failures:
         print("\nFAILED (%d):" % len(failures))
         for failure in failures:
             print("  - %s" % failure)
         return 1
-
-    print(
-        "\nOK — publication gate passed with %d explicit label whitelist entries."
-        % len(MISSING_LABEL_WHITELIST)
-    )
+    print("\nOK — publication gate passed with %d explicit label whitelist entries." % len(whitelist))
     return 0
+
+
+SELFTEST_DENYLIST = (
+    "# Embedded policy fixture.\n"
+    "private-marker\tacme[-_ ]" "secret\n"
+    "private-host\tprivate\\.example\\.invalid\n"
+)
+SELFTEST_CLEAN_README = "# Public project\n\nPublication-safe example content.\n"
+SELFTEST_VIOLATING_README = (
+    "# Internal project\n\nThis exposes an acme-" "secret marker.\n"
+)
+SELFTEST_ASSERTIONS = 0
+
+
+def _selftest_check(condition, message):
+    global SELFTEST_ASSERTIONS
+    SELFTEST_ASSERTIONS += 1
+    if not condition:
+        raise RuntimeError("selftest failed: %s" % message)
+
+
+def _fixture_registry(account_slug="neutral-owner"):
+    return {
+        "languages": ["en", "ja"],
+        "map_repo": "example-org/map",
+        "status_labels": {"published": {"en": "published, MIT", "ja": "公開・MIT"}},
+        "modules": [
+            {"name": "Example Module", "repo": "example-org/example-module", "status": "published"}
+        ],
+        "retired_repos": [{"repo": account_slug + "/public-archive"}],
+    }
+
+
+def _capture_main(arguments):
+    output = io.StringIO()
+    with redirect_stdout(output):
+        status = main(arguments)
+    return status, output.getvalue()
+
+
+def _fixture_personal_url(account_slug, repository=None):
+    url = "https://" + "github." + "com/" + account_slug
+    return url + "/" + repository if repository else url
+
+
+def _fixture_module_link(repo="example-org/example-module"):
+    return "https://" + "github." + "com/" + repo
+
+
+def _fixture_module_line(with_status=True):
+    line = "[Example Module](" + _fixture_module_link() + ")"
+    return line + " — published, MIT" if with_status else line
+
+
+def _fixture_email(local_part, domain):
+    return local_part + "@" + domain
+
+
+def _fixture_userinfo_personal_url(account_slug, repository, username, host=None):
+    target_host = host or ("github." + "com")
+    return "https://" + username + "@" + target_host + "/" + account_slug + "/" + repository
+
+
+def selftest_policy_parsers():
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        try:
+            load_denylist(root)
+        except GateConfigurationError as exc:
+            _selftest_check(
+                str(exc)
+                == "gate-error: .publication-denylist missing/empty — a publication gate with no denylist proves nothing (fail-closed)",
+                "missing denylist",
+            )
+        else:
+            raise RuntimeError("selftest failed: missing denylist accepted")
+        (root / DENYLIST_NAME).write_text("# comment\n\n", encoding="utf-8")
+        try:
+            load_denylist(root)
+        except GateConfigurationError as exc:
+            _selftest_check("missing/empty" in str(exc), "zero-rule denylist")
+        else:
+            raise RuntimeError("selftest failed: zero-rule denylist accepted")
+        malformed = (
+            ("broken\n", ":1 malformed rule"),
+            ("name\t[\n", ":1 invalid regex"),
+            ("bad name\tmarker\n", ":1 malformed rule"),
+            ("\tmarker\n", ":1 malformed rule"),
+            ("bad\tname\tmarker\n", ":1 malformed rule"),
+            ("name\t marker\n", "write \\s or [ ] explicitly"),
+            ("name\tmarker \n", "write \\s or [ ] explicitly"),
+        )
+        for source, marker in malformed:
+            (root / DENYLIST_NAME).write_text(source, encoding="utf-8")
+            try:
+                load_denylist(root)
+            except GateConfigurationError as exc:
+                _selftest_check(marker in str(exc), "line-numbered policy error")
+            else:
+                raise RuntimeError("selftest failed: malformed denylist accepted")
+        (root / DENYLIST_NAME).write_text(
+            "\ufeff# BOM-prefixed comment\nmarker\tprivate(?:\\t|[ ])+marker\n",
+            encoding="utf-8",
+        )
+        _selftest_check(len(load_denylist(root)) == 1, "BOM comment and explicit whitespace regex")
+        _selftest_check(load_label_whitelist(root) == frozenset(), "absent whitelist")
+        (root / WHITELIST_NAME).write_text("README.md\tapproved exact line\n", encoding="utf-8")
+        _selftest_check(("README.md", "approved exact line") in load_label_whitelist(root), "whitelist parser")
+        registry_path = root / "registry.json"
+        registry_path.write_text("[]\n", encoding="utf-8")
+        try:
+            load_registry(registry_path)
+        except GateConfigurationError as exc:
+            _selftest_check(
+                str(exc) == "gate-error: registry must be a JSON object",
+                "non-object registry error",
+            )
+        else:
+            raise RuntimeError("selftest failed: non-object registry accepted")
+
+
+def selftest_scanners():
+    rules = (("private marker", re.compile("private" + "[- ]marker", re.IGNORECASE)),)
+    failures = []
+    documents = {"README.md": "private%2Dmarker\n"}
+    _selftest_check(
+        check_denylist(documents, rules, failures) == 1
+        and "(decoded view)" in failures[0],
+        "decoded denylist marker",
+    )
+    raw_line_failures = []
+    _selftest_check(
+        check_denylist(
+            {"README.md": "safe\nprivate-marker\n"}, rules, raw_line_failures
+        )
+        == 1
+        and "README.md:2" in raw_line_failures[0]
+        and "(decoded view)" not in raw_line_failures[0],
+        "raw-view line number",
+    )
+    decoded_line_failures = []
+    _selftest_check(
+        check_denylist(
+            {"README.md": "safe%0Aprivate%2Dmarker\n"}, rules, decoded_line_failures
+        )
+        == 1
+        and "README.md:2" in decoded_line_failures[0]
+        and "(decoded view)" in decoded_line_failures[0],
+        "decoded-view line number",
+    )
+    raw_failures = []
+    account_rule = (("account marker", re.compile("neutral-owner", re.IGNORECASE)),)
+    _selftest_check(check_denylist({"README.md": "neutral-owner"}, account_rule, raw_failures) == 1, "denylist raw account text")
+    email_failures = []
+    email_rule = (
+        (
+            "email address",
+            re.compile(r"\b[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}\b", re.IGNORECASE),
+        ),
+    )
+    _selftest_check(
+        check_denylist(
+            {"README.md": _fixture_email("bob", "neutral-owner." + "com")},
+            email_rule,
+            email_failures,
+        )
+        == 1
+        and email_failures,
+        "slug-domain email remains visible to raw denylist",
+    )
+    userinfo_failures = []
+    _selftest_check(
+        check_personal_urls(
+            {
+                "README.md": "See "
+                + _fixture_userinfo_personal_url(
+                    "neutral-owner", "private", "viewer"
+                )
+            },
+            "neutral-owner",
+            None,
+            userinfo_failures,
+        )
+        == 1
+        and "personal-url: README.md:1 references personal account repository neutral-owner/private"
+        in userinfo_failures[0],
+        "userinfo personal URL candidate",
+    )
+    clean_userinfo_failures = []
+    _selftest_check(
+        check_personal_urls(
+            {
+                "README.md": "See "
+                + _fixture_userinfo_personal_url(
+                    "neutral-owner",
+                    "private",
+                    "viewer",
+                    host="github." + "com.evil.invalid",
+                )
+            },
+            "neutral-owner",
+            None,
+            clean_userinfo_failures,
+        )
+        == 0
+        and not clean_userinfo_failures,
+        "userinfo clean host control",
+    )
+
+    normalized_failures = []
+    normalized_documents = {
+        "README.md": "\n".join(
+            (
+                "https://github." "com:443/neutral-owner/x",
+                "https://github." "com./neutral-owner/x",
+                "https://gist.github." "com/neutral-owner/x",
+                "https://neutral-owner.github." "io/page",
+                "https://not-neutral-owner.github." "io/page",
+                "https://github." "com.evil.invalid/neutral-owner/x",
+            )
+        )
+    }
+    _selftest_check(
+        check_personal_urls(
+            normalized_documents, "neutral-owner", None, normalized_failures
+        )
+        == 4
+        and len(normalized_failures) == 4,
+        "normalized personal URL hosts and unrelated-host negatives",
+    )
+
+    no_registry_failures = []
+    count = check_personal_urls(
+        {"README.md": urllib.parse.quote(_fixture_personal_url("neutral-owner", "public-archive"))},
+        "neutral-owner",
+        None,
+        no_registry_failures,
+    )
+    _selftest_check(count == 1 and no_registry_failures, "registry-free personal URL any-hit")
+    registry = _fixture_registry()
+    allowed_failures = []
+    _selftest_check(
+        check_personal_urls(
+            {"README.md": _fixture_personal_url("neutral-owner", "public-archive") + "."},
+            "neutral-owner",
+            registry,
+            allowed_failures,
+        ) == 1 and not allowed_failures,
+        "registry personal URL allowlist",
+    )
+    unknown_failures = []
+    _selftest_check(
+        check_personal_urls(
+            {"README.md": _fixture_personal_url("neutral-owner", "unlisted")},
+            "neutral-owner",
+            registry,
+            unknown_failures,
+        ) == 1 and unknown_failures,
+        "unknown personal repository",
+    )
+
+
+def selftest_registry_checks():
+    registry = _fixture_registry()
+    clean = {"README.md": _fixture_module_line() + "\n"}
+    failures = []
+    _selftest_check(check_missing_labels(clean, registry, frozenset(), failures) == 1 and not failures, "clean label")
+    missing = []
+    line = _fixture_module_line(with_status=False)
+    _selftest_check(check_missing_labels({"README.md": line}, registry, frozenset(), missing) == 1 and missing, "missing label")
+    exempt = []
+    whitelist = frozenset((("README.md", line),))
+    _selftest_check(check_missing_labels({"README.md": line}, registry, whitelist, exempt) == 1 and not exempt, "exact whitelist")
+    stale = []
+    _selftest_check(check_whitelist_staleness({"README.md": line + " changed"}, whitelist, stale) == 1 and stale, "stale whitelist")
+    svg_failures = []
+    svg = {"assets/map.svg": "<svg><text>Example Module</text></svg>"}
+    _selftest_check(check_svg_state_sources(svg, clean, registry, svg_failures) >= 1 and not svg_failures, "clean SVG state")
+    missing_svg = []
+    _selftest_check(check_svg_state_sources(svg, {"README.md": line}, registry, missing_svg) >= 1 and missing_svg, "missing SVG state")
+
+
+SELFTEST_SOURCE_SCAN_DENYLIST = (
+    "email-address\t\\b[A-Z0-9._%+\\-]+@[A-Z0-9.\\-]+\\.[A-Z]{2,}\\b\n"
+    "github-url-ish\thttps?://(?:[A-Za-z0-9._~!$&'()*+,;=:%-]+@)?"
+    "(?:gist\\.)?github\\.(?:com|io)/[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)?\n"
+)
+
+
+def _materialize_fixture(root, readme=SELFTEST_CLEAN_README, denylist=SELFTEST_DENYLIST):
+    (root / "README.md").write_text(readme, encoding="utf-8")
+    (root / DENYLIST_NAME).write_text(denylist, encoding="utf-8")
+
+
+def _git(arguments, root):
+    result = subprocess.run(
+        ["git"] + list(arguments),
+        cwd=str(root),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    _selftest_check(
+        result.returncode == 0,
+        "git %s: %s"
+        % (" ".join(arguments), result.stderr.decode("utf-8", errors="replace")),
+    )
+
+
+def _initialize_git_fixture(root, paths):
+    _git(["init", "-q"], root)
+    _git(["add", "-f", "--"] + list(paths), root)
+
+
+def selftest_end_to_end():
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        _materialize_fixture(root)
+        (root / ".env").write_text("PUBLIC_VALUE=example\n", encoding="utf-8")
+        (root / "LICENSE").write_text("Example license\n", encoding="utf-8")
+        (root / "Dockerfile").write_text("FROM scratch\n", encoding="utf-8")
+        (root / "notes.txt").write_text("safe notes\n", encoding="utf-8")
+        (root / "extensionless").write_text("safe\n", encoding="utf-8")
+        (root / "image.bin").write_bytes(b"\xff\xfe\x00")
+        (root / "node_modules").mkdir()
+        (root / "node_modules" / "fallback-excluded.md").write_text(
+            "acme-" "secret\n", encoding="utf-8"
+        )
+        os.symlink("README.md", root / "readme-link")
+        status, output = _capture_main(["--root", str(root), "--account-slug", "neutral-owner"])
+        _selftest_check(status == 0, "clean fixture main(): %r" % output)
+        _selftest_check(all(notice in output for notice in SKIP_NOTICES), "four registry skip notices")
+        _selftest_check("enumeration: rglob-fallback" in output, "fallback enumeration summary")
+        _selftest_check("source files scanned : 6" in output, "all UTF-8 suffixes and extensionless files scanned")
+        _selftest_check("binary files skipped: 1" in output, "binary summary")
+        _selftest_check("symlinks skipped: 1" in output, "fallback symlink summary")
+        _selftest_check("denylist rules loaded : 2" in output, "denylist rule summary")
+        missing_slug_status, missing_slug_output = _capture_main(["--root", str(root)])
+        _selftest_check(
+            missing_slug_status == 1
+            and "gate-error: --account-slug is required for publication URL checks (fail-closed)"
+            in missing_slug_output,
+            "missing account slug fails closed",
+        )
+        whitespace_status, whitespace_output = _capture_main(
+            ["--root", str(root), "--account-slug", " "]
+        )
+        _selftest_check(
+            whitespace_status == 1 and "gate-error: --account-slug" in whitespace_output,
+            "whitespace account slug fails closed",
+        )
+        invalid_slug_status, invalid_slug_output = _capture_main(
+            ["--root", str(root), "--account-slug", "foo/bar"]
+        )
+        _selftest_check(
+            invalid_slug_status == 1
+            and "gate-error: --account-slug must match ^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37})$ (fail-closed)"
+            in invalid_slug_output,
+            "invalid account slug fails closed",
+        )
+
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        _materialize_fixture(root, SELFTEST_VIOLATING_README)
+        status, output = _capture_main(["--root", str(root), "--account-slug", "neutral-owner"])
+        _selftest_check(status == 1 and "denylist:" in output, "violating fixture main()")
+
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        _materialize_fixture(root)
+        copied_gate = root / "tools" / "check_publication_gate.py"
+        copied_gate.parent.mkdir(parents=True)
+        shutil.copyfile(Path(__file__), copied_gate)
+        status, output = _capture_main(["--root", str(root), "--account-slug", "neutral-owner"])
+        _selftest_check(status == 0 and "source files scanned : 2" in output, "copied gate self-scan: %r" % output)
+        (root / DENYLIST_NAME).write_text(SELFTEST_SOURCE_SCAN_DENYLIST, encoding="utf-8")
+        source_scan_status, source_scan_output = _capture_main(
+            ["--root", str(root), "--account-slug", "neutral-owner"]
+        )
+        _selftest_check(
+            source_scan_status == 0
+            and "denylist matches     : 0" in source_scan_output,
+            "copied gate source scan denylist stays green: %r" % source_scan_output,
+        )
+
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        _materialize_fixture(root)
+        registry_path = root / "registry" / "modules.json"
+        registry_path.parent.mkdir(parents=True)
+        registry_path.write_text(json.dumps(_fixture_registry()), encoding="utf-8")
+        (root / "README.md").write_text(
+            _fixture_module_line() + "\n",
+            encoding="utf-8",
+        )
+        status, output = _capture_main(
+            ["--root", str(root), "--account-slug", "neutral-owner", "--registry", "registry/modules.json"]
+        )
+        _selftest_check(status == 0 and "notice:" not in output, "registry-backed main(): %r" % output)
+
+    with tempfile.TemporaryDirectory() as temporary, tempfile.TemporaryDirectory() as external:
+        root = Path(temporary)
+        _materialize_fixture(root)
+        external_registry = Path(external) / "modules.json"
+        external_registry.write_text(json.dumps(_fixture_registry()), encoding="utf-8")
+        status, output = _capture_main(
+            [
+                "--root",
+                str(root),
+                "--account-slug",
+                "neutral-owner",
+                "--registry",
+                str(external_registry),
+            ]
+        )
+        _selftest_check(
+            status == 1
+            and "gate-error: --registry must resolve inside --root (fail-closed)" in output,
+            "external registry rejected without an empty corpus anchor",
+        )
+
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        _materialize_fixture(root)
+        (root / ".gitignore").write_text("node_modules/\n*.txt\n", encoding="utf-8")
+        (root / "node_modules").mkdir()
+        (root / "node_modules" / "x.md").write_text(
+            "acme-" "secret\n", encoding="utf-8"
+        )
+        (root / "published.txt").write_text("acme-" "secret\n", encoding="utf-8")
+        _initialize_git_fixture(
+            root,
+            ("README.md", DENYLIST_NAME, ".gitignore", "node_modules/x.md", "published.txt"),
+        )
+        status, output = _capture_main(
+            ["--root", str(root), "--account-slug", "neutral-owner"]
+        )
+        _selftest_check(
+            status == 1
+            and "enumeration: git" in output
+            and "denylist: node_modules/x.md:1" in output
+            and "denylist: published.txt:1" in output,
+            "git mode scans committed formerly-excluded and .txt files: %r" % output,
+        )
+
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        _materialize_fixture(root)
+        (root / "binary.dat").write_bytes(b"\x80\x81\x82")
+        _initialize_git_fixture(root, ("README.md", DENYLIST_NAME, "binary.dat"))
+        status, output = _capture_main(
+            ["--root", str(root), "--account-slug", "neutral-owner"]
+        )
+        _selftest_check(
+            status == 0
+            and "enumeration: git" in output
+            and "binary files skipped: 1" in output,
+            "git binary is skipped once and counted: %r" % output,
+        )
+
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        _materialize_fixture(root)
+        os.symlink("https://github." "com/neutral-owner/private", root / "published-link")
+        _initialize_git_fixture(root, ("README.md", DENYLIST_NAME, "published-link"))
+        status, output = _capture_main(
+            ["--root", str(root), "--account-slug", "neutral-owner"]
+        )
+        _selftest_check(
+            status == 1
+            and "personal-url: published-link:1" in output
+            and "symlinks skipped:" not in output,
+            "git symlink readlink text is scanned: %r" % output,
+        )
+
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        _materialize_fixture(
+            root,
+            "Contact bob@" "neutral-owner.com\n",
+            "email-address\t\\b[A-Z0-9._%+\\-]+@[A-Z0-9.\\-]+\\.[A-Z]{2,}\\b\n",
+        )
+        status, output = _capture_main(
+            ["--root", str(root), "--account-slug", "neutral-owner"]
+        )
+        _selftest_check(
+            status == 1 and "denylist: README.md:1 contains email-address" in output,
+            "main-level slug-domain email denylist: %r" % output,
+        )
+
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        _materialize_fixture(
+            root, "See https://gist.github." "com/neutral-owner/example\n"
+        )
+        status, output = _capture_main(
+            ["--root", str(root), "--account-slug", "neutral-owner"]
+        )
+        _selftest_check(
+            status == 1 and "personal-url: README.md:1" in output,
+            "main-level personal URL without registry: %r" % output,
+        )
+
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        _materialize_fixture(root)
+        (root / "README.md").unlink()
+        (root / "safe.txt").write_text("safe\n", encoding="utf-8")
+        status, output = _capture_main(
+            ["--root", str(root), "--account-slug", "neutral-owner"]
+        )
+        _selftest_check(
+            status == 1 and "corpus-floor: README.md was not among scanned documents" in output,
+            "main-level corpus floor: %r" % output,
+        )
+
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        _materialize_fixture(root)
+        (root / ".git").mkdir()
+        status, output = _capture_main(
+            ["--root", str(root), "--account-slug", "neutral-owner"]
+        )
+        _selftest_check(
+            status == 1
+            and "enumeration: git" in output
+            and "gate-error: git enumeration failed" in output
+            and "denylist rules loaded : 2" in output,
+            "broken .git fails closed without fallback: %r" % output,
+        )
+
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        (root / "policies").mkdir()
+        explicit = root / "policies" / "secret-rules.txt"
+        explicit.write_text(SELFTEST_DENYLIST, encoding="utf-8")
+        (root / "README.md").write_text(SELFTEST_CLEAN_README, encoding="utf-8")
+        status, output = _capture_main(
+            [
+                "--root",
+                str(root),
+                "--account-slug",
+                "neutral-owner",
+                "--denylist",
+                "policies/secret-rules.txt",
+            ]
+        )
+        _selftest_check(
+            status == 0
+            and "source files scanned : 1" in output
+            and "denylist rules loaded : 2" in output,
+            "explicit in-root denylist is path-excluded: %r" % output,
+        )
+
+    if not os.environ.get("PUBLICATION_GATE_SELFTEST_COPY_PROBE"):
+        with tempfile.TemporaryDirectory() as temporary:
+            copied_gate = Path(temporary) / "check_publication_gate.py"
+            shutil.copyfile(Path(__file__), copied_gate)
+            environment = dict(os.environ)
+            environment["PUBLICATION_GATE_SELFTEST_COPY_PROBE"] = "1"
+            result = subprocess.run(
+                [sys.executable, "-B", str(copied_gate), "--selftest"],
+                cwd=temporary,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                env=environment,
+                check=False,
+                text=True,
+            )
+            _selftest_check(
+                result.returncode == 0 and "PASS (publication gate selftest" in result.stdout,
+                "copied-single-file selftest: %r" % result.stdout,
+            )
+
+
+def run_selftests():
+    global SELFTEST_ASSERTIONS
+    SELFTEST_ASSERTIONS = 0
+    tests = (selftest_policy_parsers, selftest_scanners, selftest_registry_checks, selftest_end_to_end)
+    for test in tests:
+        test()
+        print("ok: %s" % test.__name__)
+    print("PASS (publication gate selftest; assertions: %d)" % SELFTEST_ASSERTIONS)
+    return 0
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--selftest", action="store_true", help="run embedded gate fixtures")
+    parser.add_argument("--root", type=Path, default=Path("."), help="repository checkout to inspect (default: .)")
+    parser.add_argument("--account-slug", default=None, help="personal account slug (required for normal runs)")
+    parser.add_argument("--registry", type=Path, default=None, help="optional publication registry JSON file")
+    parser.add_argument(
+        "--denylist",
+        type=Path,
+        default=None,
+        help="denylist policy file (default: <root>/.publication-denylist)",
+    )
+    args = parser.parse_args(argv)
+    if args.selftest:
+        return run_selftests()
+    return run_gate(args.root, args.account_slug, args.registry, args.denylist)
 
 
 if __name__ == "__main__":
