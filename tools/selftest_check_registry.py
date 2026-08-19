@@ -3,24 +3,38 @@
 
 from __future__ import annotations
 
+import http.client
 import pathlib
 import tempfile
 import urllib.error
 from typing import Optional
 from unittest import mock
 
-from check_registry import check_orphan, check_reality, check_retired, github_is_public
+from check_registry import (
+    check_orphan,
+    check_reality,
+    check_retired,
+    fetch_org_repos,
+    github_is_public,
+)
 
 
 class Response:
-    def __init__(self, status: int) -> None:
+    def __init__(self, status: int, read_result=b"[]") -> None:
         self.status = status
+        self.read_result = read_result
+        self.headers = {}
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback) -> None:
         return None
+
+    def read(self):
+        if isinstance(self.read_result, BaseException):
+            raise self.read_result
+        return self.read_result
 
 
 class Opener:
@@ -71,6 +85,20 @@ def check_status_contract() -> None:
         ):
             actual = github_is_public("caty-ai/example")
         assert actual == expected, (result, expected, actual)
+
+
+def check_fetch_org_repos_read_faults_degrade() -> None:
+    faults = [
+        http.client.IncompleteRead(b""),
+        ConnectionResetError("connection reset during response read"),
+    ]
+    for fault in faults:
+        with mock.patch(
+            "check_registry.urllib.request.build_opener",
+            return_value=Opener(Response(200, fault)),
+        ):
+            actual = fetch_org_repos("caty-ai")
+        assert actual is None, (fault, actual)
 
 
 def check_unexpected_statuses_are_recorded_and_later_modules_continue() -> None:
@@ -168,6 +196,25 @@ def check_orphan_all_repos_accounted_for() -> None:
     assert failures == [], failures
 
 
+def check_orphan_accounts_for_retired_repos_case_insensitively() -> None:
+    registry = _orphan_registry()
+    registry["retired_repos"] = [{"repo": "caty-ai/retired-example"}]
+    org_repos = [
+        "Caty-AI/Family-OS",
+        "Caty-AI/Alpha",
+        "Caty-AI/Beta",
+        "Caty-AI/.GitHub",
+        "Caty-AI/Retired-Example",
+    ]
+    failures = []
+    notes = []
+    with mock.patch("check_registry.fetch_org_repos", return_value=org_repos):
+        skipped = check_orphan(registry, failures, notes)
+
+    assert skipped == 0, skipped
+    assert failures == [], failures
+
+
 def check_orphan_flags_unaccounted_public_repo() -> None:
     registry = _orphan_registry()
     org_repos = [
@@ -175,7 +222,7 @@ def check_orphan_flags_unaccounted_public_repo() -> None:
         "caty-ai/alpha",
         "caty-ai/beta",
         "caty-ai/.github",
-        "caty-ai/mystery-repo",
+        "Caty-AI/Mystery-Repo",
     ]
     failures = []
     notes = []
@@ -184,7 +231,7 @@ def check_orphan_flags_unaccounted_public_repo() -> None:
 
     assert skipped == 0, skipped
     assert len(failures) == 1, failures
-    assert failures[0].startswith("orphan: caty-ai/mystery-repo"), failures
+    assert failures[0].startswith("orphan: Caty-AI/Mystery-Repo"), failures
 
 
 def check_orphan_fetch_failure_degrades_instead_of_failing() -> None:
@@ -263,14 +310,46 @@ def check_retired_scans_beyond_markdown_but_exempts_the_registry() -> None:
     assert not any("modules.json" in failure for failure in failures), failures
 
 
+def check_retired_reports_regex_escaped_github_spelling() -> None:
+    retired_owner = "example-org"
+    retired_name = "retired-" + "escaped-example"
+    retired_repo = "%s/%s" % (retired_owner, retired_name)
+    registry = {
+        "retired_repos": [
+            {
+                "repo": retired_repo,
+                "superseded_by": "example-org/current-escaped-example",
+                "reason": "synthetic self-test fixture",
+            }
+        ]
+    }
+    with tempfile.TemporaryDirectory() as tmp:
+        root = pathlib.Path(tmp)
+        yml_path = root / "family-links.yml"
+        yml_path.write_text(
+            "args: >-\n"
+            "  --exclude 'github\\.com/%s'\n" % retired_repo,
+            encoding="utf-8",
+        )
+
+        failures: list = []
+        check_retired(registry, root, failures)
+
+    assert len(failures) == 1, failures
+    assert failures[0].startswith("retired: family-links.yml:2 "), failures
+
+
 if __name__ == "__main__":
     check_status_contract()
+    check_fetch_org_repos_read_faults_degrade()
     check_unexpected_statuses_are_recorded_and_later_modules_continue()
     check_gone_statuses_hard_fail_published_modules()
     check_require_reality_escalates_unexpected_status()
     check_orphan_all_repos_accounted_for()
+    check_orphan_accounts_for_retired_repos_case_insensitively()
     check_orphan_flags_unaccounted_public_repo()
     check_orphan_fetch_failure_degrades_instead_of_failing()
     check_orphan_require_reality_escalates_fetch_failure()
     check_retired_scans_beyond_markdown_but_exempts_the_registry()
+    check_retired_reports_regex_escaped_github_spelling()
     print("selftest_check_registry: ok")

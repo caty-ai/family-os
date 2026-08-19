@@ -22,6 +22,7 @@ Python 3.9+, standard library only.
 """
 
 import argparse
+import http.client
 import json
 import pathlib
 import re
@@ -217,9 +218,9 @@ def fetch_org_repos(org: str, timeout: float = 20.0):
     org to stay under one page forever.
 
     Returns the list of full names on success, or None if GitHub could not
-    be reached, returned a non-200 status, or the response could not be
-    parsed (including anonymous rate-limiting) — the caller treats None as a
-    non-fatal degraded skip, never a confirmed empty org.
+    be reached, returned a non-200 status, or the response could not be read
+    or parsed (including anonymous rate-limiting) — the caller treats None as
+    a non-fatal degraded skip, never a confirmed empty org.
     """
     names = []
     url = "https://api.github.com/orgs/%s/repos?per_page=100&type=public" % org
@@ -238,7 +239,7 @@ def fetch_org_repos(org: str, timeout: float = 20.0):
                     return None
                 payload = json.loads(response.read().decode("utf-8"))
                 link_header = response.headers.get("Link")
-        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError, UnicodeDecodeError):
+        except (OSError, http.client.HTTPException, json.JSONDecodeError, UnicodeDecodeError):
             return None
         if not isinstance(payload, list):
             return None
@@ -260,11 +261,14 @@ def check_orphan(
         return 0
     org = map_repo.split("/", 1)[0]
 
-    accounted = {module["repo"] for module in registry["modules"]}
-    accounted.add(map_repo)
+    accounted = {module["repo"].casefold() for module in registry["modules"]}
+    accounted.add(map_repo.casefold())
     org_profile_repo = registry.get("org_profile", {}).get("repo")
     if org_profile_repo:
-        accounted.add(org_profile_repo)
+        accounted.add(org_profile_repo.casefold())
+    accounted.update(
+        entry["repo"].casefold() for entry in registry.get("retired_repos", [])
+    )
 
     org_repos = fetch_org_repos(org)
     if org_repos is None:
@@ -274,7 +278,7 @@ def check_orphan(
         )
     else:
         for repo in org_repos:
-            if repo not in accounted:
+            if repo.casefold() not in accounted:
                 failures.append(
                     "orphan: %s is a public repository in %s but is not listed "
                     "in registry/modules.json. Add it to modules[] (or "
@@ -296,20 +300,20 @@ def check_retired(registry: dict, root: pathlib.Path, failures: list) -> None:
         except (OSError, UnicodeDecodeError):
             continue
         for repo, entry in retired.items():
-            needle = "github.com/%s" % repo
-            pattern = re.compile(re.escape(needle) + r"(?![A-Za-z0-9_-])")
-            for match in pattern.finditer(text):
-                line = text[: match.start()].count("\n") + 1
-                failures.append(
-                    "retired: %s:%d links to %s, which has moved to %s (%s)"
-                    % (
-                        path.relative_to(root),
-                        line,
-                        repo,
-                        entry["superseded_by"],
-                        entry["reason"],
+            for needle in ("github.com/%s" % repo, "github\\.com/%s" % repo):
+                pattern = re.compile(re.escape(needle) + r"(?![A-Za-z0-9_-])")
+                for match in pattern.finditer(text):
+                    line = text[: match.start()].count("\n") + 1
+                    failures.append(
+                        "retired: %s:%d links to %s, which has moved to %s (%s)"
+                        % (
+                            path.relative_to(root),
+                            line,
+                            repo,
+                            entry["superseded_by"],
+                            entry["reason"],
+                        )
                     )
-                )
 
 
 def check_status_text(registry: dict, root: pathlib.Path, failures: list) -> int:
