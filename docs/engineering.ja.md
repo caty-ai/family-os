@@ -62,7 +62,7 @@ flowchart TB
 | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) | runtime・縦軸の基盤 | タスクの意味・試行・リトライ・チェックポイント・完了判定・完了・DLQ | 公開・MIT |
 | [context-kit](https://github.com/caty-ai/context-kit) | runtime・机まわりの装備 | ツール出力の退避と抜粋・委譲ブリーフ検査・危険削除/公開事故/キー漏れのガード・1体分の記憶検索 | 公開・MIT |
 | [Persona Engine](https://github.com/caty-ai/persona-engine) | runtime・単独利用可能 | 人格のレイヤーと感情のグラデーション | 公開・MIT |
-| [Persona Growth Loop](https://github.com/shojikumaru/persona-growth-loop) | 計画中のフロントエンド | 最小化された冪等な提案の生成 | 公開準備中・計画中 |
+| [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop) | runtime・アプリケーション | 最小化された冪等な提案の生成 | 公開・MIT |
 | [X Collector](https://github.com/caty-ai/x-collector) | runtime・任意の入力 | 能力ループ向けの外部素材の収集 | 公開・MIT |
 | [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) | runtime・アプリケーション | 提案・ガバナンス・採用記録・成長の解釈 | 公開・MIT |
 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) | runtime・横方向の基盤 | 記憶バス・登録されたスケジュールの期待・check-in・来歴 | 公開・MIT |

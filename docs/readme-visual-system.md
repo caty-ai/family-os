@@ -141,7 +141,7 @@ the generated block directly.
 | Caty Agent Harness | `caty-ai/caty-agent-harness` | published, MIT |
 | context-kit | `caty-ai/context-kit` | published, MIT |
 | Persona Engine | `caty-ai/persona-engine` | published, MIT |
-| Persona Growth Loop | `shojikumaru/persona-growth-loop` | publication in preparation; planned |
+| Persona Growth Loop | `caty-ai/persona-growth-loop` | published, MIT |
 | X Collector | `caty-ai/x-collector` | published, MIT |
 | Self Growth Loop | `caty-ai/self-growth-loop` | published, MIT |
 | Family Memory Architecture | `caty-ai/family-memory-architecture` | published, MIT |

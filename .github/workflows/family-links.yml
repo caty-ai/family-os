@@ -108,7 +108,6 @@ jobs:
             --no-progress
             --include-fragments
             --max-concurrency 8
-            --exclude 'github\.com/shojikumaru/persona-growth-loop'
             --exclude 'img\.shields\.io'
             './**/*.md'
 
