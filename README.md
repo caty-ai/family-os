@@ -277,7 +277,7 @@ Once you know it will run, all that is left is to pick one thread and follow it.
 
 There is nothing to do on the Family OS side. No install, no account, no config file. **You open one link.**
 
-**Verifying by hand?** This map itself is intentionally not installable — a hands-on check starts one link away at [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness): open your AI tool in an empty project folder, paste the one-line install prompt at the top of that README, and your AI runs the install, the checks, and reports back (contributors can run its whole suite with `make test`).
+**Verifying by hand?** This map itself is intentionally not installable — a hands-on check starts one link away at [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) (published, MIT): open your AI tool in an empty project folder, paste the install prompt in its Get started section, and your AI runs the install, the checks, and reports back (contributors can run its whole suite with `make test`).
 
 If you are unsure, start with [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) on the vertical axis. It lets one agent learn from failure and carry long work through to the end with evidence behind it. It is free under MIT, and the setup steps are in that repository's README. If the thing that hurts most is work that stops without telling you, go straight to [Sitter](https://github.com/caty-ai/sitter) instead — it is also open and also MIT.
 
