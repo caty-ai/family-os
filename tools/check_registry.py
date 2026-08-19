@@ -391,7 +391,7 @@ def check_for_agents_tour(
             continue
         if FOR_AGENTS_NEXT_HEADING.match(line):
             break
-        if not line.startswith("|"):
+        if not line.lstrip(" \t").startswith("|"):
             continue
         match = FOR_AGENTS_TOUR_REPO.search(line)
         if match:

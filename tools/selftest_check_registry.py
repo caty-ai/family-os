@@ -84,6 +84,19 @@ def check_for_agents_tour_flags_non_published_row() -> None:
     assert "lists example-org/preparing" in failures[0], failures
 
 
+def check_for_agents_tour_flags_indented_non_published_row() -> None:
+    document = _tour_document(["example-org/alpha", "example-org/beta"]).replace(
+        "\n## 6. After the tour",
+        "\n   | [ghost](https://github.com/example-org/ghost) | role | verify |\n"
+        "\n## 6. After the tour",
+        1,
+    )
+    rows, failures = _run_tour_check(document)
+    assert rows == 3, rows
+    assert len(failures) == 1, failures
+    assert failures[0].startswith("tour:") and "lists example-org/ghost" in failures[0]
+
+
 def check_for_agents_tour_missing_section_fails_closed() -> None:
     document = (
         "## 4. Before the missing tour\n\n"
@@ -436,6 +449,7 @@ if __name__ == "__main__":
     check_for_agents_tour_matches_published_set()
     check_for_agents_tour_flags_missing_published_module()
     check_for_agents_tour_flags_non_published_row()
+    check_for_agents_tour_flags_indented_non_published_row()
     check_for_agents_tour_missing_section_fails_closed()
     check_for_agents_tour_empty_section_fails_closed()
     check_for_agents_tour_allows_approved_exemption()
