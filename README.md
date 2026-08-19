@@ -263,10 +263,9 @@ Reading the Family OS map itself takes no preparation at all.
 | --- | --- |
 | Reading this map | ✅ macOS ／ ✅ Windows ／ ✅ Linux (anything that renders Markdown) |
 | Registry & link-check tools | ✅ Linux ／ ✅ macOS (both run in CI on every change) |
-| Agent environments in real use | ✅ Claude Code ／ ✅ Hermes Agent ／ ✅ OpenClaw |
-| Agent environments planned for verification | ⚠️ Kimi Code ／ ⚠️ Codex |
+| Agent environments in real use | ✅ Claude Code ／ ✅ Hermes Agent ／ ✅ OpenClaw ／ ✅ Kimi Code ／ ✅ Codex |
 
-> **Note:** "In real use" means the related mechanisms are actually being run in that environment; it is not a guarantee of full support for every Family OS module. ⚠️ means we have not run it there yet — not that it is known to fail. Measured 2026-07-28. For per-module support, treat the README of the repository you choose as canonical.
+> **Note:** "In real use" means the related mechanisms are actually being run in that environment; it is not a guarantee of full support for every Family OS module. Measured 2026-08-19. For per-module support, treat the README of the repository you choose as canonical.
 
 Once you know it will run, all that is left is to pick one thread and follow it.
 

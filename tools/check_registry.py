@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Check that what the documentation says about each module is still true.
 
-Five checks, in order of how badly each one bites:
+Six checks, in order of how badly each one bites:
 
 1. reality      — every module's declared status matches what GitHub actually
                   serves to an anonymous visitor. Catches the case where a repo
@@ -18,6 +18,10 @@ Five checks, in order of how badly each one bites:
 5. tour         — the FOR-AGENTS.md repository tour lists exactly the published
                   registry modules. Catches documentation drift in either
                   direction without relying on the network.
+6. support      — the four README support tables declare one owner-approved set
+                  of agent environments in real use. Catches translation drift
+                  and stale planned-environment rows without relying on the
+                  network.
 
 Run with --offline to skip the network checks (reality and orphan).
 
@@ -56,6 +60,17 @@ RETIRED_SCAN_EXEMPT = pathlib.Path("registry/modules.json")
 # published module. Adding an exemption here requires owner approval —
 # do not edit this set in an implementation lane.
 FOR_AGENTS_TOUR_EXEMPT = frozenset()
+
+# Support-table declaration (issue #44): the README "in real use"
+# environments, one canonical set for all four languages. Changing this
+# set requires owner approval — do not edit it in an implementation lane.
+SUPPORT_IN_USE_ENVIRONMENTS = (
+    "Claude Code",
+    "Hermes Agent",
+    "OpenClaw",
+    "Kimi Code",
+    "Codex",
+)
 
 FOR_AGENTS_TOUR_HEADING = re.compile(r"^## 5\.")
 FOR_AGENTS_NEXT_HEADING = re.compile(r"^## ")
@@ -430,6 +445,86 @@ def check_for_agents_tour(
     return len(tour_repos)
 
 
+def check_support(root: pathlib.Path, failures: list) -> int:
+    expected = " ／ ".join("✅ %s" % env for env in SUPPORT_IN_USE_ENVIRONMENTS)
+    checked = 0
+
+    for filename in ("README.md", "README.ja.md", "README.zh.md", "README.th.md"):
+        path = root / filename
+        try:
+            lines = path.read_text(encoding="utf-8").splitlines()
+        except (OSError, UnicodeDecodeError) as exc:
+            failures.append(
+                "support: %s: row=<unreadable: %s>; expected %s"
+                % (filename, exc, expected)
+            )
+            continue
+
+        anchor_index = next(
+            (
+                index
+                for index, line in enumerate(lines)
+                if line.strip() == '<a id="environments"></a>'
+            ),
+            None,
+        )
+        if anchor_index is None:
+            failures.append(
+                "support: %s: row=<missing environments anchor>; expected %s"
+                % (filename, expected)
+            )
+            continue
+
+        section = []
+        for line in lines[anchor_index + 1 :]:
+            stripped = line.strip()
+            if stripped == "---" or stripped.startswith("<a id="):
+                break
+            section.append(line)
+
+        rows = [
+            line.strip()
+            for line in section
+            if line.lstrip(" \t").startswith("|")
+        ]
+        in_use_index = next(
+            (index for index, row in enumerate(rows) if "Claude Code" in row),
+            None,
+        )
+        if in_use_index is None:
+            failures.append(
+                "support: %s: row=<no table row containing Claude Code>; "
+                "expected %s" % (filename, expected)
+            )
+            continue
+
+        checked += 1
+        in_use_row = rows[in_use_index]
+        declared = []
+        for cell in in_use_row.split("|"):
+            for item in cell.split("／"):
+                match = re.fullmatch(r"\s*✅\s+(.+?)\s*", item)
+                if match:
+                    declared.append(match.group(1))
+
+        if tuple(declared) != SUPPORT_IN_USE_ENVIRONMENTS or "⚠️" in in_use_row:
+            failures.append(
+                "support: %s: row=%r; expected exactly %s with no ⚠️"
+                % (filename, in_use_row, expected)
+            )
+
+        for index, row in enumerate(rows):
+            if index == in_use_index:
+                continue
+            if any(env in row for env in SUPPORT_IN_USE_ENVIRONMENTS):
+                failures.append(
+                    "support: %s: row=%r; expected declared environments only "
+                    "in the in-use row %r" % (filename, row, in_use_row)
+                )
+
+    return checked
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -471,11 +566,13 @@ def main() -> int:
     check_retired(registry, root, failures)
     occurrences = check_status_text(registry, root, failures)
     tour_rows = check_for_agents_tour(registry, root, failures)
+    support_tables = check_support(root, failures)
 
     print("modules in registry : %d" % len(registry["modules"]))
     print("retired repositories: %d" % len(registry.get("retired_repos", [])))
     print("link occurrences    : %d" % occurrences)
     print("tour rows           : %d" % tour_rows)
+    print("support tables      : %d" % support_tables)
     print("reality check       : %s" % ("skipped" if args.offline else "on (anonymous)"))
     if not args.offline:
         reality_targets = len(registry["modules"]) + (1 if registry.get("map_repo") else 0)
