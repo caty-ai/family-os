@@ -60,7 +60,7 @@ The rules layer sits **above** both axes rather than inside either one. It is a 
 | --- | --- | --- | --- |
 | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook) | non-runtime governance | issue, PR, worktree, handoff, and parallel-development rules | published, MIT |
 | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) | runtime, vertical foundation | task meaning, attempt, retry, checkpoint, done-check, completion, dead-letter | published, MIT |
-| [context-kit](https://github.com/caty-ai/context-kit) | runtime, desk equipment | bounded tool output and scratch persistence, delegation-brief validation, destructive/public-repo/credential guards, one agent's memory recall | published, MIT |
+| [context-kit](https://github.com/caty-ai/context-kit) | runtime, desk equipment | bounded tool output and scratch persistence, delegation-brief validation, destructive/public-repo/credential guards, one agent's memory recall, capture-first worktree snapshots | published, MIT |
 | [Persona Engine](https://github.com/caty-ai/persona-engine) | runtime, standalone | persona layers and emotion gradation | published, MIT |
 | [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop) | runtime, application | minimised, idempotent proposal production | published, MIT |
 | [X Collector](https://github.com/caty-ai/x-collector) | runtime, optional input | collecting external material for the ability loop | published, MIT |

@@ -219,7 +219,7 @@ On top of that foundation come one set of equipment and two kinds of growth. Eac
 
 **Equipment for the desk**
 
-- [context-kit](https://github.com/caty-ai/context-kit) (published, MIT) — a five-piece context hygiene kit for one agent: bounded tool output, delegation-brief validation, safety guards, memory recall. Every piece works entirely on its own
+- [context-kit](https://github.com/caty-ai/context-kit) (published, MIT) — a six-piece context hygiene kit for one agent: bounded tool output, delegation-brief validation, safety guards, memory recall, worktree snapshots. Every piece works entirely on its own
 
 **Growth of personality**
 
@@ -347,7 +347,7 @@ Every module on this map, with its current state — generated from the same reg
 | Map | **Family OS** | The map of the whole family — every module, its state, and how they fit | published, MIT |
 | Rules | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook) | The rules of the road — issues, PRs, worktrees, handoffs, parallel development | published, MIT |
 | Vertical · foundation | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) | Task backbone for AI agents — retries, checkpoints, and honest completion | published, MIT |
-| Vertical | [context-kit](https://github.com/caty-ai/context-kit) | Five-piece context hygiene kit for one agent — bounded output, delegation briefs, safety guards, recall | published, MIT |
+| Vertical | [context-kit](https://github.com/caty-ai/context-kit) | Six-piece context hygiene kit for one agent — bounded output, delegation briefs, safety guards, recall, worktree snapshots | published, MIT |
 | Vertical | [Persona Engine](https://github.com/caty-ai/persona-engine) | Gives an agent a persona — layered personality and graded emotion | published, MIT |
 | Vertical | [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop) | Grows the persona itself — minimal, idempotent proposals | published, MIT |
 | Vertical | [X Collector](https://github.com/caty-ai/x-collector) | Turns X and the web into one daily digest — for people and agents | published, MIT |
