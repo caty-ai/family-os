@@ -125,6 +125,11 @@ jobs:
           import os
           import re
 
+          # Contract A-5 (Epic #24): these claim-ids must always exist in
+          # docs/evidence.md. Changing this set requires owner approval —
+          # do not edit it in an implementation lane.
+          REQUIRED_CLAIM_IDS = ("EV-001", "EV-002", "EV-003", "EV-004")
+
           required_fields = {
               "claim-id",
               "believe",
@@ -212,6 +217,21 @@ jobs:
           )
           if duplicate_claim_ids:
               fail("duplicate claim-ids: " + ", ".join(duplicate_claim_ids))
+
+          if not REQUIRED_CLAIM_IDS:
+              fail("required set is empty — the floor has been removed")
+
+          missing_required_claim_ids = [
+              claim_id
+              for claim_id in REQUIRED_CLAIM_IDS
+              if claim_id not in heading_ids or claim_id not in claim_ids
+          ]
+          if missing_required_claim_ids:
+              fail(
+                  "required claim-id missing from docs/evidence.md: "
+                  + ", ".join(missing_required_claim_ids)
+                  + " (contract A-5; removing a required entry needs owner approval)"
+              )
 
           heading_id_set = set(heading_ids)
           for claim_id in claim_ids:
