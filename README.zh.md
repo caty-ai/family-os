@@ -219,7 +219,7 @@ flowchart TB
 
 **桌面装备**
 
-- [context-kit](https://github.com/caty-ai/context-kit)（已公开・MIT）— 面向单个智能体的五件套上下文卫生工具包：限定工具输出、委托说明校验、安全防护、记忆召回。每一件都能完全独立使用
+- [context-kit](https://github.com/caty-ai/context-kit)（已公开・MIT）— 面向单个智能体的六件套上下文卫生工具包：限定工具输出、委托说明校验、安全防护、记忆召回、worktree 快照。每一件都能完全独立使用
 
 **人格的成长**
 

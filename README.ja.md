@@ -219,7 +219,7 @@ flowchart TB
 
 **机まわりの装備**
 
-- [context-kit](https://github.com/caty-ai/context-kit)（公開・MIT）— エージェント1体分のコンテキスト衛生キット。大出力の退避・委譲ブリーフ検査・安全フック・記憶検索の5点で、どの装備も単体で動く
+- [context-kit](https://github.com/caty-ai/context-kit)（公開・MIT）— エージェント1体分のコンテキスト衛生キット。大出力の退避・委譲ブリーフ検査・安全フック・記憶検索・worktree スナップショットの6点で、どの装備も単体で動く
 
 **人格の成長**
 

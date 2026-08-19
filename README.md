@@ -219,7 +219,7 @@ On top of that foundation come one set of equipment and two kinds of growth. Eac
 
 **Equipment for the desk**
 
-- [context-kit](https://github.com/caty-ai/context-kit) (published, MIT) — a five-piece context hygiene kit for one agent: bounded tool output, delegation-brief validation, safety guards, memory recall. Every piece works entirely on its own
+- [context-kit](https://github.com/caty-ai/context-kit) (published, MIT) — a six-piece context hygiene kit for one agent: bounded tool output, delegation-brief validation, safety guards, memory recall, worktree snapshots. Every piece works entirely on its own
 
 **Growth of personality**
 
