@@ -284,10 +284,10 @@
       "repo": "caty-ai/context-kit",
       "status": "published",
       "tagline": {
-        "en": "Five-piece context hygiene kit for one agent — bounded output, delegation briefs, safety guards, recall",
-        "ja": "エージェント1体分のコンテキスト衛生キット — 大出力の退避・委譲ブリーフ検査・安全フック・記憶検索",
-        "zh": "面向单个智能体的上下文卫生工具组 — 限制大输出、委托简报校验、安全防护、记忆检索",
-        "th": "ชุดดูแลคอนเท็กซ์สำหรับเอเจนต์หนึ่งตัว — จำกัดเอาต์พุตขนาดใหญ่, ตรวจ brief การมอบงาน, การ์ดความปลอดภัย, ค้นความทรงจำ"
+        "en": "Six-piece context hygiene kit for one agent — bounded output, delegation briefs, safety guards, recall, worktree snapshots",
+        "ja": "エージェント1体分の6点コンテキスト衛生キット — 大出力の退避・委譲ブリーフ検査・安全フック・記憶検索・worktree スナップショット",
+        "zh": "面向单个智能体的六件上下文卫生工具组 — 限制大输出、委托简报校验、安全防护、记忆检索、worktree 快照",
+        "th": "ชุดดูแลคอนเท็กซ์ 6 ชิ้นสำหรับเอเจนต์หนึ่งตัว — จำกัดเอาต์พุตขนาดใหญ่, ตรวจ brief การมอบงาน, การ์ดความปลอดภัย, ค้นความทรงจำ, snapshot ของ worktree"
       },
       "axis": {
         "group": "vertical",
