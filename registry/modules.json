@@ -403,8 +403,8 @@
       "depends_on": [
         {
           "repo": "caty-ai/caty-agent-harness",
-          "pin": "v0.2.0",
-          "pin_reason": "pinned intentionally; freshness decision tracked in self-growth-loop#14"
+          "pin": "v0.6.0",
+          "pin_reason": "pins the latest published release; newer tags (v0.7.0-v0.9.0) are un-released merge tags, deliberately skipped — decision: self-growth-loop#14 (release v0.3.1)"
         }
       ],
       "tagline": {
