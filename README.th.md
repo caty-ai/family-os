@@ -36,6 +36,7 @@ Family OS คือแผนที่ที่บอกว่ากลไกซ�
 - [แกนตั้ง: เลี้ยง AI หนึ่งตัวให้โต](#vertical)
 - [แกนนอน: เชื่อมครอบครัวเข้าด้วยกัน](#horizontal)
 - [สิ่งที่ต้องมี](#environments)
+- [สถานะโครงการ](#project-status)
 - [ก้าวแรก](#get-started)
 - [สัญญาที่จะไม่เปลี่ยน](#promises)
 - [อ่านเพิ่มเติม](#shelf)
@@ -268,6 +269,17 @@ flowchart TB
 > **หมายเหตุ:** "ยืนยันการใช้งานจริงแล้ว" หมายถึงเราได้รันกลไกที่เกี่ยวข้องในสภาพแวดล้อมนั้นจริง ไม่ได้รับประกันว่าทุกโมดูลของ Family OS จะรองรับอย่างสมบูรณ์ เป็นผลวัดจริง ณ วันที่ 2026-08-19 สำหรับสถานะการรองรับรายโมดูล ให้ยึด README ของรีโปที่คุณเลือกเป็นฉบับหลัก
 
 เมื่อมั่นใจว่ามันทำงานได้แล้ว ที่เหลือก็แค่เลือกหนึ่งเส้นทางแล้วเดินต่อ
+
+---
+
+<a id="project-status"></a>
+
+## สถานะโครงการ
+
+**Maturity:** `product` — Family OS คือแผนที่ครอบครัวที่มีการดูแลต่อเนื่อง และรีโปนี้เผยแพร่ด้วยคำศัพท์ maturity ของ registry ตามที่อธิบายใน [docs/engineering.md](docs/engineering.md)
+**CI:** [![family links](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml/badge.svg)](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml) [![Test + Lint](https://github.com/caty-ai/family-os/actions/workflows/test-lint.yml/badge.svg)](https://github.com/caty-ai/family-os/actions/workflows/test-lint.yml)
+**สภาพแวดล้อมที่ยืนยันแล้ว:** เครื่องมือเช็ก registry และลิงก์รันบน CI ทุกครั้งที่มีการเปลี่ยนแปลง ทั้งบน Ubuntu และ macOS; ตัวแผนที่เองอ่านได้ด้วย Markdown renderer ใดก็ได้
+**ข้อจำกัดที่ทราบ:** [EV-004](docs/evidence.md#ev-004--governed-self-growth-cycle--the-mechanism-is-public-no-cycle-record-is) ยังไม่ผ่านการยืนยัน เพราะยังไม่มีบันทึกปฐมภูมิของ self-growth cycle ที่เผยแพร่สู่สาธารณะ; [EV-003](docs/evidence.md#ev-003--the-weekly-reality-check-has-run-on-schedule-and-passed) ระบุว่า weekly scheduled reality check ยังใหม่ และตอนนี้มีประวัติ scheduled run เพียงครั้งเดียว
 
 ---
 

@@ -36,6 +36,7 @@ Family OS は、その一つひとつに効く仕組みが**どこにあるか**
 - [1体のAIを育てる縦軸](#vertical)
 - [家族をつなぐ横軸](#horizontal)
 - [使うのに必要なもの](#environments)
+- [プロジェクトの状態](#project-status)
 - [最初の一歩](#get-started)
 - [変えない約束](#promises)
 - [もっと詳しく](#shelf)
@@ -268,6 +269,17 @@ Family OS の地図そのものを読むのに、特別な準備は要りませ�
 > **メモ:** 「実運用が確認できている」は、その環境で関連する仕組みを実際に動かしているという意味で、Family OS の全モジュールへの完全対応を保証するものではありません。2026-08-19 時点の実測です。モジュールごとの対応状況は、選んだリポジトリの README を正本として確認してください。
 
 動く見込みが立ったら、あとは1本選んで進むだけです。
+
+---
+
+<a id="project-status"></a>
+
+## プロジェクトの状態
+
+**Maturity:** `product` — Family OS は生きたファミリーマップであり、[docs/engineering.md](docs/engineering.md) にあるレジストリの maturity 語彙で公開しています。
+**CI:** [![family links](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml/badge.svg)](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml) [![Test + Lint](https://github.com/caty-ai/family-os/actions/workflows/test-lint.yml/badge.svg)](https://github.com/caty-ai/family-os/actions/workflows/test-lint.yml)
+**確認済み環境:** レジストリ検査とリンク検査は、変更のたびに Ubuntu と macOS の CI で回ります。地図そのものは Markdown を読める環境ならどこでも開けます。
+**既知の制約:** [EV-004](docs/evidence.md#ev-004--governed-self-growth-cycle--the-mechanism-is-public-no-cycle-record-is) は self-growth cycle の公開された一次記録がまだないため未検証のままです。[EV-003](docs/evidence.md#ev-003--the-weekly-reality-check-has-run-on-schedule-and-passed) が示す通り、週次の scheduled reality check はまだ若く、履歴上の scheduled run は現時点で1回です。
 
 ---
 
