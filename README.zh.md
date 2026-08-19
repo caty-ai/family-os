@@ -36,6 +36,7 @@ Family OS 是一张地图，告诉你解决每一个问题的部件**在哪里**
 - [培养一个 AI 的纵轴](#vertical)
 - [连接家族的横轴](#horizontal)
 - [使用前需要什么](#environments)
+- [项目状态](#project-status)
 - [第一步](#get-started)
 - [不会改变的承诺](#promises)
 - [了解更多](#shelf)
@@ -268,6 +269,17 @@ flowchart TB
 > **备注:** 「已在实际运行中确认」指的是我们确实在该环境里运行了相关机制，并不保证 Family OS 的全部模块都完全适配。数据为 2026-08-19 时点的实测。各模块的适配情况，请以你所选仓库的 README 为准。
 
 确认能跑起来之后，剩下的就是挑一条线走下去。
+
+---
+
+<a id="project-status"></a>
+
+## 项目状态
+
+**Maturity:** `product` — Family OS 是一张持续维护的家族地图，这个仓库按 [docs/engineering.md](docs/engineering.md) 中注册表的 maturity 语汇对外发布。
+**CI:** [![family links](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml/badge.svg)](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml) [![Test + Lint](https://github.com/caty-ai/family-os/actions/workflows/test-lint.yml/badge.svg)](https://github.com/caty-ai/family-os/actions/workflows/test-lint.yml)
+**已验证环境:** 注册表检查会在每次变更时于 Ubuntu 和 macOS 的 CI 上运行；链接与页脚检查在 Ubuntu 上运行；这张地图本身可在任何 Markdown 渲染器中阅读。
+**已知限制:** [EV-004](docs/evidence.md#ev-004--governed-self-growth-cycle--the-mechanism-is-public-no-cycle-record-is) 仍未验证，因为尚未公开 self-growth cycle 的第一手记录；[EV-003](docs/evidence.md#ev-003--the-weekly-reality-check-has-run-on-schedule-and-passed) 说明每周 scheduled reality check 还很新，scheduled run 的历史仍然很短；最近一次审查时的当前次数和证据记录在该条目中。
 
 ---
 

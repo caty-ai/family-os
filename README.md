@@ -36,6 +36,7 @@ Every part runs on its own, so you can take just the one you need today.
 - [The vertical axis: growing one agent](#vertical)
 - [The horizontal axis: connecting the family](#horizontal)
 - [What you need](#environments)
+- [Project status](#project-status)
 - [Your first step](#get-started)
 - [What will not change](#promises)
 - [Learn more](#shelf)
@@ -268,6 +269,17 @@ Reading the Family OS map itself takes no preparation at all.
 > **Note:** "In real use" means the related mechanisms are actually being run in that environment; it is not a guarantee of full support for every Family OS module. Measured 2026-08-19. For per-module support, treat the README of the repository you choose as canonical.
 
 Once you know it will run, all that is left is to pick one thread and follow it.
+
+---
+
+<a id="project-status"></a>
+
+## Project status
+
+**Maturity:** `product` — Family OS is a living family map, using the registry maturity vocabulary described in [docs/engineering.md](docs/engineering.md).
+**CI:** [![family links](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml/badge.svg)](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml) [![Test + Lint](https://github.com/caty-ai/family-os/actions/workflows/test-lint.yml/badge.svg)](https://github.com/caty-ai/family-os/actions/workflows/test-lint.yml)
+**Verified environments:** registry checks run in CI on every change across Ubuntu and macOS; link and footer checks run on Ubuntu; the map itself is readable in any Markdown renderer.
+**Known constraints:** [EV-004](docs/evidence.md#ev-004--governed-self-growth-cycle--the-mechanism-is-public-no-cycle-record-is) remains unverified because no public primary self-growth cycle record has been published; [EV-003](docs/evidence.md#ev-003--the-weekly-reality-check-has-run-on-schedule-and-passed) shows the weekly scheduled reality check is still young and the scheduled-run history remains short; the current count and evidence as of the last review live in the entry.
 
 ---
 

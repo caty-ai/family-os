@@ -18,9 +18,19 @@ If you are unsure which side a report falls on, open it here and we will move it
 - **Keep implemented and planned separate.** The map is useful only because a reader can tell what exists today from what is still ahead. Never blur that line to make a section read better.
 - **Honest completion.** A change is done when its stated done-conditions pass with evidence, not when it looks done. Pull requests should list which conditions passed and how they were checked.
 
+## Prerequisites
+
+- `git`
+- GNU `make` or BSD `make`
+- Python 3.9+ using only the standard library; do not install anything with `pip`
+- Network access only if you intentionally run `python3 -B tools/check_registry.py` without `--offline`
+- `actionlint` if your change edits files under `.github/workflows/` (optional, but recommended)
+
 ## Checking your change
 
-There is no build and no test suite. Before opening a pull request, confirm:
+The repository entry point is `make test`. It runs the documented stdlib-only checks for the registry, README footer contract, publication gate, and generated render output. `make lint` is currently a documented no-op, kept as a stable CI entry point while no lint tool is configured.
+
+Before opening a pull request, run `make test`, optionally run `make lint`, and confirm these additional manual checks:
 
 - Every relative link and in-page anchor resolves.
 - Images referenced from the README exist and carry no embedded metadata.
