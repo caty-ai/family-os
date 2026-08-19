@@ -1,0 +1,9 @@
+name: gitleaks
+on:
+  pull_request:
+permissions: {contents: read}
+concurrency: {group: 'gitleaks-${{ github.event.pull_request.number }}', cancel-in-progress: true}
+jobs:
+  gitleaks:
+    uses: caty-ai/family-dev-handbook/.github/workflows/reusable-gitleaks.yml@ci-v1
+    permissions: {contents: read}
