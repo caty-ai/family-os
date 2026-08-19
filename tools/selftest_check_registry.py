@@ -11,13 +11,20 @@ from typing import Optional
 from unittest import mock
 
 from check_registry import (
+    check_aliases,
+    check_ci_existence,
     check_for_agents_tour,
     check_orphan,
+    check_pin_freshness,
     check_reality,
     check_retired,
+    check_schema,
     check_support,
+    fetch_newest_tag,
     fetch_org_repos,
+    github_ci_workflow_exists,
     github_is_public,
+    NoRedirectHandler,
 )
 
 
@@ -539,6 +546,351 @@ def check_retired_reports_regex_escaped_github_spelling() -> None:
     assert failures[0].startswith("retired: family-links.yml:2 "), failures
 
 
+def check_alias_flags_yaml_reference_but_exempts_registry() -> None:
+    alias = "example-org/former-module"
+    canonical = "example-org/current-module"
+    registry = {
+        "modules": [{"repo": canonical, "aliases": [alias]}],
+    }
+    with tempfile.TemporaryDirectory() as tmp:
+        root = pathlib.Path(tmp)
+        (root / "registry").mkdir()
+        (root / "registry" / "modules.json").write_text(
+            '{"aliases": ["%s"]}\n' % alias, encoding="utf-8"
+        )
+        (root / "links.yml").write_text(
+            "source: https://github.com/%s\n" % alias, encoding="utf-8"
+        )
+        failures = []
+        checked = check_aliases(registry, root, failures)
+
+    assert checked == 1, checked
+    assert failures == [
+        "alias: links.yml:1 references %s, an alias of %s — use the canonical path"
+        % (alias, canonical)
+    ], failures
+
+
+def check_alias_no_aliases_produces_no_scan_output() -> None:
+    registry = {"modules": [{"repo": "example-org/current-module"}]}
+    with tempfile.TemporaryDirectory() as tmp:
+        root = pathlib.Path(tmp)
+        (root / "links.yml").write_text(
+            "source: https://github.com/example-org/former-module\n",
+            encoding="utf-8",
+        )
+        failures = []
+        checked = check_aliases(registry, root, failures)
+
+    assert checked == 0, checked
+    assert failures == [], failures
+
+
+def _pin_registry(pin="v0.2.0", pin_reason=None) -> dict:
+    dependency = {"repo": "example-org/dependency", "pin": pin}
+    if pin_reason is not None:
+        dependency["pin_reason"] = pin_reason
+    return {
+        "modules": [
+            {"id": "example-module", "depends_on": [dependency]},
+        ]
+    }
+
+
+def check_pin_freshness_accepts_matching_newest_tag() -> None:
+    failures = []
+    notes = []
+    with mock.patch("check_registry.fetch_newest_tag", return_value="v0.2.0"):
+        skipped = check_pin_freshness(_pin_registry(), failures, notes)
+
+    assert skipped == 0, skipped
+    assert failures == [], failures
+    assert notes == [], notes
+
+
+def check_pin_freshness_accepts_bare_tag_from_message_bearing_entry() -> None:
+    payload = (
+        b'<feed xmlns="http://www.w3.org/2005/Atom">'
+        b"<entry>"
+        b"<title>v0.9.0 \xe2\x80\x94 some message</title>"
+        b"<id>tag:github.com,2008:Repository/1/v0.9.0</id>"
+        b"</entry></feed>"
+    )
+    failures = []
+    notes = []
+    with mock.patch(
+        "check_registry.urllib.request.build_opener",
+        return_value=Opener(Response(200, payload)),
+    ):
+        skipped = check_pin_freshness(_pin_registry(pin="v0.9.0"), failures, notes)
+
+    assert skipped == 0, skipped
+    assert failures == [], failures
+    assert notes == [], notes
+
+
+def check_pin_freshness_flags_stale_pin_once() -> None:
+    failures = []
+    notes = []
+    with mock.patch("check_registry.fetch_newest_tag", return_value="v0.3.0"):
+        skipped = check_pin_freshness(_pin_registry(), failures, notes)
+
+    assert skipped == 0, skipped
+    assert failures == [
+        "pin-freshness: example-module pins example-org/dependency@v0.2.0 but "
+        "the newest tag is v0.3.0. Update the pin or record pin_reason in "
+        "registry/modules.json."
+    ], failures
+    assert notes == [], notes
+
+
+def check_pin_freshness_flags_stale_pin_with_bare_newest_tag() -> None:
+    payload = (
+        b'<feed xmlns="http://www.w3.org/2005/Atom">'
+        b"<entry>"
+        b"<title>v0.9.0 \xe2\x80\x94 some message</title>"
+        b"<id>tag:github.com,2008:Repository/1/v0.9.0</id>"
+        b"</entry></feed>"
+    )
+    failures = []
+    notes = []
+    with mock.patch(
+        "check_registry.urllib.request.build_opener",
+        return_value=Opener(Response(200, payload)),
+    ):
+        skipped = check_pin_freshness(_pin_registry(pin="v0.2.0"), failures, notes)
+
+    assert skipped == 0, skipped
+    assert failures == [
+        "pin-freshness: example-module pins example-org/dependency@v0.2.0 but "
+        "the newest tag is v0.9.0. Update the pin or record pin_reason in "
+        "registry/modules.json."
+    ], failures
+    assert notes == [], notes
+
+
+def check_pin_freshness_honours_pin_reason() -> None:
+    failures = []
+    notes = []
+    with mock.patch("check_registry.fetch_newest_tag", return_value="v0.3.0"):
+        skipped = check_pin_freshness(
+            _pin_registry(pin_reason="tracked in example-module#14"), failures, notes
+        )
+
+    assert skipped == 0, skipped
+    assert failures == [], failures
+    assert len(notes) == 1 and "tracked in example-module#14" in notes[0], notes
+
+
+def check_pin_freshness_fetch_failure_degrades_and_escalates() -> None:
+    failures = []
+    notes = []
+    with mock.patch("check_registry.fetch_newest_tag", return_value=None):
+        skipped = check_pin_freshness(_pin_registry(), failures, notes)
+
+    assert skipped == 1, skipped
+    assert failures == [], failures
+    assert any(note.startswith("pin:example-org/dependency:") for note in notes), notes
+
+    failures = []
+    notes = []
+    with mock.patch("check_registry.fetch_newest_tag", return_value=None):
+        skipped = check_pin_freshness(
+            _pin_registry(), failures, notes, require_reality=True
+        )
+
+    assert skipped == 1, skipped
+    assert len(failures) == 1, failures
+    assert "--require-reality rejects this degraded run" in failures[0], failures
+
+
+def check_fetch_newest_tag_read_faults_degrade() -> None:
+    faults = [
+        http.client.IncompleteRead(b""),
+        ConnectionResetError("connection reset during response read"),
+    ]
+    for fault in faults:
+        with mock.patch(
+            "check_registry.urllib.request.build_opener",
+            return_value=Opener(Response(200, fault)),
+        ):
+            actual = fetch_newest_tag("example-org/dependency")
+        assert actual is None, (fault, actual)
+
+
+def check_fetch_newest_tag_unsupported_encoding_degrades() -> None:
+    payload = b'<?xml version="1.0" encoding="BOGUS"?><feed/>'
+    with mock.patch(
+        "check_registry.urllib.request.build_opener",
+        return_value=Opener(Response(200, payload)),
+    ):
+        actual = fetch_newest_tag("example-org/dependency")
+    assert actual is None, actual
+
+
+def check_fetch_newest_tag_prefers_entry_id_over_title_message() -> None:
+    payload = (
+        b'<feed xmlns="http://www.w3.org/2005/Atom">'
+        b"<entry>"
+        b"<title>v0.9.0 \xe2\x80\x94 some message</title>"
+        b"<id>tag:github.com,2008:Repository/1/v0.9.0</id>"
+        b"</entry>"
+        b'</feed>'
+    )
+    with mock.patch(
+        "check_registry.urllib.request.build_opener",
+        return_value=Opener(Response(200, payload)),
+    ):
+        actual = fetch_newest_tag("example-org/dependency")
+    assert actual == "v0.9.0", actual
+
+
+def check_fetch_newest_tag_falls_back_to_first_title_token_when_id_missing() -> None:
+    payload = (
+        b'<feed xmlns="http://www.w3.org/2005/Atom">'
+        b"<entry><title>v0.9.0 \xe2\x80\x94 some message</title></entry>"
+        b'</feed>'
+    )
+    with mock.patch(
+        "check_registry.urllib.request.build_opener",
+        return_value=Opener(Response(200, payload)),
+    ):
+        actual = fetch_newest_tag("example-org/dependency")
+    assert actual == "v0.9.0", actual
+
+
+def _ci_registry() -> dict:
+    return {
+        "modules": [
+            {
+                "id": "example-module",
+                "repo": "example-org/current-module",
+                "ci": {"required": True, "workflow": "test-lint.yml"},
+            }
+        ]
+    }
+
+
+def check_ci_existence_accepts_200_and_flags_404() -> None:
+    failures = []
+    notes = []
+    with mock.patch("check_registry.github_ci_workflow_exists", return_value=True):
+        skipped = check_ci_existence(_ci_registry(), failures, notes)
+    assert skipped == 0, skipped
+    assert failures == [], failures
+
+    failures = []
+    notes = []
+    with mock.patch("check_registry.github_ci_workflow_exists", return_value=False):
+        skipped = check_ci_existence(_ci_registry(), failures, notes)
+    assert skipped == 0, skipped
+    assert failures == [
+        "ci-existence: example-module declares ci.required but test-lint.yml "
+        "does not exist on example-org/current-module's default branch."
+    ], failures
+
+
+def check_ci_existence_network_error_degrades() -> None:
+    failures = []
+    notes = []
+    with mock.patch("check_registry.github_ci_workflow_exists", return_value=None):
+        skipped = check_ci_existence(_ci_registry(), failures, notes)
+
+    assert skipped == 1, skipped
+    assert failures == [], failures
+    assert any(note.startswith("ci:example-org/current-module:") for note in notes), notes
+
+
+def check_ci_existence_require_reality_escalates_network_error() -> None:
+    failures = []
+    notes = []
+    with mock.patch("check_registry.github_ci_workflow_exists", return_value=None):
+        skipped = check_ci_existence(
+            _ci_registry(), failures, notes, require_reality=True
+        )
+
+    assert skipped == 1, skipped
+    assert len(failures) == 1, failures
+    assert "--require-reality rejects this degraded run" in failures[0], failures
+    assert any(note.startswith("ci:example-org/current-module:") for note in notes), notes
+
+
+def check_ci_workflow_helper_treats_404_as_absent() -> None:
+    with mock.patch(
+        "check_registry.urllib.request.build_opener", return_value=Opener(Response(404))
+    ):
+        actual = github_ci_workflow_exists("example-org/current-module", "test.yml")
+    assert actual is False, actual
+
+
+def check_ci_workflow_helper_does_not_follow_redirects() -> None:
+    with mock.patch(
+        "check_registry.urllib.request.build_opener",
+        return_value=Opener(http_error(302, "https://example.invalid/redirect")),
+    ) as build_opener:
+        actual = github_ci_workflow_exists("example-org/current-module", "test.yml")
+
+    assert actual is None, actual
+    assert isinstance(build_opener.call_args.args[0], NoRedirectHandler)
+
+
+def check_ci_workflow_helper_network_faults_degrade() -> None:
+    faults = [
+        http.client.IncompleteRead(b""),
+        ConnectionResetError("connection reset during response read"),
+    ]
+    for fault in faults:
+        with mock.patch(
+            "check_registry.urllib.request.build_opener", return_value=Opener(fault)
+        ):
+            actual = github_ci_workflow_exists("example-org/current-module", "test.yml")
+        assert actual is None, (fault, actual)
+
+
+def check_schema_rejects_bad_contract_fields() -> None:
+    registry = {
+        "modules": [
+            {
+                "id": "missing-maturity",
+            },
+            {
+                "id": "bad-maturity",
+                "maturity": "prototype",
+            },
+            {
+                "id": "bad-dependency",
+                "maturity": "product",
+                "depends_on": [
+                    {
+                        "repo": "example-org/dependency",
+                        "pin": "v0.2.0",
+                        "unexpected": True,
+                    }
+                ],
+            },
+            {
+                "id": "bad-ci",
+                "maturity": "product",
+                "ci": {
+                    "required": True,
+                    "workflow": "test-lint.yml",
+                    "unexpected": True,
+                },
+            },
+        ]
+    }
+    failures = []
+    checked = check_schema(registry, failures)
+
+    assert checked == 4, checked
+    assert failures == [
+        "schema: missing-maturity: maturity must be 'product' or 'reference'",
+        "schema: bad-maturity: maturity must be 'product' or 'reference'",
+        "schema: bad-dependency: depends_on must be a list of {repo, pin} entries",
+        "schema: bad-ci: ci must be {required: true, workflow: '<file>.yml'}",
+    ], failures
+
+
 if __name__ == "__main__":
     check_support_accepts_four_consistent_readmes()
     check_support_flags_environment_in_planned_row()
@@ -564,4 +916,23 @@ if __name__ == "__main__":
     check_orphan_require_reality_escalates_fetch_failure()
     check_retired_scans_beyond_markdown_but_exempts_the_registry()
     check_retired_reports_regex_escaped_github_spelling()
+    check_alias_flags_yaml_reference_but_exempts_registry()
+    check_alias_no_aliases_produces_no_scan_output()
+    check_pin_freshness_accepts_matching_newest_tag()
+    check_pin_freshness_accepts_bare_tag_from_message_bearing_entry()
+    check_pin_freshness_flags_stale_pin_once()
+    check_pin_freshness_flags_stale_pin_with_bare_newest_tag()
+    check_pin_freshness_honours_pin_reason()
+    check_pin_freshness_fetch_failure_degrades_and_escalates()
+    check_fetch_newest_tag_read_faults_degrade()
+    check_fetch_newest_tag_unsupported_encoding_degrades()
+    check_fetch_newest_tag_prefers_entry_id_over_title_message()
+    check_fetch_newest_tag_falls_back_to_first_title_token_when_id_missing()
+    check_ci_existence_accepts_200_and_flags_404()
+    check_ci_existence_network_error_degrades()
+    check_ci_existence_require_reality_escalates_network_error()
+    check_ci_workflow_helper_treats_404_as_absent()
+    check_ci_workflow_helper_does_not_follow_redirects()
+    check_ci_workflow_helper_network_faults_degrade()
+    check_schema_rejects_bad_contract_fields()
     print("selftest_check_registry: ok")

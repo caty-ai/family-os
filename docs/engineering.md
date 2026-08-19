@@ -71,6 +71,8 @@ The rules layer sits **above** both axes rather than inside either one. It is a 
 
 This table is generated from [`registry/modules.json`](../registry/modules.json). Links marked *publication in preparation* cannot be opened yet. They are listed so the map stays honest about what exists and where it will live.
 
+The registry is also the family contract: every module declares a closed-vocabulary `maturity` of `product` or `reference`, which drives the Tier-2 display. Optional `aliases` record former paths and are rejected everywhere except the registry, so documentation always uses the canonical repository path. Optional `depends_on` entries record a dependency pin; their pins are checked against the newest GitHub tag unless a `pin_reason` records an intentional hold. A module declaring `ci.required` also declares its workflow filename, whose existence is checked by the weekly registry run.
+
 Persona Engine and X Collector are usable on their own and are not required by anything else. X Collector is the current default input path into the ability loop, not the only possible one — it is replaceable.
 
 ---

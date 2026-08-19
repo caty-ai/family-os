@@ -71,6 +71,8 @@ flowchart TB
 
 この表は [`registry/modules.json`](../registry/modules.json) から生成しています。「公開準備中」のリンクは、いまはまだ開けません。何が存在し、どこに置かれるのかを地図として正直に保つために載せています。
 
+レジストリは家族の契約でもあります。各モジュールは閉じた語彙である `product` または `reference` の `maturity` を宣言し、これは Tier-2 の表示を決めます。任意の `aliases` は旧パスを記録し、レジストリ自身を除くどこでも検出されるため、文書は常に canonical なリポジトリパスを使います。任意の `depends_on` は依存先の pin を記録し、意図的に据え置く `pin_reason` がなければ GitHub の最新 tag と照合されます。`ci.required` を宣言するモジュールは workflow 名も宣言し、その存在は週次のレジストリ実行で検査されます。
+
 Persona Engine と X Collector は単独で使え、他のどれからも必須とされていません。X Collector は能力ループへの現在の既定の入力経路ですが、唯一の経路ではなく置き換えられます。
 
 ---
