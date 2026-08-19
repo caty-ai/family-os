@@ -15,7 +15,7 @@
 
 [![family links](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml/badge.svg)](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![install](https://img.shields.io/badge/install-not%20required-brightgreen)
+![install](https://img.shields.io/badge/install-not%20required-lightgrey)
 
 ยิ่งเพิ่มเอเจนต์ AI มากเท่าไร ความทรงจำก็ยิ่งกระจัดกระจาย งานยิ่งหล่นหาย<br>
 และประสบการณ์ที่อุตส่าห์สั่งสมมาก็หายไปในเซสชันถัดไป<br>

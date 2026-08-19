@@ -15,7 +15,7 @@
 
 [![family links](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml/badge.svg)](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![install](https://img.shields.io/badge/install-not%20required-brightgreen)
+![install](https://img.shields.io/badge/install-not%20required-lightgrey)
 
 The more AI agents you add, the more their memory scatters, the more work slips<br>
 through the cracks, and the more of what they learned vanishes at the next session.<br>

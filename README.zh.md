@@ -15,7 +15,7 @@
 
 [![family links](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml/badge.svg)](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![install](https://img.shields.io/badge/install-not%20required-brightgreen)
+![install](https://img.shields.io/badge/install-not%20required-lightgrey)
 
 AI 智能体越多，记忆就越分散，工作越容易被漏掉，<br>
 好不容易积累的经验也会在下一次会话中消失。<br>
