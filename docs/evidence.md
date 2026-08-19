@@ -13,7 +13,7 @@ Weekly CI flags stale evidence, humans edit this file, and CI never edits it.
 | claim-id | EV-001 |
 | believe | A map that claims to check reality must fail when it cannot see reality. |
 | built | Weekly registry checker `tools/check_registry.py` runs anonymously and, since PR #1, fails closed when the check cannot complete. |
-| actually happened | The initial checker silently skipped every module under anonymous API rate limiting yet printed OK with exit 0. One reviewer run skipped 5 of the 8 modules registered at the time (2026-08-12; 9 as of 2026-08-19). The fix moved to HTML checks and added `--require-reality` for the scheduled run. |
+| actually happened | The initial checker silently skipped every module under anonymous API rate limiting yet printed OK with exit 0. One reviewer run skipped 5 of the 8 modules then in the registry (measured 2026-08-05, PR #1; the registry has held 9 since 2026-08-07 and holds 9 as of 2026-08-19). The fix moved to HTML checks and added `--require-reality` for the scheduled run. |
 | still don't know | Whether every future fail-open shape is covered. See EV-002. |
 | state (delivery · visibility · evidence) | implemented · published · observed |
 | evidence | primary: https://github.com/caty-ai/family-os/pull/1 ; related (different failure family): https://github.com/caty-ai/.github/pull/12 (hand-edited generated SVGs were detected as generator drift and resynced with determinism proof) |
