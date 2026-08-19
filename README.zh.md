@@ -278,8 +278,8 @@ flowchart TB
 
 **Maturity:** `product` — Family OS 是一张持续维护的家族地图，这个仓库按 [docs/engineering.md](docs/engineering.md) 中注册表的 maturity 语汇对外发布。
 **CI:** [![family links](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml/badge.svg)](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml) [![Test + Lint](https://github.com/caty-ai/family-os/actions/workflows/test-lint.yml/badge.svg)](https://github.com/caty-ai/family-os/actions/workflows/test-lint.yml)
-**已验证环境:** 注册表与链接检查会在每次变更时于 Ubuntu 和 macOS 的 CI 上运行；这张地图本身可在任何 Markdown 渲染器中阅读。
-**已知限制:** [EV-004](docs/evidence.md#ev-004--governed-self-growth-cycle--the-mechanism-is-public-no-cycle-record-is) 仍未验证，因为尚未公开 self-growth cycle 的第一手记录；[EV-003](docs/evidence.md#ev-003--the-weekly-reality-check-has-run-on-schedule-and-passed) 说明每周 scheduled reality check 还很新，历史上目前只有一次 scheduled run。
+**已验证环境:** 注册表检查会在每次变更时于 Ubuntu 和 macOS 的 CI 上运行；链接与页脚检查在 Ubuntu 上运行；这张地图本身可在任何 Markdown 渲染器中阅读。
+**已知限制:** [EV-004](docs/evidence.md#ev-004--governed-self-growth-cycle--the-mechanism-is-public-no-cycle-record-is) 仍未验证，因为尚未公开 self-growth cycle 的第一手记录；[EV-003](docs/evidence.md#ev-003--the-weekly-reality-check-has-run-on-schedule-and-passed) 说明每周 scheduled reality check 还很新，scheduled run 的历史仍然很短；最近一次审查时的当前次数和证据记录在该条目中。
 
 ---
 

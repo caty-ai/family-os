@@ -278,8 +278,8 @@ Family OS の地図そのものを読むのに、特別な準備は要りませ�
 
 **Maturity:** `product` — Family OS は生きたファミリーマップであり、[docs/engineering.md](docs/engineering.md) にあるレジストリの maturity 語彙で公開しています。
 **CI:** [![family links](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml/badge.svg)](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml) [![Test + Lint](https://github.com/caty-ai/family-os/actions/workflows/test-lint.yml/badge.svg)](https://github.com/caty-ai/family-os/actions/workflows/test-lint.yml)
-**確認済み環境:** レジストリ検査とリンク検査は、変更のたびに Ubuntu と macOS の CI で回ります。地図そのものは Markdown を読める環境ならどこでも開けます。
-**既知の制約:** [EV-004](docs/evidence.md#ev-004--governed-self-growth-cycle--the-mechanism-is-public-no-cycle-record-is) は self-growth cycle の公開された一次記録がまだないため未検証のままです。[EV-003](docs/evidence.md#ev-003--the-weekly-reality-check-has-run-on-schedule-and-passed) が示す通り、週次の scheduled reality check はまだ若く、履歴上の scheduled run は現時点で1回です。
+**確認済み環境:** レジストリ検査は変更のたびに Ubuntu と macOS の CI で回り、リンク検査とフッター検査は Ubuntu で回ります。地図そのものは Markdown を読める環境ならどこでも開けます。
+**既知の制約:** [EV-004](docs/evidence.md#ev-004--governed-self-growth-cycle--the-mechanism-is-public-no-cycle-record-is) は self-growth cycle の公開された一次記録がまだないため未検証のままです。[EV-003](docs/evidence.md#ev-003--the-weekly-reality-check-has-run-on-schedule-and-passed) が示す通り、週次の scheduled reality check はまだ若く、scheduled run の履歴もまだ短いままです。直近レビュー時点の件数と根拠はそのエントリにあります。
 
 ---
 

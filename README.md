@@ -278,8 +278,8 @@ Once you know it will run, all that is left is to pick one thread and follow it.
 
 **Maturity:** `product` — Family OS is a living family map, using the registry maturity vocabulary described in [docs/engineering.md](docs/engineering.md).
 **CI:** [![family links](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml/badge.svg)](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml) [![Test + Lint](https://github.com/caty-ai/family-os/actions/workflows/test-lint.yml/badge.svg)](https://github.com/caty-ai/family-os/actions/workflows/test-lint.yml)
-**Verified environments:** registry and link tooling run in CI on every change across Ubuntu and macOS; the map itself is readable in any Markdown renderer.
-**Known constraints:** [EV-004](docs/evidence.md#ev-004--governed-self-growth-cycle--the-mechanism-is-public-no-cycle-record-is) remains unverified because no public primary self-growth cycle record has been published; [EV-003](docs/evidence.md#ev-003--the-weekly-reality-check-has-run-on-schedule-and-passed) shows the weekly scheduled reality check is still young, with one scheduled run in history so far.
+**Verified environments:** registry checks run in CI on every change across Ubuntu and macOS; link and footer checks run on Ubuntu; the map itself is readable in any Markdown renderer.
+**Known constraints:** [EV-004](docs/evidence.md#ev-004--governed-self-growth-cycle--the-mechanism-is-public-no-cycle-record-is) remains unverified because no public primary self-growth cycle record has been published; [EV-003](docs/evidence.md#ev-003--the-weekly-reality-check-has-run-on-schedule-and-passed) shows the weekly scheduled reality check is still young and the scheduled-run history remains short; the current count and evidence as of the last review live in the entry.
 
 ---
 

@@ -278,8 +278,8 @@ flowchart TB
 
 **Maturity:** `product` — Family OS คือแผนที่ครอบครัวที่มีการดูแลต่อเนื่อง และรีโปนี้เผยแพร่ด้วยคำศัพท์ maturity ของ registry ตามที่อธิบายใน [docs/engineering.md](docs/engineering.md)
 **CI:** [![family links](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml/badge.svg)](https://github.com/caty-ai/family-os/actions/workflows/family-links.yml) [![Test + Lint](https://github.com/caty-ai/family-os/actions/workflows/test-lint.yml/badge.svg)](https://github.com/caty-ai/family-os/actions/workflows/test-lint.yml)
-**สภาพแวดล้อมที่ยืนยันแล้ว:** เครื่องมือเช็ก registry และลิงก์รันบน CI ทุกครั้งที่มีการเปลี่ยนแปลง ทั้งบน Ubuntu และ macOS; ตัวแผนที่เองอ่านได้ด้วย Markdown renderer ใดก็ได้
-**ข้อจำกัดที่ทราบ:** [EV-004](docs/evidence.md#ev-004--governed-self-growth-cycle--the-mechanism-is-public-no-cycle-record-is) ยังไม่ผ่านการยืนยัน เพราะยังไม่มีบันทึกปฐมภูมิของ self-growth cycle ที่เผยแพร่สู่สาธารณะ; [EV-003](docs/evidence.md#ev-003--the-weekly-reality-check-has-run-on-schedule-and-passed) ระบุว่า weekly scheduled reality check ยังใหม่ และตอนนี้มีประวัติ scheduled run เพียงครั้งเดียว
+**สภาพแวดล้อมที่ยืนยันแล้ว:** การตรวจ registry รันบน CI ทุกครั้งที่มีการเปลี่ยนแปลงทั้งบน Ubuntu และ macOS; การตรวจลิงก์และ footer รันบน Ubuntu; ตัวแผนที่เองอ่านได้ด้วย Markdown renderer ใดก็ได้
+**ข้อจำกัดที่ทราบ:** [EV-004](docs/evidence.md#ev-004--governed-self-growth-cycle--the-mechanism-is-public-no-cycle-record-is) ยังไม่ผ่านการยืนยัน เพราะยังไม่มีบันทึกปฐมภูมิของ self-growth cycle ที่เผยแพร่สู่สาธารณะ; [EV-003](docs/evidence.md#ev-003--the-weekly-reality-check-has-run-on-schedule-and-passed) ระบุว่า weekly scheduled reality check ยังใหม่ และประวัติ scheduled run ก็ยังสั้นอยู่; จำนวนครั้งปัจจุบันและหลักฐาน ณ ตอนรีวิวล่าสุดอยู่ใน entry นั้น
 
 ---
 
