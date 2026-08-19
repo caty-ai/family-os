@@ -15,9 +15,103 @@ from check_registry import (
     check_orphan,
     check_reality,
     check_retired,
+    check_support,
     fetch_org_repos,
     github_is_public,
 )
+
+
+SUPPORT_READMES = ("README.md", "README.ja.md", "README.zh.md", "README.th.md")
+
+
+def _support_document(in_use: str, extra_rows: str = "") -> str:
+    return (
+        "# Family OS\n\n"
+        '<a id="environments"></a>\n\n'
+        "## What you need\n\n"
+        "| Aspect | Support |\n"
+        "| --- | --- |\n"
+        "| Agent environments in real use | %s |\n"
+        "%s"
+        "\n---\n\n"
+        '<a id="later"></a>\n' % (in_use, extra_rows)
+    )
+
+
+def _run_support_check(overrides=None):
+    in_use = (
+        "✅ Claude Code ／ ✅ Hermes Agent ／ ✅ OpenClaw ／ "
+        "✅ Kimi Code ／ ✅ Codex"
+    )
+    documents = {
+        filename: _support_document(in_use) for filename in SUPPORT_READMES
+    }
+    documents.update(overrides or {})
+
+    with tempfile.TemporaryDirectory() as tmp:
+        root = pathlib.Path(tmp)
+        for filename, document in documents.items():
+            (root / filename).write_text(document, encoding="utf-8")
+        failures: list = []
+        checked = check_support(root, failures)
+    return checked, failures
+
+
+def check_support_accepts_four_consistent_readmes() -> None:
+    checked, failures = _run_support_check()
+    assert checked == 4, checked
+    assert failures == [], failures
+
+
+def check_support_flags_environment_in_planned_row() -> None:
+    in_use = (
+        "✅ Claude Code ／ ✅ Hermes Agent ／ ✅ OpenClaw ／ "
+        "✅ Kimi Code ／ ✅ Codex"
+    )
+    document = _support_document(
+        in_use,
+        "| Agent environments planned for verification | ⚠️ Kimi Code |\n",
+    )
+    checked, failures = _run_support_check({"README.th.md": document})
+    assert checked == 4, checked
+    assert len(failures) == 1, failures
+    assert failures[0].startswith("support: README.th.md:"), failures
+    assert "planned for verification" in failures[0], failures
+
+
+def check_support_flags_missing_in_use_environment() -> None:
+    document = _support_document(
+        "✅ Claude Code ／ ✅ Hermes Agent ／ ✅ OpenClaw ／ ✅ Kimi Code"
+    )
+    checked, failures = _run_support_check({"README.zh.md": document})
+    assert checked == 4, checked
+    assert len(failures) == 1, failures
+    assert failures[0].startswith("support: README.zh.md:"), failures
+    assert "✅ Codex" in failures[0], failures
+
+
+def check_support_missing_anchor_fails_closed() -> None:
+    document = _support_document(
+        "✅ Claude Code ／ ✅ Hermes Agent ／ ✅ OpenClaw ／ "
+        "✅ Kimi Code ／ ✅ Codex"
+    ).replace('<a id="environments"></a>\n\n', "", 1)
+    checked, failures = _run_support_check({"README.ja.md": document})
+    assert checked == 3, checked
+    assert len(failures) == 1, failures
+    assert failures[0].startswith("support: README.ja.md:"), failures
+    assert "missing environments anchor" in failures[0], failures
+
+
+def check_support_flags_warning_mark_in_in_use_row() -> None:
+    document = _support_document(
+        "✅ Claude Code ／ ✅ Hermes Agent ／ ✅ OpenClaw ／ "
+        "✅ Kimi Code ／ ⚠️ Codex"
+    )
+    checked, failures = _run_support_check({"README.md": document})
+    assert checked == 4, checked
+    assert len(failures) == 1, failures
+    assert failures[0].startswith("support: README.md:"), failures
+    assert "with no ⚠️" in failures[0], failures
 
 
 def _tour_registry() -> dict:
@@ -446,6 +540,11 @@ def check_retired_reports_regex_escaped_github_spelling() -> None:
 
 
 if __name__ == "__main__":
+    check_support_accepts_four_consistent_readmes()
+    check_support_flags_environment_in_planned_row()
+    check_support_flags_missing_in_use_environment()
+    check_support_missing_anchor_fails_closed()
+    check_support_flags_warning_mark_in_in_use_row()
     check_for_agents_tour_matches_published_set()
     check_for_agents_tour_flags_missing_published_module()
     check_for_agents_tour_flags_non_published_row()
