@@ -336,8 +336,8 @@
     {
       "id": "persona-growth-loop",
       "name": "Persona Growth Loop",
-      "repo": "shojikumaru/persona-growth-loop",
-      "status": "preparing",
+      "repo": "caty-ai/persona-growth-loop",
+      "status": "published",
       "tagline": {
         "en": "Grows the persona itself — minimal, idempotent proposals",
         "ja": "人格そのものを育てる — 最小・冪等な提案づくり",
@@ -348,18 +348,14 @@
         "group": "vertical",
         "foundation": false
       },
-      "license": null,
+      "license": "MIT",
       "class": {
-        "en": "planned frontend",
-        "ja": "計画中のフロントエンド"
+        "en": "runtime, application",
+        "ja": "runtime・アプリケーション"
       },
       "owns": {
         "en": "minimised, idempotent proposal production",
         "ja": "最小化された冪等な提案の生成"
-      },
-      "note": {
-        "en": "planned",
-        "ja": "計画中"
       }
     },
     {
@@ -486,6 +482,11 @@
     {
       "repo": "shojikumaru/self-growth-loop",
       "superseded_by": "caty-ai/self-growth-loop",
+      "reason": "republished under caty-ai as a fresh repository, so GitHub does not redirect"
+    },
+    {
+      "repo": "shojikumaru/persona-growth-loop",
+      "superseded_by": "caty-ai/persona-growth-loop",
       "reason": "republished under caty-ai as a fresh repository, so GitHub does not redirect"
     }
   ]
