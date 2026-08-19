@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Check that what the documentation says about each module is still true.
 
-Four checks, in order of how badly each one bites:
+Five checks, in order of how badly each one bites:
 
 1. reality      — every module's declared status matches what GitHub actually
                   serves to an anonymous visitor. Catches the case where a repo
@@ -15,6 +15,9 @@ Four checks, in order of how badly each one bites:
 4. status-text  — wherever a module link appears, the status wording next to it
                   matches the registry, in that file's language. Catches the
                   reverse of (1): a live link with a stale label beside it.
+5. tour         — the FOR-AGENTS.md repository tour lists exactly the published
+                  registry modules. Catches documentation drift in either
+                  direction without relying on the network.
 
 Run with --offline to skip the network checks (reality and orphan).
 
@@ -48,6 +51,17 @@ RETIRED_SCAN_SUFFIXES = (".md", ".yml", ".yaml", ".py", ".json", ".toml", ".txt"
 # The registry legitimately names retired repos inside retired_repos[]; that
 # is the one file the retired-reverse-reference check must never flag.
 RETIRED_SCAN_EXEMPT = pathlib.Path("registry/modules.json")
+
+# Contract A-8 (Epic #24): the FOR-AGENTS §5 tour table must list every
+# published module. Adding an exemption here requires owner approval —
+# do not edit this set in an implementation lane.
+FOR_AGENTS_TOUR_EXEMPT = frozenset()
+
+FOR_AGENTS_TOUR_HEADING = re.compile(r"^## 5\.")
+FOR_AGENTS_NEXT_HEADING = re.compile(r"^## ")
+FOR_AGENTS_TOUR_REPO = re.compile(
+    r"github\.com/(?P<repo>[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)"
+)
 
 # GitHub's Link header, e.g. '<https://...&page=2>; rel="next", <...>; rel="last"'.
 LINK_NEXT = re.compile(r'<(?P<url>[^>]+)>\s*;\s*rel="next"')
@@ -356,6 +370,66 @@ def check_status_text(registry: dict, root: pathlib.Path, failures: list) -> int
     return checked
 
 
+def check_for_agents_tour(
+    registry: dict, root: pathlib.Path, failures: list
+) -> int:
+    path = root / "FOR-AGENTS.md"
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        failures.append("tour: could not read FOR-AGENTS.md: %s" % exc)
+        return 0
+
+    section_found = False
+    in_section = False
+    tour_repos = set()
+    for line in text.splitlines():
+        if not in_section:
+            if FOR_AGENTS_TOUR_HEADING.match(line):
+                section_found = True
+                in_section = True
+            continue
+        if FOR_AGENTS_NEXT_HEADING.match(line):
+            break
+        if not line.lstrip(" \t").startswith("|"):
+            continue
+        match = FOR_AGENTS_TOUR_REPO.search(line)
+        if match:
+            tour_repos.add(match.group("repo"))
+
+    if not section_found:
+        failures.append(
+            "tour: FOR-AGENTS.md §5 section not found (contract A-8; "
+            "refusing to pass without parsing the tour table)"
+        )
+        return 0
+    if not tour_repos:
+        failures.append(
+            "tour: FOR-AGENTS.md §5 contains zero parsed tour rows "
+            "(contract A-8; refusing to pass without parsing the tour table)"
+        )
+        return 0
+
+    published = {
+        module["repo"]
+        for module in registry["modules"]
+        if module["status"] == "published"
+    }
+    for repo in sorted(published - tour_repos - FOR_AGENTS_TOUR_EXEMPT):
+        failures.append(
+            "tour: %s is published in the registry but missing from "
+            "FOR-AGENTS.md §5 (contract A-8; add a tour row or get owner "
+            "approval for an exemption)" % repo
+        )
+    for repo in sorted(tour_repos - published):
+        failures.append(
+            "tour: FOR-AGENTS.md §5 lists %s, which is not a published "
+            "module in the registry (remove the row or fix the registry)" % repo
+        )
+
+    return len(tour_repos)
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -396,10 +470,12 @@ def main() -> int:
         orphan_skipped = check_orphan(registry, failures, notes, args.require_reality)
     check_retired(registry, root, failures)
     occurrences = check_status_text(registry, root, failures)
+    tour_rows = check_for_agents_tour(registry, root, failures)
 
     print("modules in registry : %d" % len(registry["modules"]))
     print("retired repositories: %d" % len(registry.get("retired_repos", [])))
     print("link occurrences    : %d" % occurrences)
+    print("tour rows           : %d" % tour_rows)
     print("reality check       : %s" % ("skipped" if args.offline else "on (anonymous)"))
     if not args.offline:
         reality_targets = len(registry["modules"]) + (1 if registry.get("map_repo") else 0)

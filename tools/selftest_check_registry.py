@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Offline self-tests for the registry reality, orphan, and retired checks."""
+"""Offline self-tests for the registry checks."""
 
 from __future__ import annotations
 
@@ -11,12 +11,118 @@ from typing import Optional
 from unittest import mock
 
 from check_registry import (
+    check_for_agents_tour,
     check_orphan,
     check_reality,
     check_retired,
     fetch_org_repos,
     github_is_public,
 )
+
+
+def _tour_registry() -> dict:
+    return {
+        "modules": [
+            {"repo": "example-org/alpha", "status": "published"},
+            {"repo": "example-org/beta", "status": "published"},
+            {"repo": "example-org/preparing", "status": "preparing"},
+        ]
+    }
+
+
+def _tour_document(repos: list) -> str:
+    rows = "".join(
+        "| [%s](https://github.com/%s) (published, MIT) | role | verify |\n"
+        % (repo.split("/", 1)[1], repo)
+        for repo in repos
+    )
+    return (
+        "## 4. Before the tour\n\n"
+        "| [outside](https://github.com/example-org/outside) | ignored |\n\n"
+        "## 5. Repository tour table (all published modules)\n\n"
+        "A prose URL https://github.com/example-org/prose is ignored.\n\n"
+        "| repository | role | what to verify |\n"
+        "|---|---|---|\n"
+        "%s\n"
+        "## 6. After the tour\n\n"
+        "| [later](https://github.com/example-org/later) | ignored |\n" % rows
+    )
+
+
+def _run_tour_check(document: str):
+    with tempfile.TemporaryDirectory() as tmp:
+        root = pathlib.Path(tmp)
+        (root / "FOR-AGENTS.md").write_text(document, encoding="utf-8")
+        failures: list = []
+        rows = check_for_agents_tour(_tour_registry(), root, failures)
+    return rows, failures
+
+
+def check_for_agents_tour_matches_published_set() -> None:
+    rows, failures = _run_tour_check(
+        _tour_document(["example-org/alpha", "example-org/beta"])
+    )
+    assert rows == 2, rows
+    assert failures == [], failures
+
+
+def check_for_agents_tour_flags_missing_published_module() -> None:
+    rows, failures = _run_tour_check(_tour_document(["example-org/alpha"]))
+    assert rows == 1, rows
+    assert len(failures) == 1, failures
+    assert failures[0].startswith("tour: example-org/beta is published"), failures
+
+
+def check_for_agents_tour_flags_non_published_row() -> None:
+    rows, failures = _run_tour_check(
+        _tour_document(
+            ["example-org/alpha", "example-org/beta", "example-org/preparing"]
+        )
+    )
+    assert rows == 3, rows
+    assert len(failures) == 1, failures
+    assert "lists example-org/preparing" in failures[0], failures
+
+
+def check_for_agents_tour_flags_indented_non_published_row() -> None:
+    document = _tour_document(["example-org/alpha", "example-org/beta"]).replace(
+        "\n## 6. After the tour",
+        "\n   | [ghost](https://github.com/example-org/ghost) | role | verify |\n"
+        "\n## 6. After the tour",
+        1,
+    )
+    rows, failures = _run_tour_check(document)
+    assert rows == 3, rows
+    assert len(failures) == 1, failures
+    assert failures[0].startswith("tour:") and "lists example-org/ghost" in failures[0]
+
+
+def check_for_agents_tour_missing_section_fails_closed() -> None:
+    document = (
+        "## 4. Before the missing tour\n\n"
+        "| [alpha](https://github.com/example-org/alpha) | ignored |\n\n"
+        "## 6. After the missing tour\n"
+    )
+    rows, failures = _run_tour_check(document)
+    assert rows == 0, rows
+    assert len(failures) == 1, failures
+    assert failures[0].startswith("tour:") and "section not found" in failures[0]
+
+
+def check_for_agents_tour_empty_section_fails_closed() -> None:
+    rows, failures = _run_tour_check(_tour_document([]))
+    assert rows == 0, rows
+    assert len(failures) == 1, failures
+    assert failures[0].startswith("tour:") and "zero parsed tour rows" in failures[0]
+
+
+def check_for_agents_tour_allows_approved_exemption() -> None:
+    with mock.patch(
+        "check_registry.FOR_AGENTS_TOUR_EXEMPT", frozenset({"example-org/beta"})
+    ):
+        rows, failures = _run_tour_check(_tour_document(["example-org/alpha"]))
+    assert rows == 1, rows
+    assert failures == [], failures
 
 
 class Response:
@@ -340,6 +446,13 @@ def check_retired_reports_regex_escaped_github_spelling() -> None:
 
 
 if __name__ == "__main__":
+    check_for_agents_tour_matches_published_set()
+    check_for_agents_tour_flags_missing_published_module()
+    check_for_agents_tour_flags_non_published_row()
+    check_for_agents_tour_flags_indented_non_published_row()
+    check_for_agents_tour_missing_section_fails_closed()
+    check_for_agents_tour_empty_section_fails_closed()
+    check_for_agents_tour_allows_approved_exemption()
     check_status_contract()
     check_fetch_org_repos_read_faults_degrade()
     check_unexpected_statuses_are_recorded_and_later_modules_continue()
