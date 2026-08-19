@@ -277,6 +277,8 @@ Family OS の地図そのものを読むのに、特別な準備は要りませ�
 
 Family OS 側でやることはありません。インストールも、アカウント登録も、設定ファイルもありません。**リンクを1つ開くだけです。**
 
+**手で検証しますか？** この地図そのものは、意図的にインストールできないようにしてあります。実際に手を動かす確認は、1つ先の [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（公開・MIT） から始まります。空のプロジェクトフォルダで AI ツールを開き、その README の Get started 節にあるインストール用プロンプトを貼り付ければ、AI がインストールと確認を実行して結果を報告します（コントリビューターは `make test` でスイート全体を実行できます）。
+
 迷ったら、縦軸の [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) から始めてください。1体のAIが失敗から学び、長い作業を証拠つきで最後まで進められるようになります。無料の MIT で、導入手順はそのリポジトリの README にあります。いちばん困っているのが「黙って止まる作業」なら、[Sitter](https://github.com/caty-ai/sitter) へ直接どうぞ — こちらも公開済み・MIT です。
 
 横軸の [FMA](https://github.com/caty-ai/family-memory-architecture) も公開済み（MIT）です。いちばん困っているのが「記憶がばらばら」なら、そちらから始めてください。
