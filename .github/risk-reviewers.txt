@@ -1,0 +1,11 @@
+# .github/risk-reviewers.txt — 高リスク確認者名簿 (1行 = 1 GitHub ID)
+#
+# 使い方: このファイルを対象リポの .github/risk-reviewers.txt にコピーして commit する。
+# - Risk Review Gate は名簿を base (main) 側から読む。PR 側で名簿を書き換えても効かない
+#   (「PR が名簿に自分を足して自分で通す」循環の封じ)。名簿の変更自体が高リスクパスとして
+#   人間確認の対象になる。
+# - REPLACE_ME を実際のオーナー (人間) の GitHub ID に置き換えること。
+#   プレースホルダのまま・空のままなら gate は赤 (fail-closed)。
+# - 秘密ではないのでリポ変数や環境変数に置かない (handbook docs/09 R-3② — 非秘密の設定は
+#   コミットされたファイルへ。変更が PR に現れて可視になる)。
+shojikumaru
