@@ -231,6 +231,7 @@
       "name": "Family Dev Handbook",
       "repo": "caty-ai/family-dev-handbook",
       "status": "published",
+      "maturity": "product",
       "tagline": {
         "en": "The rules of the road — issues, PRs, worktrees, handoffs, parallel development",
         "ja": "開発の交通ルール — Issue・PR・worktree・受け渡し・並行開発",
@@ -257,6 +258,11 @@
       "name": "Caty Agent Harness",
       "repo": "caty-ai/caty-agent-harness",
       "status": "published",
+      "maturity": "product",
+      "ci": {
+        "required": true,
+        "workflow": "test-lint.yml"
+      },
       "tagline": {
         "en": "Task backbone for AI agents — retries, checkpoints, and honest completion",
         "ja": "AIエージェントのタスク基盤 — 試行・リトライ・チェックポイント・完了判定",
@@ -283,6 +289,7 @@
       "name": "context-kit",
       "repo": "caty-ai/context-kit",
       "status": "published",
+      "maturity": "product",
       "tagline": {
         "en": "Six-piece context hygiene kit for one agent — bounded output, delegation briefs, safety guards, recall, worktree snapshots",
         "ja": "エージェント1体分の6点コンテキスト衛生キット — 大出力の退避・委譲ブリーフ検査・安全フック・記憶検索・worktree スナップショット",
@@ -309,6 +316,7 @@
       "name": "Persona Engine",
       "repo": "caty-ai/persona-engine",
       "status": "published",
+      "maturity": "product",
       "tagline": {
         "en": "Gives an agent a persona — layered personality and graded emotion",
         "ja": "エージェントに人格を与える — 人格レイヤーと感情のグラデーション",
@@ -338,6 +346,7 @@
       "name": "Persona Growth Loop",
       "repo": "caty-ai/persona-growth-loop",
       "status": "published",
+      "maturity": "reference",
       "tagline": {
         "en": "Grows the persona itself — minimal, idempotent proposals",
         "ja": "人格そのものを育てる — 最小・冪等な提案づくり",
@@ -363,6 +372,7 @@
       "name": "X Collector",
       "repo": "caty-ai/x-collector",
       "status": "published",
+      "maturity": "product",
       "tagline": {
         "en": "Turns X and the web into one daily digest — for people and agents",
         "ja": "Xやウェブの素材を1日1回のダイジェストに — 人にもエージェントにも",
@@ -389,6 +399,14 @@
       "name": "Self Growth Loop",
       "repo": "caty-ai/self-growth-loop",
       "status": "published",
+      "maturity": "reference",
+      "depends_on": [
+        {
+          "repo": "caty-ai/caty-agent-harness",
+          "pin": "v0.6.0",
+          "pin_reason": "pins the latest published release; newer tags (v0.7.0-v0.9.0) are un-released merge tags, deliberately skipped — decision: self-growth-loop#14 (release v0.3.1)"
+        }
+      ],
       "tagline": {
         "en": "Lets an agent grow its own abilities — proposals, governance, adoption records",
         "ja": "エージェントが自分の能力を育てるループ — 提案・ガバナンス・採用記録",
@@ -415,6 +433,7 @@
       "name": "Family Memory Architecture",
       "repo": "caty-ai/family-memory-architecture",
       "status": "published",
+      "maturity": "reference",
       "tagline": {
         "en": "The memory bus — how the family shares what it knows",
         "ja": "記憶バス — 家族が知っていることを共有する層",
@@ -441,6 +460,7 @@
       "name": "Sitter",
       "repo": "caty-ai/sitter",
       "status": "published",
+      "maturity": "product",
       "tagline": {
         "en": "Babysits delegated agent runs — watches, keeps evidence, restarts",
         "ja": "委譲したエージェント実行の見張り番 — 監視・証拠の記録・再起動",

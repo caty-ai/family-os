@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Check that what the documentation says about each module is still true.
 
-Six checks, in order of how badly each one bites:
+Nine checks, in order of how badly each one bites:
 
 1. reality      — every module's declared status matches what GitHub actually
                   serves to an anonymous visitor. Catches the case where a repo
@@ -9,21 +9,29 @@ Six checks, in order of how badly each one bites:
 2. orphan       — every public repository in the org is accounted for by the
                   registry. Catches the case where a repo was created (or
                   un-retired) on GitHub and nobody added it to the map.
-3. retired      — no tracked text file links to a repository we have moved
+3. pin-freshness — every declared dependency pin still names the newest tag,
+                  unless a recorded decision explains why it is intentionally
+                  held back.
+4. ci-existence  — every required CI workflow actually exists on the module's
+                  default branch.
+5. retired      — no tracked text file links to a repository we have moved
                   away from. Publishing under a fresh repository forfeits
                   GitHub's automatic redirect, so an old URL is a hard 404.
-4. status-text  — wherever a module link appears, the status wording next to it
+6. alias        — no tracked text file uses an alternative or former module
+                  path when the canonical path is declared in the registry.
+7. status-text  — wherever a module link appears, the status wording next to it
                   matches the registry, in that file's language. Catches the
                   reverse of (1): a live link with a stale label beside it.
-5. tour         — the FOR-AGENTS.md repository tour lists exactly the published
+8. tour         — the FOR-AGENTS.md repository tour lists exactly the published
                   registry modules. Catches documentation drift in either
                   direction without relying on the network.
-6. support      — the four README support tables declare one owner-approved set
+9. support      — the four README support tables declare one owner-approved set
                   of agent environments in real use. Catches translation drift
                   and stale planned-environment rows without relying on the
                   network.
 
-Run with --offline to skip the network checks (reality and orphan).
+Run with --offline to skip the network checks (reality, orphan, pin-freshness,
+and ci-existence).
 
 Python 3.9+, standard library only.
 """
@@ -36,6 +44,7 @@ import re
 import sys
 import urllib.error
 import urllib.request
+import xml.etree.ElementTree as ElementTree
 
 from family_common import DegradedReality
 
@@ -72,11 +81,19 @@ SUPPORT_IN_USE_ENVIRONMENTS = (
     "Codex",
 )
 
+# Contract #62: maturity is the single required registry-contract field for
+# every module. Changing this closed vocabulary requires owner approval — do
+# not edit it in an implementation lane.
+MODULE_MATURITIES = ("product", "reference")
+
 FOR_AGENTS_TOUR_HEADING = re.compile(r"^## 5\.")
 FOR_AGENTS_NEXT_HEADING = re.compile(r"^## ")
 FOR_AGENTS_TOUR_REPO = re.compile(
     r"github\.com/(?P<repo>[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)"
 )
+
+REPOSITORY_PATH = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
+WORKFLOW_NAME = re.compile(r"^[^/]+\.yml$")
 
 # GitHub's Link header, e.g. '<https://...&page=2>; rel="next", <...>; rel="last"'.
 LINK_NEXT = re.compile(r'<(?P<url>[^>]+)>\s*;\s*rel="next"')
@@ -112,6 +129,21 @@ def retired_scan_files(root: pathlib.Path):
         if path.relative_to(root) == RETIRED_SCAN_EXEMPT:
             continue
         yield path
+
+
+def scan_repository_references(root: pathlib.Path, entries: dict, report) -> None:
+    """Find normal and regex-escaped GitHub paths in tracked text files."""
+    for path in retired_scan_files(root):
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        for repo, entry in entries.items():
+            for needle in ("github.com/%s" % repo, "github\\.com/%s" % repo):
+                pattern = re.compile(re.escape(needle) + r"(?![A-Za-z0-9_-])")
+                for match in pattern.finditer(text):
+                    line = text[: match.start()].count("\n") + 1
+                    report(path, line, repo, entry)
 
 
 def status_span(text: str, start: int) -> str:
@@ -323,26 +355,265 @@ def check_retired(registry: dict, root: pathlib.Path, failures: list) -> None:
     retired = {entry["repo"]: entry for entry in registry.get("retired_repos", [])}
     if not retired:
         return
-    for path in retired_scan_files(root):
-        try:
-            text = path.read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError):
+    def report(path: pathlib.Path, line: int, repo: str, entry: dict) -> None:
+        failures.append(
+            "retired: %s:%d links to %s, which has moved to %s (%s)"
+            % (
+                path.relative_to(root),
+                line,
+                repo,
+                entry["superseded_by"],
+                entry["reason"],
+            )
+        )
+
+    scan_repository_references(root, retired, report)
+
+
+def _is_repository_path(value) -> bool:
+    return isinstance(value, str) and REPOSITORY_PATH.fullmatch(value) is not None
+
+
+def check_schema(registry: dict, failures: list) -> int:
+    """Fail closed for required maturity and present optional contract fields."""
+    checked = 0
+    for module in registry.get("modules", []):
+        module_id = module.get("id", "<unnamed>") if isinstance(module, dict) else "<unnamed>"
+        if not isinstance(module, dict):
+            failures.append("schema: %s: module entry must be an object" % module_id)
             continue
-        for repo, entry in retired.items():
-            for needle in ("github.com/%s" % repo, "github\\.com/%s" % repo):
-                pattern = re.compile(re.escape(needle) + r"(?![A-Za-z0-9_-])")
-                for match in pattern.finditer(text):
-                    line = text[: match.start()].count("\n") + 1
-                    failures.append(
-                        "retired: %s:%d links to %s, which has moved to %s (%s)"
-                        % (
-                            path.relative_to(root),
-                            line,
-                            repo,
-                            entry["superseded_by"],
-                            entry["reason"],
-                        )
-                    )
+        checked += 1
+
+        if module.get("maturity") not in MODULE_MATURITIES:
+            failures.append(
+                "schema: %s: maturity must be 'product' or 'reference'" % module_id
+            )
+
+        if "aliases" in module:
+            aliases = module["aliases"]
+            if not isinstance(aliases, list) or not all(
+                _is_repository_path(alias) for alias in aliases
+            ):
+                failures.append(
+                    "schema: %s: aliases must be a list of owner/name strings"
+                    % module_id
+                )
+
+        if "depends_on" in module:
+            dependencies = module["depends_on"]
+            valid = isinstance(dependencies, list)
+            if valid:
+                for dependency in dependencies:
+                    if not isinstance(dependency, dict):
+                        valid = False
+                        break
+                    if set(dependency) - {"repo", "pin", "pin_reason"}:
+                        valid = False
+                        break
+                    if not _is_repository_path(dependency.get("repo")):
+                        valid = False
+                        break
+                    if not isinstance(dependency.get("pin"), str) or not dependency["pin"]:
+                        valid = False
+                        break
+                    if "pin_reason" in dependency and not isinstance(
+                        dependency["pin_reason"], str
+                    ):
+                        valid = False
+                        break
+            if not valid:
+                failures.append(
+                    "schema: %s: depends_on must be a list of {repo, pin} entries"
+                    % module_id
+                )
+
+        if "ci" in module:
+            ci = module["ci"]
+            if (
+                not isinstance(ci, dict)
+                or set(ci) != {"required", "workflow"}
+                or ci.get("required") is not True
+                or not isinstance(ci.get("workflow"), str)
+                or WORKFLOW_NAME.fullmatch(ci["workflow"]) is None
+            ):
+                failures.append(
+                    "schema: %s: ci must be {required: true, workflow: '<file>.yml'}"
+                    % module_id
+                )
+    return checked
+
+
+def check_aliases(registry: dict, root: pathlib.Path, failures: list) -> int:
+    aliases = {}
+    for module in registry.get("modules", []):
+        if not isinstance(module, dict) or not isinstance(module.get("aliases"), list):
+            continue
+        for alias in module["aliases"]:
+            if isinstance(alias, str):
+                aliases[alias] = module.get("repo", "<unknown>")
+    if not aliases:
+        return 0
+
+    def report(path: pathlib.Path, line: int, alias: str, canonical: str) -> None:
+        failures.append(
+            "alias: %s:%d references %s, an alias of %s — use the canonical path"
+            % (path.relative_to(root), line, alias, canonical)
+        )
+
+    scan_repository_references(root, aliases, report)
+    return len(aliases)
+
+
+def fetch_newest_tag(repo: str, timeout: float = 20.0):
+    """Return GitHub's newest tag according to the tags Atom feed, or None.
+
+    GitHub orders this feed by tag creation date, newest first. The contract is
+    therefore the newest tag, rather than the largest semantic version.
+    """
+    request = urllib.request.Request(
+        "https://github.com/%s/tags.atom" % repo,
+        headers={"User-Agent": "family-os-registry-check"},
+    )
+    try:
+        with urllib.request.build_opener().open(request, timeout=timeout) as response:
+            if response.status != 200:
+                return None
+            payload = response.read()
+        root = ElementTree.fromstring(payload)
+    except (
+        OSError,
+        http.client.HTTPException,
+        LookupError,
+        UnicodeError,
+        ElementTree.ParseError,
+    ):
+        return None
+
+    # GitHub orders Atom entries by tag creation date, newest first.
+    entry = next(
+        (element for element in root.iter() if element.tag.rsplit("}", 1)[-1] == "entry"),
+        None,
+    )
+    if entry is None:
+        return None
+    entry_id = next(
+        (
+            (element.text or "").strip()
+            for element in entry
+            if element.tag.rsplit("}", 1)[-1] == "id"
+        ),
+        "",
+    )
+    if entry_id:
+        return entry_id.rsplit("/", 1)[-1]
+
+    title = next(
+        (
+            (element.text or "").strip()
+            for element in entry
+            if element.tag.rsplit("}", 1)[-1] == "title"
+        ),
+        "",
+    )
+    if title:
+        return title.split(None, 1)[0]
+    return None
+
+
+def check_pin_freshness(
+    registry: dict, failures: list, notes: list, require_reality: bool = False
+) -> int:
+    degraded = DegradedReality()
+    for module in registry.get("modules", []):
+        if not isinstance(module, dict) or not isinstance(module.get("depends_on"), list):
+            continue
+        for dependency in module["depends_on"]:
+            if not isinstance(dependency, dict):
+                continue
+            repo = dependency.get("repo")
+            pin = dependency.get("pin")
+            if not _is_repository_path(repo) or not isinstance(pin, str):
+                continue
+            newest = fetch_newest_tag(repo)
+            if newest is None:
+                degraded.skip(
+                    "pin:%s" % repo,
+                    "pin:%s: could not fetch newest tag, pin freshness check skipped"
+                    % repo,
+                )
+                continue
+            if newest == pin:
+                continue
+            module_id = module.get("id", module.get("repo", "<unnamed>"))
+            if "pin_reason" in dependency:
+                reason = dependency["pin_reason"]
+                notes.append(
+                    "pin-freshness: %s pins %s@%s but the newest tag is %s; "
+                    "pin_reason: %s" % (module_id, repo, pin, newest, reason)
+                )
+                continue
+            failures.append(
+                "pin-freshness: %s pins %s@%s but the newest tag is %s. "
+                "Update the pin or record pin_reason in registry/modules.json."
+                % (module_id, repo, pin, newest)
+            )
+
+    notes.extend(degraded.notes())
+    return degraded.finalize(failures, require_reality, noun="dependency pins")
+
+
+def github_ci_workflow_exists(repo: str, workflow: str, timeout: float = 20.0):
+    """Anonymous no-redirect HEAD request for a workflow on a default branch."""
+    request = urllib.request.Request(
+        "https://raw.githubusercontent.com/%s/HEAD/.github/workflows/%s"
+        % (repo, workflow),
+        method="HEAD",
+        headers={"User-Agent": "family-os-registry-check"},
+    )
+    opener = urllib.request.build_opener(NoRedirectHandler())
+    try:
+        with opener.open(request, timeout=timeout) as response:
+            if response.status == 200:
+                return True
+            return False if response.status == 404 else None
+    except urllib.error.HTTPError as exc:
+        if exc.code == 404:
+            return False
+        return None
+    except (OSError, http.client.HTTPException):
+        return None
+
+
+def check_ci_existence(
+    registry: dict, failures: list, notes: list, require_reality: bool = False
+) -> int:
+    degraded = DegradedReality()
+    for module in registry.get("modules", []):
+        if not isinstance(module, dict) or not isinstance(module.get("ci"), dict):
+            continue
+        ci = module["ci"]
+        if ci.get("required") is not True:
+            continue
+        repo = module.get("repo")
+        workflow = ci.get("workflow")
+        if not _is_repository_path(repo) or not isinstance(workflow, str):
+            continue
+        exists = github_ci_workflow_exists(repo, workflow)
+        if exists is None:
+            degraded.skip(
+                "ci:%s" % repo,
+                "ci:%s: could not verify %s, ci existence check skipped"
+                % (repo, workflow),
+            )
+        elif not exists:
+            failures.append(
+                "ci-existence: %s declares ci.required but %s does not exist on "
+                "%s's default branch."
+                % (module.get("id", repo), workflow, repo)
+            )
+
+    notes.extend(degraded.notes())
+    return degraded.finalize(failures, require_reality, noun="CI workflows")
 
 
 def check_status_text(registry: dict, root: pathlib.Path, failures: list) -> int:
@@ -530,7 +801,7 @@ def main() -> int:
     parser.add_argument(
         "--offline",
         action="store_true",
-        help="skip the GitHub reality and orphan checks",
+        help="skip the GitHub reality, orphan, pin-freshness, and CI checks",
     )
     parser.add_argument(
         "--require-reality",
@@ -558,17 +829,30 @@ def main() -> int:
     failures: list = []
     notes: list = []
 
+    schema_modules = check_schema(registry, failures)
+
     skipped = 0
     orphan_skipped = 0
+    pin_skipped = 0
+    ci_skipped = 0
     if not args.offline:
         skipped = check_reality(registry, failures, notes, args.require_reality)
         orphan_skipped = check_orphan(registry, failures, notes, args.require_reality)
+        pin_skipped = check_pin_freshness(
+            registry, failures, notes, args.require_reality
+        )
+        ci_skipped = check_ci_existence(
+            registry, failures, notes, args.require_reality
+        )
     check_retired(registry, root, failures)
+    aliases = check_aliases(registry, root, failures)
     occurrences = check_status_text(registry, root, failures)
     tour_rows = check_for_agents_tour(registry, root, failures)
     support_tables = check_support(root, failures)
 
     print("modules in registry : %d" % len(registry["modules"]))
+    print("schema check        : %d modules" % schema_modules)
+    print("alias check         : %d aliases" % aliases)
     print("retired repositories: %d" % len(registry.get("retired_repos", [])))
     print("link occurrences    : %d" % occurrences)
     print("tour rows           : %d" % tour_rows)
@@ -580,6 +864,28 @@ def main() -> int:
     print("orphan check        : %s" % ("skipped" if args.offline else "on (anonymous)"))
     if not args.offline:
         print("orphan skipped      : %d of 1" % orphan_skipped)
+    print(
+        "pin freshness check : %s" % ("skipped" if args.offline else "on (anonymous)")
+    )
+    if not args.offline:
+        pin_targets = sum(
+            len(module.get("depends_on", []))
+            for module in registry["modules"]
+            if isinstance(module, dict) and isinstance(module.get("depends_on"), list)
+        )
+        print("pin freshness skipped: %d of %d" % (pin_skipped, pin_targets))
+    print(
+        "ci existence check  : %s" % ("skipped" if args.offline else "on (anonymous)")
+    )
+    if not args.offline:
+        ci_targets = sum(
+            1
+            for module in registry["modules"]
+            if isinstance(module, dict)
+            and isinstance(module.get("ci"), dict)
+            and module["ci"].get("required") is True
+        )
+        print("ci existence skipped: %d of %d" % (ci_skipped, ci_targets))
 
     for note in notes:
         print("  note: %s" % note)
