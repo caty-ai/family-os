@@ -6,6 +6,7 @@ test:
 	python3 -B tools/selftest_check_registry.py
 	python3 -B tools/selftest_family_footer.py
 	python3 -B tools/check_publication_gate.py --selftest
+	python3 -B tools/selftest_check_evidence_warning.py
 	python3 -B tools/check_registry.py --offline
 	python3 -B tools/render.py --check
 

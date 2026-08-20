@@ -1,0 +1,89 @@
+name: evidence freshness warning
+
+on:
+  schedule:
+    # Mondays, 23:30 UTC. This is intentionally distinct from the family-links
+    # weekly reality check, which runs at 23:00 UTC on Sunday.
+    - cron: "30 23 * * 1"
+  workflow_dispatch:
+    inputs:
+      threshold_days:
+        description: Warn when an entry is this many days old
+        required: false
+        default: '60'
+        type: string
+
+concurrency:
+  group: evidence-freshness-warning
+  cancel-in-progress: false
+
+jobs:
+  evidence-warning:
+    name: evidence freshness warning
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: detect evidence warnings
+        id: detector
+        env:
+          THRESHOLD_DAYS: ${{ inputs.threshold_days || '60' }}
+        run: |
+          output_path="$(mktemp)"
+          python3 -B tools/check_evidence_warning.py \
+            --threshold-days "$THRESHOLD_DAYS" \
+            --format github > "$output_path"
+          tab="$(printf '\t')"
+          if grep -q "^WARN${tab}" "$output_path"; then
+            {
+              echo "warnings<<EOF"
+              grep "^WARN${tab}" "$output_path"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
+          rm -f "$output_path"
+
+      - name: file evidence freshness warning
+        if: steps.detector.outputs.warnings != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          WARNINGS: ${{ steps.detector.outputs.warnings }}
+        run: |
+          title="evidence freshness warning: entries approaching the 90-day limit"
+          body_path="$(mktemp)"
+          {
+            echo "The following public evidence entries are approaching the 90-day rule in \`docs/evidence.md\`."
+            echo
+            echo "| Claim ID | Last reviewed | Age (days) |"
+            echo "| --- | --- | ---: |"
+            printf '%s\n' "$WARNINGS" | while IFS="$(printf '\t')" read -r kind claim_id reviewed age_days; do
+              if [ "$kind" = "WARN" ]; then
+                printf '| %s | %s | %s |\n' "$claim_id" "$reviewed" "$age_days"
+              fi
+            done
+            echo
+            echo "Close this issue once every listed entry has been re-reviewed and its \`last-reviewed\` date updated."
+          } > "$body_path"
+
+          existing_issue="$(gh issue list \
+            --repo "$REPOSITORY" \
+            --state open \
+            --search "$title in:title" \
+            --json number,title \
+            --jq '[.[] | select(.title == "evidence freshness warning: entries approaching the 90-day limit")][0].number // empty')"
+
+          if [ -n "$existing_issue" ]; then
+            gh issue comment "$existing_issue" \
+              --repo "$REPOSITORY" \
+              --body-file "$body_path"
+            exit 0
+          fi
+
+          gh issue create \
+            --repo "$REPOSITORY" \
+            --title "$title" \
+            --body-file "$body_path"
