@@ -1,10 +1,12 @@
+# Protected literals use publication-safe notation per option (a), owner decision 2026-08-20.
+# Edits must preserve this property: no protected literal may appear contiguous in this file.
 # This exception is coupled to LICENSE's first three byte-exact lines.
-personal-real-name-en	(?:(?<!(?-i:\AMIT License\n\nCopyright \(c\) 2026 ))\bShoji\b|(?<!(?-i:\AMIT License\n\nCopyright \(c\) 2026 Shoji ))\bKumaru\b)
-personal-real-name-ja	翔さん|翔士|翔どん
-approval-record	承認記録|オーナー承認|approved\s+by|CP-\d+[A-Za-z]{0,2}\s*(?:GO|承認)
+personal-real-name-en	(?:(?<!(?-i:\AMIT License\n\nCopyright \(c\) 2026 ))\bShoj[i]\b|(?<!(?-i:\AMIT License\n\nCopyright \(c\) 2026 Shoj[i] ))\bKumar[u]\b)
+personal-real-name-ja	翔さ[ん]|翔[士]|翔ど[ん]
+approval-record	承認記[録]|オーナー承[認]|approved\s+by|CP-\d+[A-Za-z]{0,2}\s*(?:GO|承[認])
 absolute-personal-path	(?-i:/Users/)
 private-network-address	\b100\.(?:6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\.\d+\.\d+\b
 local-service-host-port	localhost:\d+
 local-service-loopback	\b(?:127\.0\.0\.1|0\.0\.0\.0)\b
 email-address	\b[A-Z0-9._%+\-]+@[A-Z0-9.\-]+\.[A-Z]{2,}\b
-private-repository-reference	\b(?:alpha-loom|alpha-wiki|alpha-mission-control|family-vault|wip-caty-talk|sitter-private|claude-workspace)\b
+private-repository-reference	\b(?:alpha-loo[m]|alpha-wik[i]|alpha-mission-contro[l]|family-vaul[t]|wip-caty-ta[l]k|sitter-privat[e]|claude-workspac[e])\b
