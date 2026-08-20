@@ -126,6 +126,8 @@ Self growth and the independent-growth mechanism are implemented. Autonomous gro
 
 Family OS gathers the pieces that exist today, in one place, pointed at that world.
 
+This is not only narrative: in a sealed, pre-registered benchmark, verified completion on context-overflowing work went from 13% (bare model) to 43% with the harness (+30 pt, p = 0.0079) — see [EV-006](docs/evidence.md#ev-006--the-first-true-product-test-improved-verified-completion-on-context-overflowing-work-with-limitations-stated) and the [full numbers, including where the harness did not win](https://github.com/caty-ai/caty-agent-harness/blob/main/docs/benchmark.md).
+
 Read the full model in [English](docs/growth-model.md) or [Japanese](docs/growth-model.ja.md).
 
 ---
@@ -260,13 +262,13 @@ Now that you can see how it fits together, check whether it runs in your environ
 
 Reading the Family OS map itself takes no preparation at all.
 
-| Aspect | Support |
-| --- | --- |
-| Reading this map | ✅ macOS ／ ✅ Windows ／ ✅ Linux (anything that renders Markdown) |
-| Registry & link-check tools | ✅ Linux ／ ✅ macOS (both run in CI on every change) |
-| Agent environments in real use | ✅ Claude Code ／ ✅ Hermes Agent ／ ✅ OpenClaw ／ ✅ Kimi Code ／ ✅ Codex |
+| Aspect | Support | Verified |
+| --- | --- | --- |
+| Reading this map | ✅ macOS ／ ✅ Windows ／ ✅ Linux (anything that renders Markdown) | 2026-08-19 |
+| Registry & link-check tools | ✅ Linux ／ ✅ macOS (both run in CI on every change) | 2026-08-19 |
+| Agent environments in real use | ✅ Claude Code ／ ✅ Hermes Agent ／ ✅ OpenClaw ／ ✅ Kimi Code ／ ✅ Codex | 2026-08-19 |
 
-> **Note:** "In real use" means the related mechanisms are actually being run in that environment; it is not a guarantee of full support for every Family OS module. Measured 2026-08-19. For per-module support, treat the README of the repository you choose as canonical.
+> **Note:** "In real use" means the related mechanisms are actually being run in that environment; it is not a guarantee of full support for every Family OS module. For per-module support, treat the README of the repository you choose as canonical.
 
 Once you know it will run, all that is left is to pick one thread and follow it.
 

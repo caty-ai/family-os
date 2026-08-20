@@ -126,6 +126,8 @@ AIエージェントを1体から2体、3体と増やしていくと、こうい
 
 その世界へ向かうために、いま手に入る仕組みを一か所へ集めたのが Family OS です。
 
+これは物語だけではありません。封印済みの事前登録ベンチマークでは、コンテキストあふれを起こす作業で検証済み完了率が 13%（素のモデル）から 43%（ハーネスあり）へ伸びました（+30 pt, p = 0.0079）— [EV-006](docs/evidence.md#ev-006--the-first-true-product-test-improved-verified-completion-on-context-overflowing-work-with-limitations-stated) と[勝てなかった条件も含む全数値](https://github.com/caty-ai/caty-agent-harness/blob/main/docs/benchmark.md)を確認してください。
+
 完全版は[英語](docs/growth-model.md)と[日本語](docs/growth-model.ja.md)で読めます。
 
 ---
@@ -260,13 +262,13 @@ flowchart TB
 
 Family OS の地図そのものを読むのに、特別な準備は要りません。
 
-| 観点 | 対応 |
-| --- | --- |
-| この地図を読む | ✅ macOS ／ ✅ Windows ／ ✅ Linux（Markdown が読めれば足ります） |
-| レジストリ・リンク検査ツール | ✅ Linux ／ ✅ macOS（変更のたびに両OSのCIで実走） |
-| 実運用が確認できているAIエージェント環境 | ✅ Claude Code ／ ✅ Hermes Agent ／ ✅ OpenClaw ／ ✅ Kimi Code ／ ✅ Codex |
+| 観点 | 対応 | 確認日 |
+| --- | --- | --- |
+| この地図を読む | ✅ macOS ／ ✅ Windows ／ ✅ Linux（Markdown が読めれば足ります） | 2026-08-19 |
+| レジストリ・リンク検査ツール | ✅ Linux ／ ✅ macOS（変更のたびに両OSのCIで実走） | 2026-08-19 |
+| 実運用が確認できているAIエージェント環境 | ✅ Claude Code ／ ✅ Hermes Agent ／ ✅ OpenClaw ／ ✅ Kimi Code ／ ✅ Codex | 2026-08-19 |
 
-> **メモ:** 「実運用が確認できている」は、その環境で関連する仕組みを実際に動かしているという意味で、Family OS の全モジュールへの完全対応を保証するものではありません。2026-08-19 時点の実測です。モジュールごとの対応状況は、選んだリポジトリの README を正本として確認してください。
+> **メモ:** 「実運用が確認できている」は、その環境で関連する仕組みを実際に動かしているという意味で、Family OS の全モジュールへの完全対応を保証するものではありません。モジュールごとの対応状況は、選んだリポジトリの README を正本として確認してください。
 
 動く見込みが立ったら、あとは1本選んで進むだけです。
 

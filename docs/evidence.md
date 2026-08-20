@@ -70,7 +70,7 @@ Weekly CI flags stale evidence, humans edit this file, and CI never edits it.
 | owner | maintainers |
 | counter-evidence | none |
 
-<!-- EV-005 (harness effect measurement) and EV-006 (multi-environment install verification) are reserved by the lanes of https://github.com/caty-ai/family-os/issues/43 and will be added when those lanes complete. Claim-ids are identifiers, not file order. -->
+<!-- The multi-environment install verification record will be added under a NEW claim-id (EV-008 expected) after https://github.com/caty-ai/family-os/issues/45 and https://github.com/caty-ai/family-os/issues/46 complete. Claim-ids are identifiers, not file order. -->
 
 ## EV-007 — The shared-memory horizontal layer ran across three environments and two runtimes, and the newest adoption was accepted on artifacts, not self-report
 
@@ -87,3 +87,35 @@ Weekly CI flags stale evidence, humans edit this file, and CI never edits it.
 | last-reviewed | 2026-08-14 |
 | owner | maintainers |
 | counter-evidence | none |
+
+## EV-005 — A pre-product instrument test measured one gate in isolation, and the result was null
+
+| field | value |
+| --- | --- |
+| claim-id | EV-005 |
+| believe | Measure the instrument before trusting it to measure the product, and publish the null when the hypothesis is not supported. |
+| built | A purpose-built experiment wrapper measured exactly one mechanism before the product: the completion-declaration gate; the design was sealed and pre-registered, and 270 runs were executed across 3 arms. |
+| actually happened | EV-005 did not test the caty-agent-harness product: the primary result was not confirmed at +5.6 pt, p = 0.234, on a task bundle later judged miscalibrated for the subject model; the product machinery was never exercised, with attempts/run = 1.0 in all arms and the retry machinery never firing once in 270 runs. |
+| still don't know | Whether the completion-declaration gate helps under better-calibrated tasks; all runs were on author-controlled environments; the experiment used a single subject model. |
+| state (delivery · visibility · evidence) | implemented · published · observed |
+| evidence | primary: https://github.com/caty-ai/caty-agent-harness/issues/63 (final comment = scope clarification, 2026-08-18) |
+| observed-at | 2026-08-20 |
+| last-reviewed | 2026-08-20 |
+| owner | maintainers |
+| counter-evidence | The primary hypothesis was not supported: +5.6 pt, p = 0.234. |
+
+## EV-006 — The first true product test improved verified completion on context-overflowing work, with limitations stated
+
+| field | value |
+| --- | --- |
+| claim-id | EV-006 |
+| believe | The full product should be tested as installed under sealed, machine-scored conditions, and the limitations should be published alongside the win. |
+| built | Sealed, pre-registered, machine-scored: corpora/graders/runners hash-sealed BEFORE the runs (SEAL-MANIFEST, 185 files, sha256 f31e9af8…); 105 sequences run to completion; subject model Claude Haiku 4.5; arms: bare vs full product install (install.sh) plus a naive-retry control. |
+| actually happened | On the pre-registered M/L context-overflow sizes pooled task_resolved primary, bare 4/30 (13%, CI 5–30%) vs harness 13/30 (43%, CI 27–61%), effect +30 pt, CMH exact p = 0.0079; unread completion claims measured against tool-call transcripts at M/L collapsed from bare 222/226 (98%) to harness 2/26 (8%); time and cost at M/L were roughly half (M 2.3 h → 1.3 h, L 3.9 h → 2.3 h; tokens M 122M → 50M, L 241M → 98M); honest negatives remained: S size showed no advantage with bare 10/15 (67%) vs harness 9/15 (60%), CSV genre p3 was 0/10 in both arms, wrong-answer rates did not improve at bare 22–31% vs harness 24–38%, unsupported quotes were higher under the harness at 166 vs 138, and half of the harness's overflow-size deliveries still failed verification, so what collapsed was specifically the unread completion claim, not wrongness in general. |
+| still don't know | Only a single model lane (Haiku 4.5) has been run so far; the runs were on author-controlled machines; both arms were restricted to Read/Glob/Write (no search), so the result does not extrapolate to search-enabled operation. |
+| state (delivery · visibility · evidence) | implemented · published · observed |
+| evidence | primary: https://github.com/caty-ai/caty-agent-harness/issues/100 (final comment = full run result, 2026-08-19) ; published analysis page: https://github.com/caty-ai/caty-agent-harness/blob/main/docs/benchmark.md |
+| observed-at | 2026-08-20 |
+| last-reviewed | 2026-08-20 |
+| owner | maintainers |
+| counter-evidence | EV-005 is the preceding instrument-level null; in the product test, S size showed no advantage with bare 10/15 (67%) vs harness 9/15 (60%), p3 was 0/10 in both arms, wrong-answer rates did not improve at bare 22–31% vs harness 24–38%, and unsupported quotes were higher under the harness at 166 vs 138. |
