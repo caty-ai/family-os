@@ -191,7 +191,7 @@ authority, implementation state, or required install.
 
 ### Verification checklist
 
-- [ ] `python3 -B tools/check_publication_gate.py`
+- [ ] `python3 -B tools/check_publication_gate.py --root . --account-slug shojikumaru --registry registry/modules.json`
 - [ ] `python3 -B tools/check_registry.py --offline`
 - [ ] `python3 -B tools/render.py --check`
 - [ ] Parse every adopted SVG as XML and render it for visual inspection.

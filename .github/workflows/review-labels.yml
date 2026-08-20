@@ -15,4 +15,6 @@ jobs:
         tools/**
         registry/**
         .github/workflows/**
+        .publication-denylist
+        .publication-label-whitelist
       risk_paths_auth: 'none'
