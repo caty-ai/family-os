@@ -126,6 +126,8 @@ Family OS 是一张地图，告诉你解决每一个问题的部件**在哪里**
 
 为了走向那个世界，Family OS 把当下已经能拿到手的部件汇集到了一处。
 
+这不只是叙事：在一次封印并预注册的基准测试里，面对会发生上下文溢出的工作，经过验证的完成率从 13%（裸模型）提升到 43%（使用 harness，+30 pt, p = 0.0079）—— 见 [EV-006](docs/evidence.md#ev-006--the-first-true-product-test-improved-verified-completion-on-context-overflowing-work-with-limitations-stated) 与[完整数据，包括 harness 没赢的地方](https://github.com/caty-ai/caty-agent-harness/blob/main/docs/benchmark.md)。
+
 完整模型可阅读[英文版](docs/growth-model.md)或[日文版](docs/growth-model.ja.md)。
 
 ---
@@ -260,13 +262,13 @@ flowchart TB
 
 只是阅读 Family OS 这张地图本身，不需要任何特别准备。
 
-| 观察点 | 支持情况 |
-| --- | --- |
-| 阅读这张地图 | ✅ macOS ／ ✅ Windows ／ ✅ Linux（能看 Markdown 就够了） |
-| 注册表与链接检查工具 | ✅ Linux ／ ✅ macOS（每次变更都在两个系统的 CI 上运行） |
-| 已在实际运行中确认的 AI 智能体环境 | ✅ Claude Code ／ ✅ Hermes Agent ／ ✅ OpenClaw ／ ✅ Kimi Code ／ ✅ Codex |
+| 观察点 | 支持情况 | 确认日期 |
+| --- | --- | --- |
+| 阅读这张地图 | ✅ macOS ／ ✅ Windows ／ ✅ Linux（能看 Markdown 就够了） | 2026-08-19 |
+| 注册表与链接检查工具 | ✅ Linux ／ ✅ macOS（每次变更都在两个系统的 CI 上运行） | 2026-08-19 |
+| 已在实际运行中确认的 AI 智能体环境 | ✅ Claude Code ／ ✅ Hermes Agent ／ ✅ OpenClaw ／ ✅ Kimi Code ／ ✅ Codex | 2026-08-19 |
 
-> **备注:** 「已在实际运行中确认」指的是我们确实在该环境里运行了相关机制，并不保证 Family OS 的全部模块都完全适配。数据为 2026-08-19 时点的实测。各模块的适配情况，请以你所选仓库的 README 为准。
+> **备注:** 「已在实际运行中确认」指的是我们确实在该环境里运行了相关机制，并不保证 Family OS 的全部模块都完全适配。各模块的适配情况，请以你所选仓库的 README 为准。
 
 确认能跑起来之后，剩下的就是挑一条线走下去。
 
