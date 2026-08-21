@@ -362,7 +362,8 @@
       "owns": {
         "en": "minimised, idempotent proposal production",
         "ja": "最小化された冪等な提案の生成"
-      }
+      },
+      "footer": true
     },
     {
       "id": "x-collector",
