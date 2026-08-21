@@ -327,9 +327,6 @@
         "group": "vertical",
         "foundation": false
       },
-      "readme_overrides": {
-        "README.zh-CN.md": "zh"
-      },
       "license": "MIT",
       "class": {
         "en": "runtime, standalone",
