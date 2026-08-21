@@ -67,6 +67,7 @@ The rules layer sits **above** both axes rather than inside either one. It is a 
 | [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) | runtime, application | proposal, governance, adoption records, growth interpretation | published, MIT |
 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) | runtime, horizontal infrastructure | the memory bus; registered schedule expectation, check-in, provenance | published, MIT |
 | [Sitter](https://github.com/caty-ai/sitter) | runtime, observation | local process and reply facts, dispatch-attempt evidence, delegated same-attempt restart | published, MIT |
+| [Alpha Nightshift](https://github.com/caty-ai/alpha-nightshift) | runtime・autonomous ops loop | overnight observe/implement/verify lanes, the guard publish boundary, and morning triage | publication in preparation |
 <!-- family:generated:module-inventory:end -->
 
 This table is generated from [`registry/modules.json`](../registry/modules.json). Links marked *publication in preparation* cannot be opened yet. They are listed so the map stays honest about what exists and where it will live.

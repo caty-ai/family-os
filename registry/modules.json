@@ -222,6 +222,15 @@
           "zh": "替你盯着委派出去的智能体：看守进程、留下证据、原样重启同一次尝试——让「我交出去了」不再变成「它不见了」",
           "th": "พี่เลี้ยงของงานที่มอบหมายให้เอเจนต์ เฝ้าดูโปรเซส เก็บหลักฐาน และรีสตาร์ตการลองเดิม — เพื่อไม่ให้ \"ฉันมอบหมายไปแล้ว\" กลายเป็น \"มันหายไปไหน\""
         }
+      },
+      "alpha-nightshift": {
+        "name": "alpha-nightshift",
+        "desc": {
+          "en": "A nightly autonomous maintenance loop: overnight observe/implement/verify lanes run in isolated worktrees behind a deny-by-default guard, and humans cherry-pick proven results in the morning",
+          "ja": "夜間自律保守ループ。deny-by-default の guard の内側で観測・実装・検証レーンが隔離 worktree で走り、朝は人間が証明つきの結果だけを cherry-pick する",
+          "zh": "夜间自主维护循环：观测・实现・验证通道在默认拒绝的防护边界内的隔离 worktree 中运行，早晨由人工挑选已验证的成果合并",
+          "th": "ลูปบำรุงรักษาอัตโนมัติยามค่ำคืน: เลนสังเกต/พัฒนา/ตรวจสอบทำงานใน worktree แยกหลังการ์ดแบบปฏิเสธโดยปริยาย ตอนเช้ามนุษย์เลือกรับเฉพาะผลที่พิสูจน์แล้ว"
+        }
       }
     }
   },
@@ -479,6 +488,33 @@
         "ja": "ローカルのプロセスと返信の事実・発注試行の証拠・委譲された同一試行の再起動"
       },
       "footer": true
+    },
+    {
+      "id": "alpha-nightshift",
+      "name": "Alpha Nightshift",
+      "repo": "caty-ai/alpha-nightshift",
+      "status": "preparing",
+      "maturity": "reference",
+      "tagline": {
+        "en": "Nightly autonomous maintenance loop — isolated night lanes behind a deny-by-default guard; humans cherry-pick in the morning",
+        "ja": "夜間自律保守ループ — deny-by-default の guard の内側で夜のレーンが走り、朝は人間が cherry-pick するだけ",
+        "zh": "夜间自主维护循环 — 在默认拒绝的防护边界内运行夜间通道，早晨由人工挑选合并",
+        "th": "ลูปบำรุงรักษาอัตโนมัติยามค่ำคืน — เลนกลางคืนทำงานหลังการ์ดแบบปฏิเสธโดยปริยาย ตอนเช้ามนุษย์เลือก cherry-pick"
+      },
+      "axis": {
+        "group": "horizontal",
+        "foundation": false
+      },
+      "license": "MIT",
+      "class": {
+        "en": "runtime・autonomous ops loop",
+        "ja": "runtime・自律運用ループ"
+      },
+      "owns": {
+        "en": "overnight observe/implement/verify lanes, the guard publish boundary, and morning triage",
+        "ja": "夜間の観測・実装・検証レーン、guard の publish 境界、morning triage"
+      },
+      "footer": false
     }
   ],
   "adjacent": [
