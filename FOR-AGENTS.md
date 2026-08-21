@@ -64,7 +64,6 @@ For each repository: its role in one line, and the one thing to verify. These ar
 | [persona-growth-loop](https://github.com/caty-ai/persona-growth-loop) (published, MIT) | grows the persona itself — minimal, idempotent proposals with a governed adoption path | that proposals are minimal and idempotent, and adoption is gated by approval |
 | [x-collector](https://github.com/caty-ai/x-collector) (published, MIT) | the sense organ gathering outside information (X/Reddit/RSS → daily digest) | that acquisition is a reproducible pipeline |
 | [self-growth-loop](https://github.com/caty-ai/self-growth-loop) (published, MIT) | the loop for independent growth of ability (propose → trial → council → human approval → adopt) | that no code path reaches "adopt" without human approval |
-| [meetmate](https://github.com/caty-ai/meetmate) (published, MIT) | gives your own agent a seat in the meeting as a voice participant (Google Meet, Zoom) | that the agent stays yours — the meeting path carries no model, memory, or persona of its own |
 | [family-memory-architecture](https://github.com/caty-ai/family-memory-architecture) (published, MIT) | the horizontal axis where a family shares memory (single write path, provenance) | that there is a single write path and provenance records are kept |
 | [sitter](https://github.com/caty-ai/sitter) (published, MIT) | the watcher for long-running tasks (zero-dependency bash, stall detection) | that the monitoring runs with zero dependencies |
 

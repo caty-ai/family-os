@@ -327,6 +327,11 @@ def check_orphan(
     org_profile_repo = registry.get("org_profile", {}).get("repo")
     if org_profile_repo:
         accounted.add(org_profile_repo.casefold())
+    adjacent = registry.get("adjacent")
+    if isinstance(adjacent, list):
+        for entry in adjacent:
+            if isinstance(entry, dict) and _is_repository_path(entry.get("repo")):
+                accounted.add(entry["repo"].casefold())
     accounted.update(
         entry["repo"].casefold() for entry in registry.get("retired_repos", [])
     )
@@ -343,7 +348,8 @@ def check_orphan(
                 failures.append(
                     "orphan: %s is a public repository in %s but is not listed "
                     "in registry/modules.json. Add it to modules[] (or "
-                    "retired_repos[] if it should stay retired)."
+                    "adjacent[] if it belongs to the family but is not a module, "
+                    "or retired_repos[] if it should stay retired)."
                     % (repo, org)
                 )
 
@@ -372,6 +378,67 @@ def check_retired(registry: dict, root: pathlib.Path, failures: list) -> None:
 
 def _is_repository_path(value) -> bool:
     return isinstance(value, str) and REPOSITORY_PATH.fullmatch(value) is not None
+
+
+def _is_non_empty_string(value) -> bool:
+    return isinstance(value, str) and bool(value.strip())
+
+
+def _validate_localized_strings(
+    *,
+    owner: str,
+    field: str,
+    value,
+    languages,
+    failures: list,
+) -> None:
+    if not isinstance(value, dict):
+        failures.append(
+            "schema: %s: %s must be an object with every declared language" % (owner, field)
+        )
+        return
+
+    keys = set(value)
+    expected = set(languages)
+    unknown = sorted(keys - expected)
+    if unknown:
+        failures.append(
+            "schema: %s: %s has unknown languages: %s"
+            % (owner, field, ", ".join(unknown))
+        )
+    for language in languages:
+        text = value.get(language)
+        if not _is_non_empty_string(text):
+            failures.append(
+                "schema: %s: %s.%s must be a non-empty string"
+                % (owner, field, language)
+            )
+
+
+def _validate_adjacent_text(registry: dict, failures: list) -> None:
+    languages = registry.get("languages", [])
+    adjacent_text = registry.get("adjacent_text")
+    if not isinstance(adjacent_text, dict):
+        failures.append("schema: adjacent_text must be an object")
+        return
+
+    for label in (
+        "heading",
+        "intro",
+        "table_module",
+        "table_what",
+        "table_relation",
+    ):
+        if label not in adjacent_text:
+            failures.append("schema: adjacent_text.%s is required" % label)
+            continue
+        _validate_localized_strings(
+            owner="adjacent_text",
+            field=label,
+            value=adjacent_text[label],
+            languages=languages,
+            failures=failures,
+        )
 
 
 def check_schema(registry: dict, failures: list) -> int:
@@ -440,6 +507,76 @@ def check_schema(registry: dict, failures: list) -> int:
                     "schema: %s: ci must be {required: true, workflow: '<file>.yml'}"
                     % module_id
                 )
+
+    adjacent_repos = set()
+    adjacent_present = "adjacent" in registry
+    adjacent = registry.get("adjacent")
+    if adjacent_present and not isinstance(adjacent, list):
+        failures.append("schema: adjacent must be a list")
+        adjacent = []
+
+    languages = registry.get("languages", [])
+    if isinstance(adjacent, list):
+        module_repos = {
+            module["repo"].casefold()
+            for module in registry.get("modules", [])
+            if isinstance(module, dict) and _is_repository_path(module.get("repo"))
+        }
+        allowed_keys = {"id", "name", "repo", "license", "tagline", "relation"}
+        for index, entry in enumerate(adjacent):
+            owner = "adjacent[%d]" % index
+            if not isinstance(entry, dict):
+                failures.append("schema: %s: entry must be an object" % owner)
+                continue
+            entry_id = entry.get("id")
+            if _is_non_empty_string(entry_id):
+                owner = "adjacent[%d] (%s)" % (index, entry_id)
+            unknown = sorted(set(entry) - allowed_keys)
+            if unknown:
+                failures.append(
+                    "schema: %s: unknown keys: %s" % (owner, ", ".join(unknown))
+                )
+            if not _is_non_empty_string(entry.get("id")):
+                failures.append("schema: %s: id must be a non-empty string" % owner)
+            if not _is_non_empty_string(entry.get("name")):
+                failures.append("schema: %s: name must be a non-empty string" % owner)
+            repo = entry.get("repo")
+            if not _is_repository_path(repo):
+                failures.append(
+                    "schema: %s: repo must be a non-empty owner/name string" % owner
+                )
+            else:
+                repo_folded = repo.casefold()
+                if repo_folded in module_repos:
+                    failures.append(
+                        "schema: %s: repo %s may not appear in both modules[] and adjacent[]"
+                        % (owner, repo)
+                    )
+                if repo_folded in adjacent_repos:
+                    failures.append(
+                        "schema: %s: repo %s appears more than once in adjacent[]"
+                        % (owner, repo)
+                    )
+                adjacent_repos.add(repo_folded)
+            if not _is_non_empty_string(entry.get("license")):
+                failures.append("schema: %s: license must be a non-empty string" % owner)
+            _validate_localized_strings(
+                owner=owner,
+                field="tagline",
+                value=entry.get("tagline"),
+                languages=languages,
+                failures=failures,
+            )
+            _validate_localized_strings(
+                owner=owner,
+                field="relation",
+                value=entry.get("relation"),
+                languages=languages,
+                failures=failures,
+            )
+
+    if adjacent_present or "adjacent_text" in registry:
+        _validate_adjacent_text(registry, failures)
     return checked
 
 
@@ -850,7 +987,10 @@ def main() -> int:
     tour_rows = check_for_agents_tour(registry, root, failures)
     support_tables = check_support(root, failures)
 
+    adjacent = registry.get("adjacent")
+    adjacent_count = len(adjacent) if isinstance(adjacent, list) else 0
     print("modules in registry : %d" % len(registry["modules"]))
+    print("adjacent entries    : %d" % adjacent_count)
     print("schema check        : %d modules" % schema_modules)
     print("alias check         : %d aliases" % aliases)
     print("retired repositories: %d" % len(registry.get("retired_repos", [])))

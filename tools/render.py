@@ -27,10 +27,10 @@ REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
 REGISTRY = REPO_ROOT / "registry" / "modules.json"
 
 EXPECTED_BLOCKS = {
-    pathlib.Path("README.md"): ("family-table",),
-    pathlib.Path("README.ja.md"): ("family-table",),
-    pathlib.Path("README.zh.md"): ("family-table",),
-    pathlib.Path("README.th.md"): ("family-table",),
+    pathlib.Path("README.md"): ("family-table", "adjacent-tools"),
+    pathlib.Path("README.ja.md"): ("family-table", "adjacent-tools"),
+    pathlib.Path("README.zh.md"): ("family-table", "adjacent-tools"),
+    pathlib.Path("README.th.md"): ("family-table", "adjacent-tools"),
     pathlib.Path("docs/engineering.md"): ("module-inventory",),
     pathlib.Path("docs/engineering.ja.md"): ("module-inventory",),
     pathlib.Path("docs/readme-visual-system.md"): ("repository-links",),
@@ -71,6 +71,13 @@ def table_cell(module: dict, field: str, value: str) -> str:
             "module '%s' field '%s' contains a table delimiter or newline"
             % (module.get("id", "<unknown>"), field)
         )
+    return value
+
+
+def block_text(label: str, value: str) -> str:
+    """Reject block prose that would break generated Markdown structure."""
+    if "\n" in value or "\r" in value:
+        raise RenderError("%s contains a newline" % label)
     return value
 
 
@@ -180,6 +187,53 @@ def render_family_table(registry: dict, lang: str, newline: str) -> str:
     return module_table(registry, None, lang, newline, bold_map=True)
 
 
+def render_adjacent_tools(registry: dict, lang: str) -> str:
+    adjacent_text = registry["adjacent_text"]
+    intro = block_text(
+        "adjacent_text.intro.%s" % lang, adjacent_text["intro"][lang]
+    )
+    entries = registry.get("adjacent", [])
+    if not entries:
+        return intro
+
+    heading = block_text(
+        "adjacent_text.heading.%s" % lang, adjacent_text["heading"][lang]
+    )
+    headers = (
+        block_text(
+            "adjacent_text.table_module.%s" % lang,
+            adjacent_text["table_module"][lang],
+        ),
+        block_text(
+            "adjacent_text.table_what.%s" % lang,
+            adjacent_text["table_what"][lang],
+        ),
+        block_text(
+            "adjacent_text.table_relation.%s" % lang,
+            adjacent_text["table_relation"][lang],
+        ),
+    )
+    rows = [
+        "## %s" % heading,
+        "",
+        intro,
+        "",
+        "| %s | %s | %s |" % headers,
+        "| --- | --- | --- |",
+    ]
+    for entry in entries:
+        rows.append(
+            "| [%s](https://github.com/%s) | %s | %s |"
+            % (
+                table_cell(entry, "name", entry["name"]),
+                table_cell(entry, "repo", entry["repo"]),
+                table_cell(entry, "tagline.%s" % lang, entry["tagline"][lang]),
+                table_cell(entry, "relation.%s" % lang, entry["relation"][lang]),
+            )
+        )
+    return "\n".join(rows)
+
+
 def render_block(block: str, registry: dict, path: pathlib.Path) -> str:
     if block == "family-table":
         try:
@@ -187,6 +241,14 @@ def render_block(block: str, registry: dict, path: pathlib.Path) -> str:
         except FamilyCommonError as exc:
             raise RenderError(str(exc))
         return render_family_table(registry, lang, "\n")
+    if block == "adjacent-tools":
+        try:
+            return render_adjacent_tools(
+                registry,
+                language_of(path, registry["languages"], FILE_LANG_OVERRIDES),
+            )
+        except FamilyCommonError as exc:
+            raise RenderError(str(exc))
     if block == "module-inventory":
         try:
             return render_inventory(

@@ -367,10 +367,21 @@ Every module on this map, with its current state — generated from the same reg
 | Vertical | [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop) | Grows the persona itself — minimal, idempotent proposals | published, MIT |
 | Vertical | [X Collector](https://github.com/caty-ai/x-collector) | Turns X and the web into one daily digest — for people and agents | published, MIT |
 | Vertical | [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) | Lets an agent grow its own abilities — proposals, governance, adoption records | published, MIT |
-| Vertical | [Meetmate](https://github.com/caty-ai/meetmate) | Puts your own AI agent in the meeting — a real voice participant in Google Meet and Zoom | published, MIT |
 | Horizontal · foundation | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) | The memory bus — how the family shares what it knows | published, MIT |
 | Horizontal | [Sitter](https://github.com/caty-ai/sitter) | Babysits delegated agent runs — watches, keeps evidence, restarts | published, MIT |
 <!-- family:generated:family-table:end -->
+
+---
+
+<!-- family:generated:adjacent-tools:start -->
+## Connecting to the family
+
+These are not Family OS modules. They are tools that carry an existing family agent to where people already are, and they hold no model, memory, or persona of their own.
+
+| Module | What it does | Relation to the family |
+| --- | --- | --- |
+| [Meetmate](https://github.com/caty-ai/meetmate) | Puts your own AI agent in the meeting — a real voice participant in Google Meet and Zoom | Carries an existing family agent into a meeting. Supplies no model, memory, or persona of its own. |
+<!-- family:generated:adjacent-tools:end -->
 
 ---
 

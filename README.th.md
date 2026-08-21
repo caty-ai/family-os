@@ -367,10 +367,21 @@ flowchart TB
 | แกนตั้ง | [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop) | พัฒนาบุคลิกของเอเจนต์ — สร้างข้อเสนอแบบน้อยที่สุดและทำซ้ำได้ | เปิดแล้ว・MIT |
 | แกนตั้ง | [X Collector](https://github.com/caty-ai/x-collector) | รวบรวมข้อมูลจาก X และเว็บเป็นสรุปวันละฉบับ — สำหรับคนและเอเจนต์ | เปิดแล้ว・MIT |
 | แกนตั้ง | [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) | วงจรให้เอเจนต์พัฒนาความสามารถของตัวเอง — ข้อเสนอ ธรรมาภิบาล และบันทึกการนำไปใช้ | เปิดแล้ว・MIT |
-| แกนตั้ง | [Meetmate](https://github.com/caty-ai/meetmate) | พาเอเจนต์ AI ของคุณเข้าประชุม — ผู้ร่วมประชุมด้วยเสียงจริงใน Google Meet และ Zoom | เปิดแล้ว・MIT |
 | แกนนอน · รากฐาน | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) | บัสความทรงจำ — ชั้นที่ครอบครัวใช้แบ่งปันสิ่งที่รู้ | เปิดแล้ว・MIT |
 | แกนนอน | [Sitter](https://github.com/caty-ai/sitter) | พี่เลี้ยงของงานที่มอบหมายให้เอเจนต์ — เฝ้าดู เก็บหลักฐาน และรีสตาร์ต | เปิดแล้ว・MIT |
 <!-- family:generated:family-table:end -->
+
+---
+
+<!-- family:generated:adjacent-tools:start -->
+## การเชื่อมเข้ากับครอบครัว
+
+สิ่งเหล่านี้ไม่ใช่โมดูลของ Family OS แต่เป็นเครื่องมือที่พาเอเจนต์ของครอบครัวที่มีอยู่แล้วไปยังที่ที่ผู้คนใช้งานกันอยู่ และตัวมันเองไม่มีโมเดล ความทรงจำ หรือบุคลิก
+
+| โมดูล | ทำอะไร | ความเกี่ยวข้องกับครอบครัว |
+| --- | --- | --- |
+| [Meetmate](https://github.com/caty-ai/meetmate) | พาเอเจนต์ AI ของคุณเข้าไปในที่ประชุม — เข้าร่วม Google Meet และ Zoom ในฐานะผู้เข้าประชุมที่มีเสียงจริง | พาเอเจนต์ของครอบครัวที่มีอยู่แล้วเข้าไปอยู่ในที่ประชุม โดยตัวมันเองไม่มีโมเดล ความทรงจำ หรือบุคลิกเป็นของตนเอง |
+<!-- family:generated:adjacent-tools:end -->
 
 ---
 
