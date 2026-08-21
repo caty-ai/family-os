@@ -65,6 +65,7 @@ flowchart TB
 | [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop) | runtime・アプリケーション | 最小化された冪等な提案の生成 | 公開・MIT |
 | [X Collector](https://github.com/caty-ai/x-collector) | runtime・任意の入力 | 能力ループ向けの外部素材の収集 | 公開・MIT |
 | [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) | runtime・アプリケーション | 提案・ガバナンス・採用記録・成長の解釈 | 公開・MIT |
+| [Meetmate](https://github.com/caty-ai/meetmate) | runtime・単独利用可能 | 会議への参加とエージェントの声の席 — 音声の入力と発話 | 公開・MIT |
 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) | runtime・横方向の基盤 | 記憶バス・登録されたスケジュールの期待・check-in・来歴 | 公開・MIT |
 | [Sitter](https://github.com/caty-ai/sitter) | runtime・観測 | ローカルのプロセスと返信の事実・発注試行の証拠・委譲された同一試行の再起動 | 公開・MIT |
 <!-- family:generated:module-inventory:end -->
