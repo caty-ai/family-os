@@ -227,7 +227,7 @@ flowchart TB
 **การเติบโตของบุคลิก**
 
 - [Persona Engine](https://github.com/caty-ai/persona-engine) (เปิดแล้ว・MIT) — เพิ่มชั้นของบุคลิกและการไล่ระดับของอารมณ์
-- [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop) (เปิดแล้ว・MIT) — ผลักดันการเติบโตอย่างเป็นอิสระของบุคลิก
+- [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop) (เปิดแล้ว・MIT) — ผลักดันการเติบโตอย่างเป็นอิสระของบุคลิก อยู่ในแผน
 
 **การเติบโตของความสามารถ**
 

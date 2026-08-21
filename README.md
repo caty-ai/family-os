@@ -227,7 +227,7 @@ On top of that foundation come one set of equipment and two kinds of growth. Eac
 **Growth of personality**
 
 - [Persona Engine](https://github.com/caty-ai/persona-engine) (published, MIT) — adds persona layers and a gradation of feeling
-- [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop) (published, MIT) — drives independent growth of personality
+- [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop) (published, MIT) — drives independent growth of personality. Planned
 
 **Growth of ability**
 

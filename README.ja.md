@@ -227,7 +227,7 @@ flowchart TB
 **人格の成長**
 
 - [Persona Engine](https://github.com/caty-ai/persona-engine)（公開・MIT）— 人格のレイヤーと、感情のグラデーションを足す
-- [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop)（公開・MIT）— 人格の自立的な成長を促す
+- [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop)（公開・MIT）— 人格の自立的な成長を促す。計画中
 
 **能力の成長**
 

@@ -227,7 +227,7 @@ flowchart TB
 **人格的成长**
 
 - [Persona Engine](https://github.com/caty-ai/persona-engine)（已公开・MIT）— 加上人格的层次与情感的渐变
-- [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop)（已公开・MIT）— 推动人格的独立成长
+- [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop)（已公开・MIT）— 推动人格的独立成长。计划中
 
 **能力的成长**
 
