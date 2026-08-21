@@ -373,6 +373,18 @@ Family OS が広がっても、次の5つは変わりません。
 
 ---
 
+<!-- family:generated:adjacent-tools:start -->
+## 家族へつながる道具
+
+これらは Family OS のモジュールではありません。既存の家族エージェントを、人がすでにいる場所へ連れていくための道具です。自前のモデル・記憶・人格は持ちません。
+
+| モジュール | 何をするもの | 家族との関係 |
+| --- | --- | --- |
+| [Meetmate](https://github.com/caty-ai/meetmate) | あなたのAIエージェントを会議に連れていく — Google Meet や Zoom に、本当の声の参加者として入れる | 既存の家族エージェントを会議へ運ぶだけ。モデル・記憶・人格は自前で持たない。 |
+<!-- family:generated:adjacent-tools:end -->
+
+---
+
 <a id="license"></a>
 
 ## ライセンスと参加

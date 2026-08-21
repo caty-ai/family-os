@@ -373,6 +373,18 @@ Family OS 这边没有要做的事。不用安装，不用注册账号，也没�
 
 ---
 
+<!-- family:generated:adjacent-tools:start -->
+## 连接到这个家族
+
+这些不是 Family OS 模块。它们只是把现有的家族智能体带到人们已经在使用的场景里，本身不持有模型、记忆或人格。
+
+| 模块 | 做什么 | 与家族的关系 |
+| --- | --- | --- |
+| [Meetmate](https://github.com/caty-ai/meetmate) | 把你自己的 AI 智能体带进会议里 — 作为真正会说话的参会者进入 Google Meet 和 Zoom | 把现有的家族智能体带进会议里；自身不提供模型、记忆或人格。 |
+<!-- family:generated:adjacent-tools:end -->
+
+---
+
 <a id="license"></a>
 
 ## 许可证与参与

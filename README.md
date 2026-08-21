@@ -373,6 +373,18 @@ Every module on this map, with its current state — generated from the same reg
 
 ---
 
+<!-- family:generated:adjacent-tools:start -->
+## Connecting to the family
+
+These are not Family OS modules. They are tools that carry an existing family agent to where people already are, and they hold no model, memory, or persona of their own.
+
+| Module | What it does | Relation to the family |
+| --- | --- | --- |
+| [Meetmate](https://github.com/caty-ai/meetmate) | Puts your own AI agent in the meeting — a real voice participant in Google Meet and Zoom | Carries an existing family agent into a meeting. Supplies no model, memory, or persona of its own. |
+<!-- family:generated:adjacent-tools:end -->
+
+---
+
 <a id="license"></a>
 
 ## License and taking part

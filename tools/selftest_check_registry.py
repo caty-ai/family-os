@@ -383,6 +383,51 @@ def _orphan_registry() -> dict:
     }
 
 
+def _adjacent_localized(en: str) -> dict:
+    return {
+        "en": en,
+        "ja": "テスト文言",
+        "zh": "测试文案",
+        "th": "ข้อความทดสอบ",
+    }
+
+
+def _adjacent_text() -> dict:
+    return {
+        "heading": _adjacent_localized("Connecting to the family"),
+        "intro": _adjacent_localized(
+            "These are not Family OS modules. They carry an existing family agent elsewhere."
+        ),
+        "table_module": _adjacent_localized("Module"),
+        "table_what": _adjacent_localized("What it does"),
+        "table_relation": _adjacent_localized("Relation to the family"),
+    }
+
+
+def _adjacent_registry() -> dict:
+    return {
+        "languages": ["en", "ja", "zh", "th"],
+        "modules": [
+            {
+                "id": "alpha",
+                "repo": "example-org/alpha",
+                "maturity": "product",
+            }
+        ],
+        "adjacent": [
+            {
+                "id": "meetmate",
+                "name": "Meetmate",
+                "repo": "example-org/meetmate",
+                "license": "MIT",
+                "tagline": _adjacent_localized("Meeting presence"),
+                "relation": _adjacent_localized("Carries an existing family agent"),
+            }
+        ],
+        "adjacent_text": _adjacent_text(),
+    }
+
+
 def check_orphan_all_repos_accounted_for() -> None:
     registry = _orphan_registry()
     org_repos = [
@@ -412,6 +457,25 @@ def check_orphan_accounts_for_retired_repos_case_insensitively() -> None:
         "Caty-AI/Beta",
         "Caty-AI/.GitHub",
         "Caty-AI/Retired-Example",
+    ]
+    failures = []
+    notes = []
+    with mock.patch("check_registry.fetch_org_repos", return_value=org_repos):
+        skipped = check_orphan(registry, failures, notes)
+
+    assert skipped == 0, skipped
+    assert failures == [], failures
+
+
+def check_orphan_accounts_for_adjacent_repos() -> None:
+    registry = _orphan_registry()
+    registry["adjacent"] = [{"repo": "caty-ai/meetmate"}]
+    org_repos = [
+        "Caty-AI/Family-OS",
+        "Caty-AI/Alpha",
+        "Caty-AI/Beta",
+        "Caty-AI/.GitHub",
+        "Caty-AI/MeetMate",
     ]
     failures = []
     notes = []
@@ -891,6 +955,102 @@ def check_schema_rejects_bad_contract_fields() -> None:
     ], failures
 
 
+def check_schema_accepts_missing_adjacent_key() -> None:
+    registry = _adjacent_registry()
+    registry.pop("adjacent")
+    registry.pop("adjacent_text")
+    failures = []
+    checked = check_schema(registry, failures)
+
+    assert checked == 1, checked
+    assert failures == [], failures
+
+
+def check_schema_rejects_bad_adjacent_entries() -> None:
+    registry = _adjacent_registry()
+    registry["adjacent"] = [
+        {
+            "id": "missing-tagline-lang",
+            "name": "Missing tagline lang",
+            "repo": "example-org/missing-tagline-lang",
+            "license": "MIT",
+            "tagline": {
+                "en": "ok",
+                "ja": "ok",
+                "zh": "ok",
+            },
+            "relation": _adjacent_localized("Relation"),
+        },
+        {
+            "id": "missing-repo",
+            "name": "Missing repo",
+            "license": "MIT",
+            "tagline": _adjacent_localized("Tagline"),
+            "relation": _adjacent_localized("Relation"),
+        },
+        {
+            "id": "bad-slug",
+            "name": "Bad slug",
+            "repo": "not a slug",
+            "license": "MIT",
+            "tagline": _adjacent_localized("Tagline"),
+            "relation": _adjacent_localized("Relation"),
+        },
+        {
+            "id": "unknown-key",
+            "name": "Unknown key",
+            "repo": "example-org/unknown-key",
+            "license": "MIT",
+            "tagline": _adjacent_localized("Tagline"),
+            "relation": _adjacent_localized("Relation"),
+            "unexpected": True,
+        },
+        {
+            "id": "same-as-module",
+            "name": "Same as module",
+            "repo": "example-org/alpha",
+            "license": "MIT",
+            "tagline": _adjacent_localized("Tagline"),
+            "relation": _adjacent_localized("Relation"),
+        },
+    ]
+    failures = []
+    checked = check_schema(registry, failures)
+
+    assert checked == 1, checked
+    assert len(failures) == 5, failures
+    assert "tagline.th must be a non-empty string" in failures[0], failures
+    assert any("missing-repo" in failure and "repo must be a non-empty owner/name string" in failure for failure in failures), failures
+    assert any("bad-slug" in failure and "repo must be a non-empty owner/name string" in failure for failure in failures), failures
+    assert any("unknown-key" in failure and "unknown keys: unexpected" in failure for failure in failures), failures
+    assert any(
+        "same-as-module" in failure
+        and "may not appear in both modules[] and adjacent[]" in failure
+        for failure in failures
+    ), failures
+
+
+def check_schema_rejects_missing_adjacent_text_when_adjacent_exists() -> None:
+    registry = _adjacent_registry()
+    registry.pop("adjacent_text")
+    failures = []
+    checked = check_schema(registry, failures)
+
+    assert checked == 1, checked
+    assert failures == ["schema: adjacent_text must be an object"], failures
+
+
+def check_schema_rejects_present_null_or_non_list_adjacent() -> None:
+    for bad_value in (None, "not-a-list", {"repo": "example-org/meetmate"}):
+        registry = _adjacent_registry()
+        registry["adjacent"] = bad_value
+        failures = []
+        checked = check_schema(registry, failures)
+
+        assert checked == 1, checked
+        assert failures == ["schema: adjacent must be a list"], (bad_value, failures)
+
+
 if __name__ == "__main__":
     check_support_accepts_four_consistent_readmes()
     check_support_flags_environment_in_planned_row()
@@ -911,6 +1071,7 @@ if __name__ == "__main__":
     check_require_reality_escalates_unexpected_status()
     check_orphan_all_repos_accounted_for()
     check_orphan_accounts_for_retired_repos_case_insensitively()
+    check_orphan_accounts_for_adjacent_repos()
     check_orphan_flags_unaccounted_public_repo()
     check_orphan_fetch_failure_degrades_instead_of_failing()
     check_orphan_require_reality_escalates_fetch_failure()
@@ -935,4 +1096,8 @@ if __name__ == "__main__":
     check_ci_workflow_helper_does_not_follow_redirects()
     check_ci_workflow_helper_network_faults_degrade()
     check_schema_rejects_bad_contract_fields()
+    check_schema_accepts_missing_adjacent_key()
+    check_schema_rejects_bad_adjacent_entries()
+    check_schema_rejects_missing_adjacent_text_when_adjacent_exists()
+    check_schema_rejects_present_null_or_non_list_adjacent()
     print("selftest_check_registry: ok")

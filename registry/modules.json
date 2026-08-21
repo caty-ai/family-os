@@ -480,6 +480,58 @@
       "footer": true
     }
   ],
+  "adjacent": [
+    {
+      "id": "meetmate",
+      "name": "Meetmate",
+      "repo": "caty-ai/meetmate",
+      "license": "MIT",
+      "tagline": {
+        "en": "Puts your own AI agent in the meeting — a real voice participant in Google Meet and Zoom",
+        "ja": "あなたのAIエージェントを会議に連れていく — Google Meet や Zoom に、本当の声の参加者として入れる",
+        "zh": "把你自己的 AI 智能体带进会议里 — 作为真正会说话的参会者进入 Google Meet 和 Zoom",
+        "th": "พาเอเจนต์ AI ของคุณเข้าไปในที่ประชุม — เข้าร่วม Google Meet และ Zoom ในฐานะผู้เข้าประชุมที่มีเสียงจริง"
+      },
+      "relation": {
+        "en": "Carries an existing family agent into a meeting. Supplies no model, memory, or persona of its own.",
+        "ja": "既存の家族エージェントを会議へ運ぶだけ。モデル・記憶・人格は自前で持たない。",
+        "zh": "把现有的家族智能体带进会议里；自身不提供模型、记忆或人格。",
+        "th": "พาเอเจนต์ของครอบครัวที่มีอยู่แล้วเข้าไปอยู่ในที่ประชุม โดยตัวมันเองไม่มีโมเดล ความทรงจำ หรือบุคลิกเป็นของตนเอง"
+      }
+    }
+  ],
+  "adjacent_text": {
+    "heading": {
+      "en": "Connecting to the family",
+      "ja": "家族へつながる道具",
+      "zh": "连接到这个家族",
+      "th": "การเชื่อมเข้ากับครอบครัว"
+    },
+    "intro": {
+      "en": "These are not Family OS modules. They are tools that carry an existing family agent to where people already are, and they hold no model, memory, or persona of their own.",
+      "ja": "これらは Family OS のモジュールではありません。既存の家族エージェントを、人がすでにいる場所へ連れていくための道具です。自前のモデル・記憶・人格は持ちません。",
+      "zh": "这些不是 Family OS 模块。它们只是把现有的家族智能体带到人们已经在使用的场景里，本身不持有模型、记忆或人格。",
+      "th": "สิ่งเหล่านี้ไม่ใช่โมดูลของ Family OS แต่เป็นเครื่องมือที่พาเอเจนต์ของครอบครัวที่มีอยู่แล้วไปยังที่ที่ผู้คนใช้งานกันอยู่ และตัวมันเองไม่มีโมเดล ความทรงจำ หรือบุคลิก"
+    },
+    "table_module": {
+      "en": "Module",
+      "ja": "モジュール",
+      "zh": "模块",
+      "th": "โมดูล"
+    },
+    "table_what": {
+      "en": "What it does",
+      "ja": "何をするもの",
+      "zh": "做什么",
+      "th": "ทำอะไร"
+    },
+    "table_relation": {
+      "en": "Relation to the family",
+      "ja": "家族との関係",
+      "zh": "与家族的关系",
+      "th": "ความเกี่ยวข้องกับครอบครัว"
+    }
+  },
   "retired_repos": [
     {
       "repo": "shojikumaru/x-collector-wip",
