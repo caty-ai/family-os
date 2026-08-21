@@ -65,6 +65,7 @@ The rules layer sits **above** both axes rather than inside either one. It is a 
 | [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop) | runtime, application | minimised, idempotent proposal production | published, MIT |
 | [X Collector](https://github.com/caty-ai/x-collector) | runtime, optional input | collecting external material for the ability loop | published, MIT |
 | [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) | runtime, application | proposal, governance, adoption records, growth interpretation | published, MIT |
+| [Meetmate](https://github.com/caty-ai/meetmate) | runtime, standalone | meeting attendance and the agent's voice seat — audio in, speech out | published, MIT |
 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) | runtime, horizontal infrastructure | the memory bus; registered schedule expectation, check-in, provenance | published, MIT |
 | [Sitter](https://github.com/caty-ai/sitter) | runtime, observation | local process and reply facts, dispatch-attempt evidence, delegated same-attempt restart | published, MIT |
 <!-- family:generated:module-inventory:end -->

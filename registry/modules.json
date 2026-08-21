@@ -205,6 +205,15 @@
           "th": "วงจรให้เอเจนต์พัฒนาความสามารถของตัวเอง ข้อเสนอ ธรรมาภิบาล และบันทึกการนำไปใช้"
         }
       },
+      "meetmate": {
+        "name": "meetmate",
+        "desc": {
+          "en": "Gives your own AI agent a seat in the meeting: it joins Google Meet or Zoom, listens, and answers out loud in a real voice — the memory, skills, and tools stay on the agent you already use",
+          "ja": "自分の AI エージェントに会議の席を与える。Google Meet や Zoom に参加して聞き、実際の声で答える——記憶・スキル・道具はいつも使っているエージェントのまま",
+          "zh": "让你自己的 AI 智能体在会议中拥有一席：加入 Google Meet 或 Zoom，聆听并用真实语音开口回应——记忆、技能与工具仍留在你原本使用的智能体上",
+          "th": "ให้เอเจนต์ AI ของคุณมีที่นั่งในห้องประชุม เข้าร่วม Google Meet หรือ Zoom ฟังและตอบด้วยเสียงจริง — ความจำ ทักษะ และเครื่องมือยังอยู่กับเอเจนต์ที่คุณใช้อยู่แล้ว"
+        }
+      },
       "family-memory-architecture": {
         "name": "family-memory-architecture",
         "desc": {
@@ -422,6 +431,33 @@
       "owns": {
         "en": "proposal, governance, adoption records, growth interpretation",
         "ja": "提案・ガバナンス・採用記録・成長の解釈"
+      },
+      "footer": true
+    },
+    {
+      "id": "meetmate",
+      "name": "Meetmate",
+      "repo": "caty-ai/meetmate",
+      "status": "published",
+      "maturity": "product",
+      "tagline": {
+        "en": "Puts your own AI agent in the meeting — a real voice participant in Google Meet and Zoom",
+        "ja": "自分の AI エージェントを会議へ — Google Meet と Zoom に声で参加する",
+        "zh": "让你的 AI 智能体入席会议 — 在 Google Meet 与 Zoom 中以真实语音参与",
+        "th": "พาเอเจนต์ AI ของคุณเข้าประชุม — ผู้ร่วมประชุมด้วยเสียงจริงใน Google Meet และ Zoom"
+      },
+      "axis": {
+        "group": "vertical",
+        "foundation": false
+      },
+      "license": "MIT",
+      "class": {
+        "en": "runtime, standalone",
+        "ja": "runtime・単独利用可能"
+      },
+      "owns": {
+        "en": "meeting attendance and the agent's voice seat — audio in, speech out",
+        "ja": "会議への参加とエージェントの声の席 — 音声の入力と発話"
       },
       "footer": true
     },
