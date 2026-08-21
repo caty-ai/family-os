@@ -95,7 +95,7 @@ Persona Engine と X Collector は単独で使え、他のどれからも必須�
 | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（公開・MIT） | 1エージェントにつき1つの縦軸基盤。完了を所有する | Self Growth Loop と trial 要求および終端結果をやり取りする | 実装済み |
 | [context-kit](https://github.com/caty-ai/context-kit)（公開・MIT） | 単独利用可能な机まわりの装備 | 完了権限を持たずにエージェントを装備する | 実装済み |
 | [Persona Engine](https://github.com/caty-ai/persona-engine)（公開・MIT） | 単独利用可能な人格の source / target | Persona Growth Loop と接続する | 実装済み |
-| Persona Growth Loop（公開準備中） | 独立した人格成長ループ | Persona Engine との人格 source / target 関係が計画中。Self Growth Loop への governance 経路も計画中 | 計画中 |
+| [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop)（公開・MIT） | 独立した人格成長ループ | Persona Engine との人格 source / target 関係が計画中。Self Growth Loop への governance 経路も計画中 | 計画中 |
 | [X Collector](https://github.com/caty-ai/x-collector)（公開・MIT） | 単独利用可能で置き換え可能な外部情報源 | `family-feed` / sense を morning agents へ供給する | 実装済み |
 | morning agents | 現在 / 既定の sense bridge | 収集した素材を Self Growth Loop 向けの proposal に変える | 実装済み |
 | human / evaluator | 帰属可能な別入力 | Self Growth Loop へ別の入力を与えられる | 実装済みの入力形 |

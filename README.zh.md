@@ -144,7 +144,7 @@ Family OS 是一张地图，告诉你解决每一个问题的部件**在哪里**
 | 成长应当可观测、可逆转。 | 因此我们构建 proposal → trial → review → approval → adopt，并配套备份、回滚与台账。 | [Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（已公开・MIT） | 已公开・MIT | 已实现 — 采纳由人类把关；EV-004 尚未验证 |
 | 身份应当比模型更长寿。 | 因此我们分离模型、runtime 与身份，让连续性能够在迁移之后继续存在。 | [Persona Engine](https://github.com/caty-ai/persona-engine)（已公开・MIT）；[Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（已公开・MIT） | 已公开・MIT | 已实现 |
 | 人与 AI 之间生长出来的东西不该属于厂商。 | 因此我们构建可迁移、本地、人类可读的关系数据，以及可替换的适配器。 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（已公开・MIT）；[Persona Engine](https://github.com/caty-ai/persona-engine)（已公开・MIT）；[Family OS](https://github.com/caty-ai/family-os)（已公开・MIT） | 已公开・MIT | 已实现 |
-| 成长最终会把主语从 I 变成 WE。 | 因此我们构建从被教导到关系成长的五阶段模型。 | Persona Growth Loop（准备公开中）；[Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（已公开・MIT）；[Persona Engine](https://github.com/caty-ai/persona-engine)（已公开・MIT）；[Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（已公开・MIT） | 混合；见相邻模块标注 | 已实现 + 计划中 |
+| 成长最终会把主语从 I 变成 WE。 | 因此我们构建从被教导到关系成长的五阶段模型。 | [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop)（已公开・MIT）；[Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（已公开・MIT）；[Persona Engine](https://github.com/caty-ai/persona-engine)（已公开・MIT）；[Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（已公开・MIT） | 混合；见相邻模块标注 | 已实现 + 计划中 |
 
 完整的 13 组对应关系，请阅读[英文版](docs/growth-model.md)或[日文版](docs/growth-model.ja.md)。
 
@@ -183,7 +183,7 @@ Family OS 之下有三层。最上面是作用于全体的前提与规则（规�
 | 层 | English label | 它解决的问题 | 模块 | 关系 |
 | --- | --- | --- | --- | --- |
 | **规约** | Rules for everything below | 并行会话争抢同一个文件并把它弄坏 | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook)（已公开・MIT） | 它包含两条轴的前提；但并不执行它们 |
-| **纵轴** | Growing one agent | 会忘记；中途停下；“做完了”却无法核实 | Persona Growth Loop（准备公开中）；以 [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（已公开・MIT）为基础，以 [context-kit](https://github.com/caty-ai/context-kit)（已公开・MIT）为装备，再叠加 [Persona Engine](https://github.com/caty-ai/persona-engine)（已公开・MIT）、[X Collector](https://github.com/caty-ai/x-collector)（已公开・MIT）、[Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（已公开・MIT） | 每个智能体都有自己的一套 Harness；Persona Engine → Persona Growth Loop 为计划中；X Collector → morning agents → Self Growth Loop 是当前可替换的 sense / proposal 路径；Harness ↔ Self Growth 的 trial / result 接缝已实现；human / evaluator → Self Growth 是可追溯来源的替代输入；Persona Growth Loop → Self Growth 的 governance 为计划中 |
+| **纵轴** | Growing one agent | 会忘记；中途停下；“做完了”却无法核实 | [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop)（已公开・MIT）；以 [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（已公开・MIT）为基础，以 [context-kit](https://github.com/caty-ai/context-kit)（已公开・MIT）为装备，再叠加 [Persona Engine](https://github.com/caty-ai/persona-engine)（已公开・MIT）、[X Collector](https://github.com/caty-ai/x-collector)（已公开・MIT）、[Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（已公开・MIT） | 每个智能体都有自己的一套 Harness；Persona Engine → Persona Growth Loop 为计划中；X Collector → morning agents → Self Growth Loop 是当前可替换的 sense / proposal 路径；Harness ↔ Self Growth 的 trial / result 接缝已实现；human / evaluator → Self Growth 是可追溯来源的替代输入；Persona Growth Loop → Self Growth 的 governance 为计划中 |
 | **横轴** | Connecting the family | 记忆分散在各个智能体；委派出去的工作悄悄失踪 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（已公开・MIT）与 [Sitter](https://github.com/caty-ai/sitter)（已公开・MIT）连接完整的 Agent A / B / C 流程；[X Collector](https://github.com/caty-ai/x-collector)（已公开・MIT）与 [Persona Engine](https://github.com/caty-ai/persona-engine)（已公开・MIT）仍是可独立使用的共享表面 | Agent A / B / C ↔ FMA 共享上下文但不移交执行权限；FMA → delegated work / family nudges 携带共享上下文；Sitter → delegated work / family nudges 负责从外部观察卡住的交接，而不作领域成败判断 |
 
 <details>
@@ -227,7 +227,7 @@ flowchart TB
 **人格的成长**
 
 - [Persona Engine](https://github.com/caty-ai/persona-engine)（已公开・MIT）— 加上人格的层次与情感的渐变
-- Persona Growth Loop（准备公开中）— 推动人格的独立成长。计划中
+- [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop)（已公开・MIT）— 推动人格的独立成长。计划中
 
 **能力的成长**
 

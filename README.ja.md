@@ -144,7 +144,7 @@ AIエージェントを1体から2体、3体と増やしていくと、こうい
 | 成長は観測可能で、取り消し可能であるべきだ。 | だから、proposal → trial → review → approval → adopt と、バックアップ・ロールバック・台帳を作る。 | [Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（公開・MIT） | 公開・MIT | 実装済み — 採用は人間のゲート下にあり、EV-004 は未検証 |
 | アイデンティティはモデルより長生きするべきだ。 | だから、住み替えが起きても継続性が保てるように、モデル・runtime・アイデンティティを分離する。 | [Persona Engine](https://github.com/caty-ai/persona-engine)（公開・MIT）；[Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（公開・MIT） | 公開・MIT | 実装済み |
 | 人間と AI のあいだに育つものは、ベンダーの所有物であってはならない。 | だから、持ち運べて、ローカルで、人が読める関係データと、置き換え可能なアダプタを作る。 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（公開・MIT）；[Persona Engine](https://github.com/caty-ai/persona-engine)（公開・MIT）；[Family OS](https://github.com/caty-ai/family-os)（公開・MIT） | 公開・MIT | 実装済み |
-| 成長は、やがて主語を I から WE へ変える。 | だから、教わるところから関係性の成長までを含む5段階モデルを作る。 | Persona Growth Loop（公開準備中）；[Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（公開・MIT）；[Persona Engine](https://github.com/caty-ai/persona-engine)（公開・MIT）；[Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（公開・MIT） | 混在。隣のモジュール表記を参照 | 実装済み + 計画中 |
+| 成長は、やがて主語を I から WE へ変える。 | だから、教わるところから関係性の成長までを含む5段階モデルを作る。 | [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop)（公開・MIT）；[Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（公開・MIT）；[Persona Engine](https://github.com/caty-ai/persona-engine)（公開・MIT）；[Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（公開・MIT） | 混在。隣のモジュール表記を参照 | 実装済み + 計画中 |
 
 13組すべての完全版は [成長モデル](docs/growth-model.ja.md) にあります。
 
@@ -183,7 +183,7 @@ Family OS の下には3つの層があります。いちばん上に全体にか
 | 層 | English label | 解く困りごと | モジュール | 関係 |
 | --- | --- | --- | --- | --- |
 | **掟** | Rules for everything below | 並行セッションが同じファイルを取り合って壊す | [Family Dev Handbook](https://github.com/caty-ai/family-dev-handbook)（公開・MIT） | 両方の軸の前提を含む。実行はしない |
-| **縦軸** | Growing one agent | 忘れる・途中で止まる・「できました」が確かめられない | Persona Growth Loop（公開準備中）；[Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（公開・MIT）を基盤に、[context-kit](https://github.com/caty-ai/context-kit)（公開・MIT）を装備として、[Persona Engine](https://github.com/caty-ai/persona-engine)（公開・MIT）、[X Collector](https://github.com/caty-ai/x-collector)（公開・MIT）、[Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（公開・MIT）を重ねる | どのエージェントも自分専用の Harness を持つ。Persona Engine → Persona Growth Loop は計画中。X Collector → morning agents → Self Growth Loop は、現在の置き換え可能な sense / proposal 経路。Harness ↔ Self Growth の trial / result の継ぎ目は実装済み。human / evaluator → Self Growth は帰属可能な別入力。Persona Growth Loop → Self Growth の governance は計画中 |
+| **縦軸** | Growing one agent | 忘れる・途中で止まる・「できました」が確かめられない | [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop)（公開・MIT）；[Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（公開・MIT）を基盤に、[context-kit](https://github.com/caty-ai/context-kit)（公開・MIT）を装備として、[Persona Engine](https://github.com/caty-ai/persona-engine)（公開・MIT）、[X Collector](https://github.com/caty-ai/x-collector)（公開・MIT）、[Self Growth Loop](https://github.com/caty-ai/self-growth-loop)（公開・MIT）を重ねる | どのエージェントも自分専用の Harness を持つ。Persona Engine → Persona Growth Loop は計画中。X Collector → morning agents → Self Growth Loop は、現在の置き換え可能な sense / proposal 経路。Harness ↔ Self Growth の trial / result の継ぎ目は実装済み。human / evaluator → Self Growth は帰属可能な別入力。Persona Growth Loop → Self Growth の governance は計画中 |
 | **横軸** | Connecting the family | エージェントごとに記憶が散る・委譲した仕事が行方不明になる | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture)（公開・MIT）と [Sitter](https://github.com/caty-ai/sitter)（公開・MIT）が、Agent A / B / C の完全な流れをつなぐ。[X Collector](https://github.com/caty-ai/x-collector)（公開・MIT）と [Persona Engine](https://github.com/caty-ai/persona-engine)（公開・MIT）は、共有面でありながら単独利用もできる | Agent A / B / C ↔ FMA は、実行権限を渡さずに文脈を共有する。FMA → delegated work / family nudges は共有文脈を運ぶ。Sitter → delegated work / family nudges は、ドメイン判定ではなく、停止の外側観測を担う |
 
 <details>
@@ -227,7 +227,7 @@ flowchart TB
 **人格の成長**
 
 - [Persona Engine](https://github.com/caty-ai/persona-engine)（公開・MIT）— 人格のレイヤーと、感情のグラデーションを足す
-- Persona Growth Loop（公開準備中）— 人格の自立的な成長を促す。計画中
+- [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop)（公開・MIT）— 人格の自立的な成長を促す。計画中
 
 **能力の成長**
 

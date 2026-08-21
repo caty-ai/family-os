@@ -95,7 +95,7 @@ The figures below move the README's detailed topology into the engineering view.
 | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) (published, MIT) | one-per-agent vertical foundation; owns completion | exchanges trial requests and terminal results with Self Growth Loop | implemented |
 | [context-kit](https://github.com/caty-ai/context-kit) (published, MIT) | independently usable desk equipment | equips the agent without becoming completion authority | implemented |
 | [Persona Engine](https://github.com/caty-ai/persona-engine) (published, MIT) | independently usable persona source and target | connects to Persona Growth Loop | implemented |
-| Persona Growth Loop (publication in preparation) | independent persona-growth loop | planned persona source/target relation with Persona Engine; planned governance path to Self Growth Loop | planned |
+| [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop) (published, MIT) | independent persona-growth loop | planned persona source/target relation with Persona Engine; planned governance path to Self Growth Loop | planned |
 | [X Collector](https://github.com/caty-ai/x-collector) (published, MIT) | independently usable, replaceable outside-information source | supplies `family-feed` / sense to morning agents | implemented |
 | morning agents | current/default sense bridge | turns collected material into proposals for Self Growth Loop | implemented |
 | human / evaluator | attributable alternative input | may provide another input to Self Growth Loop | implemented input shape |
