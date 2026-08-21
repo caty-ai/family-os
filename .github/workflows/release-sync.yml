@@ -1,0 +1,12 @@
+name: release-sync
+on:
+  push:
+    tags: ['v*']
+permissions: {}
+concurrency:
+  group: 'release-sync-${{ github.ref }}'
+  cancel-in-progress: false
+jobs:
+  release-sync:
+    uses: caty-ai/family-dev-handbook/.github/workflows/reusable-release-sync.yml@ci-v1
+    permissions: {contents: write}
