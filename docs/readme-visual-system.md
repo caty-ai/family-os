@@ -144,7 +144,6 @@ the generated block directly.
 | Persona Growth Loop | `caty-ai/persona-growth-loop` | published, MIT |
 | X Collector | `caty-ai/x-collector` | published, MIT |
 | Self Growth Loop | `caty-ai/self-growth-loop` | published, MIT |
-| Meetmate | `caty-ai/meetmate` | published, MIT |
 | Family Memory Architecture | `caty-ai/family-memory-architecture` | published, MIT |
 | Sitter | `caty-ai/sitter` | published, MIT |
 <!-- family:generated:repository-links:end -->
