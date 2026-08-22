@@ -56,7 +56,7 @@ Go from one AI agent to two, then three, and these moments start piling up.
 - Work you handed over sits quietly waiting for a reply that never comes.
 - Run things in parallel and they fight over the same file until something breaks.
 
-If even one of those rings true, this map is for you. If you use a single agent for short one-off questions, it is overkill — you are fine as you are.
+If even one of those rings true, this map is for you. If you use a single agent for short one-off questions, it is overkill — you are fine as you are. One day we want to lower that step itself; when we do, come back and take another look.
 
 The problems look separate. The cause is the same one: the relationship with your AI resets every time.
 
@@ -391,7 +391,9 @@ These are not Family OS modules. They are tools that carry an existing family ag
 
 Family OS is free MIT open source. We chose MIT because we want anyone to use it freely and reshape it for their own family.
 
-Family OS is not a project that hands out one finished, correct answer. We grow it together with people who also want to keep and grow their AI's relationships and ability rather than throw them away, bringing the failures and lessons we each hit in real use. If you find a bug, something confusing, or a case where this did not apply well, tell us in an [issue](https://github.com/caty-ai/family-os/issues). Even a small report is material that makes this map easier for the next person.
+Family OS is not a project that hands out one finished, correct answer. We grow it together with people who also want to keep and grow their AI's relationships and ability rather than throw them away, bringing the failures and lessons we each hit in real use. If you find a bug, something confusing, or a case where this did not apply well, tell us in an [issue](https://github.com/caty-ai/family-os/issues). Even a small report is material that makes this map easier for the next person. Questions and half-formed ideas are just as welcome in [Discussions](https://github.com/caty-ai/family-os/discussions).
+
+If this map resonates with you, a star helps the next person find it. Fork it, reshape it for your own family, and tell us what broke — nothing would make us happier.
 
 [Contributing](CONTRIBUTING.md) · [Security](SECURITY.md) · [Code of Conduct](CODE_OF_CONDUCT.md)
 
