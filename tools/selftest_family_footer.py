@@ -22,6 +22,7 @@ from family_footer import (
     START_MARKER,
     FetchResult,
     FooterError,
+    _assert_org_svg_legacy,
     assert_org_svg,
     check_registry_footers,
     fetch_readme,
@@ -224,9 +225,23 @@ def base_registry():
             "published": {lang: " (OSS)" for lang in registry["languages"]},
             "preparing": {lang: " (soon)" for lang in registry["languages"]},
         },
+        "status_labels_bare": {
+            "published": {lang: "OSS" for lang in registry["languages"]},
+            "preparing": {lang: "soon" for lang in registry["languages"]},
+        },
+        "table_headers": {
+            lang: ["Module", "In one line", "Status"]
+            for lang in registry["languages"]
+        },
+        "svg_question": {
+            lang: "Question %s?" % lang for lang in registry["languages"]
+        },
         "map": {
             "name": "Family OS",
             "desc": {lang: "Family map" for lang in registry["languages"]},
+            "desc_short": {
+                lang: "Family map short" for lang in registry["languages"]
+            },
         },
         "modules": {},
     }
@@ -235,6 +250,9 @@ def base_registry():
             "name": module["id"],
             "desc": {
                 lang: "%s description" % module["id"] for lang in registry["languages"]
+            },
+            "desc_short": {
+                lang: "%s short" % module["id"] for lang in registry["languages"]
             },
         }
     registry["org_profile"] = profile
@@ -735,14 +753,14 @@ def test_org_ordered_fetch_and_per_file_failures():
         "profile/assets/readme-terminal-th.svg",
     ]
 
-    mutations = {"README.th.md": lambda text: text.replace("gamma description", "drift", 1)}
+    mutations = {"README.th.md": lambda text: text.replace("gamma short", "drift", 1)}
     failures, _notes = check_registry_footers(
         registry, fetcher=fixture_fetcher(registry, org_mutations=mutations)
     )
     assert any("README.th.md" in failure and "does not match" in failure for failure in failures)
     assert not any("README.ja.md" in failure for failure in failures)
 
-    mutations = {"README.md": lambda text: text.replace("alpha description", "drift", 1)}
+    mutations = {"README.md": lambda text: text.replace("alpha short", "drift", 1)}
     failures, _notes = check_registry_footers(
         registry, fetcher=fixture_fetcher(registry, org_mutations=mutations)
     )
@@ -817,7 +835,7 @@ def test_org_module_key_set_fails_closed():
         raise AssertionError("render_org_block must translate a missing key to FooterError")
 
 
-def test_org_bullet_validator_attacks():
+def test_org_table_validator_attacks_and_required_fields():
     attacks = (
         "bad\nvalue",
         "bad\tvalue",
@@ -835,14 +853,40 @@ def test_org_bullet_validator_attacks():
     )
     for attack in attacks:
         registry = base_registry()
-        registry["org_profile"]["modules"]["alpha"]["desc"]["en"] = attack
-        assert lint_registry(registry), "bullet attack was accepted: %r" % attack
+        registry["org_profile"]["modules"]["alpha"]["desc_short"]["en"] = attack
+        assert lint_registry(registry), "table attack was accepted: %r" % attack
 
     injected = base_registry()
-    injected["org_profile"]["modules"]["alpha"]["desc"]["en"] = (
+    injected["org_profile"]["modules"]["alpha"]["desc_short"]["en"] = (
         "<!-- family:generated:org-profile-modules:start -->"
     )
     assert any("generated-marker text" in failure for failure in lint_registry(injected))
+
+    missing = base_registry()
+    del missing["org_profile"]["modules"]["alpha"]["desc_short"]
+    assert any(
+        "org_profile.modules.alpha.desc_short must be an object" in failure
+        for failure in lint_registry(missing)
+    )
+
+    missing_language = base_registry()
+    del missing_language["org_profile"]["map"]["desc_short"]["ja"]
+    assert any(
+        "org_profile.map.desc_short must contain exactly the languages" in failure
+        for failure in lint_registry(missing_language)
+    )
+
+    empty = base_registry()
+    empty["org_profile"]["modules"]["beta"]["desc_short"]["zh"] = ""
+    assert any(
+        "org_profile.modules.beta.desc_short.zh must be non-empty" in failure
+        for failure in lint_registry(empty)
+    )
+
+    for field in ("status_labels_bare", "table_headers", "svg_question"):
+        registry = base_registry()
+        del registry["org_profile"][field]
+        assert any("org_profile.%s" % field in failure for failure in lint_registry(registry))
 
 
 def test_org_count_preparing_and_golden_bytes():
@@ -887,22 +931,56 @@ def test_org_count_preparing_and_golden_bytes():
                     "th": " (ร)",
                 },
             },
+            "status_labels_bare": {
+                "published": {"en": "P", "ja": "公", "zh": "发", "th": "ผ"},
+                "preparing": {"en": "S", "ja": "準", "zh": "备", "th": "ร"},
+            },
+            "table_headers": {
+                "en": ["M", "R", "S"],
+                "ja": ["日M", "日R", "日S"],
+                "zh": ["中M", "中R", "中S"],
+                "th": ["ทM", "ทR", "ทS"],
+            },
             "map": {
                 "name": "Map",
                 "desc": {"en": "eM", "ja": "日M", "zh": "中M", "th": "ทM"},
+                "desc_short": {
+                    "en": "eMs",
+                    "ja": "日Ms",
+                    "zh": "中Ms",
+                    "th": "ทMs",
+                },
             },
             "modules": {
                 "zed": {
                     "name": "Zed",
                     "desc": {"en": "eZ", "ja": "日Z", "zh": "中Z", "th": "ทZ"},
+                    "desc_short": {
+                        "en": "eZs",
+                        "ja": "日Zs",
+                        "zh": "中Zs",
+                        "th": "ทZs",
+                    },
                 },
                 "prep": {
                     "name": "Prep",
                     "desc": {"en": "eQ", "ja": "日Q", "zh": "中Q", "th": "ทQ"},
+                    "desc_short": {
+                        "en": "eQs",
+                        "ja": "日Qs",
+                        "zh": "中Qs",
+                        "th": "ทQs",
+                    },
                 },
                 "alpha": {
                     "name": "Alpha",
                     "desc": {"en": "eA", "ja": "日A", "zh": "中A", "th": "ทA"},
+                    "desc_short": {
+                        "en": "eAs",
+                        "ja": "日As",
+                        "zh": "中As",
+                        "th": "ทAs",
+                    },
                 },
             },
         },
@@ -910,31 +988,39 @@ def test_org_count_preparing_and_golden_bytes():
     expected = {
         "en": (
             "\nE3\n\n"
-            "- **[Map](https://github.com/fixture/map)** — eM (P)\n"
-            "- **[Zed](https://github.com/fixture/zed-repo)** — eZ (P)\n"
-            "- **Prep** — eQ (S)\n"
-            "- **[Alpha](https://github.com/other/alpha-repo)** — eA (P)\n\n"
+            "| M | R | S |\n"
+            "|---|---|---|\n"
+            "| **[Map](https://github.com/fixture/map)** | eMs | P |\n"
+            "| **[Zed](https://github.com/fixture/zed-repo)** | eZs | P |\n"
+            "| **Prep** | eQs | S |\n"
+            "| **[Alpha](https://github.com/other/alpha-repo)** | eAs | P |\n\n"
         ),
         "ja": (
             "\n日3\n\n"
-            "- **[Map](https://github.com/fixture/map)** — 日M（公）\n"
-            "- **[Zed](https://github.com/fixture/zed-repo)** — 日Z（公）\n"
-            "- **Prep** — 日Q（準）\n"
-            "- **[Alpha](https://github.com/other/alpha-repo)** — 日A（公）\n\n"
+            "| 日M | 日R | 日S |\n"
+            "|---|---|---|\n"
+            "| **[Map](https://github.com/fixture/map)** | 日Ms | 公 |\n"
+            "| **[Zed](https://github.com/fixture/zed-repo)** | 日Zs | 公 |\n"
+            "| **Prep** | 日Qs | 準 |\n"
+            "| **[Alpha](https://github.com/other/alpha-repo)** | 日As | 公 |\n\n"
         ),
         "zh": (
             "\n中3\n\n"
-            "- **[Map](https://github.com/fixture/map)** — 中M（发）\n"
-            "- **[Zed](https://github.com/fixture/zed-repo)** — 中Z（发）\n"
-            "- **Prep** — 中Q（备）\n"
-            "- **[Alpha](https://github.com/other/alpha-repo)** — 中A（发）\n\n"
+            "| 中M | 中R | 中S |\n"
+            "|---|---|---|\n"
+            "| **[Map](https://github.com/fixture/map)** | 中Ms | 发 |\n"
+            "| **[Zed](https://github.com/fixture/zed-repo)** | 中Zs | 发 |\n"
+            "| **Prep** | 中Qs | 备 |\n"
+            "| **[Alpha](https://github.com/other/alpha-repo)** | 中As | 发 |\n\n"
         ),
         "th": (
             "\nท3\n\n"
-            "- **[Map](https://github.com/fixture/map)** — ทM (ผ)\n"
-            "- **[Zed](https://github.com/fixture/zed-repo)** — ทZ (ผ)\n"
-            "- **Prep** — ทQ (ร)\n"
-            "- **[Alpha](https://github.com/other/alpha-repo)** — ทA (ผ)\n\n"
+            "| ทM | ทR | ทS |\n"
+            "|---|---|---|\n"
+            "| **[Map](https://github.com/fixture/map)** | ทMs | ผ |\n"
+            "| **[Zed](https://github.com/fixture/zed-repo)** | ทZs | ผ |\n"
+            "| **Prep** | ทQs | ร |\n"
+            "| **[Alpha](https://github.com/other/alpha-repo)** | ทAs | ผ |\n\n"
         ),
     }
 
@@ -952,8 +1038,22 @@ def test_org_count_preparing_and_golden_bytes():
             "{count}", str(published_count + 1)
         )
         preparing_profile = fixture["org_profile"]["modules"][preparing[0]["id"]]
-        assert "- **%s** — " % preparing_profile["name"] in rendered
+        assert "| **%s** |" % preparing_profile["name"] in rendered
         assert "https://github.com/%s" % preparing[0]["repo"] not in rendered
+
+
+def test_org_ja_intro_uses_counter_for_eleven():
+    registry = load_registry()
+    registry["modules"].append(
+        {"id": "extra", "repo": "fixture/extra", "status": "published"}
+    )
+    registry["org_profile"]["modules"]["extra"] = {
+        "name": "extra",
+        "desc_short": {lang: "extra" for lang in registry["languages"]},
+    }
+    rendered = render_org_block(registry, "ja")
+    assert "このうち11個は" in rendered
+    assert "このうち11つは" not in rendered
 
 
 def test_org_degradation_and_svg_assertions():
@@ -985,13 +1085,33 @@ def test_org_degradation_and_svg_assertions():
             registry, lang, svg_document(registry, lang), "fixture"
         ) == []
 
+        minimal = "<svg><text>visitor voice</text><text>%s</text></svg>" % (
+            registry["org_profile"]["svg_question"][lang]
+        )
+        assert assert_org_svg(registry, lang, minimal, "fixture") == []
+
+    legacy_complete_ja = svg_document(registry, "ja")
+    assert assert_org_svg(registry, "ja", legacy_complete_ja, "fixture") == []
+    legacy_with_question_ja = "%s\n<text>%s</text>" % (
+        legacy_complete_ja,
+        registry["org_profile"]["svg_question"]["ja"],
+    )
+    legacy_with_question_failures = assert_org_svg(
+        registry, "ja", legacy_with_question_ja, "fixture"
+    )
+    for module in registry["modules"]:
+        assert any(
+            "minimal profile contains module residue '%s'" % module["id"] in failure
+            for failure in legacy_with_question_failures
+        )
+
     passing = svg_document(registry, "en")
     published_to_preparing = svg_document(
         registry, "en", badge_override=("alpha", "coming soon")
     )
     assert any(
         "alpha" in failure and "badge 'repo ↗'" in failure
-        for failure in assert_org_svg(
+        for failure in _assert_org_svg_legacy(
             registry, "en", published_to_preparing, "fixture"
         )
     )
@@ -1000,7 +1120,7 @@ def test_org_degradation_and_svg_assertions():
     )
     assert any(
         "gamma" in failure and "badge 'coming soon'" in failure
-        for failure in assert_org_svg(
+        for failure in _assert_org_svg_legacy(
             registry, "en", preparing_to_published, "fixture"
         )
     )
@@ -1010,7 +1130,7 @@ def test_org_degradation_and_svg_assertions():
     )
     assert any(
         "gamma" in failure and "no badge" in failure
-        for failure in assert_org_svg(
+        for failure in _assert_org_svg_legacy(
             registry, "en", missing_preparing_badge, "fixture"
         )
     )
@@ -1018,16 +1138,44 @@ def test_org_degradation_and_svg_assertions():
         len([module for module in registry["modules"] if module["status"] == "published"]) + 1
     )
     wrong_count = svg_document(registry, "en", count_override=expected_count * 2)
-    assert any("count" in failure for failure in assert_org_svg(registry, "en", wrong_count, "fixture"))
+    assert any(
+        "count" in failure
+        for failure in _assert_org_svg_legacy(
+            registry, "en", wrong_count, "fixture"
+        )
+    )
     missing = svg_document(registry, "en", missing="beta")
-    assert any("missing module 'beta'" in failure for failure in assert_org_svg(registry, "en", missing, "fixture"))
+    assert any(
+        "missing module 'beta'" in failure
+        for failure in _assert_org_svg_legacy(registry, "en", missing, "fixture")
+    )
     substring_only = passing.replace(
         "<text>⏺ alpha</text>", "<text>prefix ⏺ alpha suffix</text>"
     )
     assert any(
         "missing module 'alpha'" in failure
-        for failure in assert_org_svg(registry, "en", substring_only, "fixture")
+        for failure in _assert_org_svg_legacy(
+            registry, "en", substring_only, "fixture"
+        )
     )
+
+    question = registry["org_profile"]["svg_question"]["en"]
+    mixed = "<svg><text>%s</text><text>alpha</text></svg>" % question
+    mixed_legacy_failures = _assert_org_svg_legacy(
+        registry, "en", mixed, "fixture"
+    )
+    assert any("missing module 'alpha'" in failure for failure in mixed_legacy_failures)
+    assert any("missing the ecosystem intro line" in failure for failure in mixed_legacy_failures)
+    mixed_failures = assert_org_svg(registry, "en", mixed, "fixture")
+    assert any(
+        "minimal profile contains module residue 'alpha'" in failure
+        for failure in mixed_failures
+    )
+
+    empty_failures = assert_org_svg(registry, "en", "<svg></svg>", "fixture")
+    assert empty_failures
+    assert all("minimal profile" in failure for failure in empty_failures)
+    assert any("missing the question needle" in failure for failure in empty_failures)
 
 
 def test_org_render_and_block_isolation():
@@ -1093,8 +1241,9 @@ def main() -> int:
         test_org_ordered_fetch_and_per_file_failures,
         test_duplicate_json_key_and_org_declared_set_guards,
         test_org_module_key_set_fails_closed,
-        test_org_bullet_validator_attacks,
+        test_org_table_validator_attacks_and_required_fields,
         test_org_count_preparing_and_golden_bytes,
+        test_org_ja_intro_uses_counter_for_eleven,
         test_org_degradation_and_svg_assertions,
         test_org_render_and_block_isolation,
     ]
