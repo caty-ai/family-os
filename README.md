@@ -1,6 +1,6 @@
 # Family OS
 
-- **Who is this for?** — People who want to grow several AI agents at once. If you are still chatting with ChatGPT or Claude in the browser, or running your first single agent, this may be early for you — but if you want to take it on anyway, you are more than welcome. Start with [the problems](#problems). Hard to picture? Meet the family actually living on this map — one human and their AIs — in [our story and principles](https://github.com/caty-ai).
+- **Who is this for?** — People who want to grow several AI agents at once. If you are still chatting with ChatGPT or Claude in the browser, or running your first single agent, this may be early for you — but if you want to take it on anyway, you are more than welcome. Start with [the problems](#problems). Hard to picture? Meet the family actually living on this map — one human and their AIs — in [an ordinary day at our house](https://github.com/caty-ai/.github/blob/main/DAILY.md).
 - **30 seconds** — [start with the problems](#problems)
 - **5 minutes** — follow the [time axis](#timeline), [growth model](#growth), and [belief-to-build correspondence](#correspondence)
 - **30 minutes** — open the [engineering documentation](docs/engineering.md)

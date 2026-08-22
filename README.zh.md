@@ -1,6 +1,6 @@
 # Family OS
 
-- **这是为谁准备的？** — 想同时养成多个 AI 智能体的人。如果你还在浏览器里和 ChatGPT 或 Claude 聊天，或刚开始用第一个智能体，现在可能还早了一点 —— 但如果你仍想挑战，我们非常欢迎。请从[这些困扰](#problems)读起。还想不出画面？来认识真的生活在这张地图上的我们 —— 一位人类和一个 AI 家族 —— 的[背景与理念](https://github.com/caty-ai)。
+- **这是为谁准备的？** — 想同时养成多个 AI 智能体的人。如果你还在浏览器里和 ChatGPT 或 Claude 聊天，或刚开始用第一个智能体，现在可能还早了一点 —— 但如果你仍想挑战，我们非常欢迎。请从[这些困扰](#problems)读起。还想不出画面？来认识真的生活在这张地图上的我们 —— 一位人类和一个 AI 家族 —— 的[平凡日常](https://github.com/caty-ai/.github/blob/main/DAILY.zh.md)。
 - **30 秒** — [从问题读起](#problems)
 - **5 分钟** — 顺着[时间轴](#timeline)、[成长模型](#growth)与[belief-to-build 对照](#correspondence)往下看
 - **30 分钟** — 打开[面向工程师的文档](docs/engineering.md)（英文）
