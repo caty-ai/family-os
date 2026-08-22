@@ -1090,6 +1090,21 @@ def test_org_degradation_and_svg_assertions():
         )
         assert assert_org_svg(registry, lang, minimal, "fixture") == []
 
+    legacy_complete_ja = svg_document(registry, "ja")
+    assert assert_org_svg(registry, "ja", legacy_complete_ja, "fixture") == []
+    legacy_with_question_ja = "%s\n<text>%s</text>" % (
+        legacy_complete_ja,
+        registry["org_profile"]["svg_question"]["ja"],
+    )
+    legacy_with_question_failures = assert_org_svg(
+        registry, "ja", legacy_with_question_ja, "fixture"
+    )
+    for module in registry["modules"]:
+        assert any(
+            "minimal profile contains module residue '%s'" % module["id"] in failure
+            for failure in legacy_with_question_failures
+        )
+
     passing = svg_document(registry, "en")
     published_to_preparing = svg_document(
         registry, "en", badge_override=("alpha", "coming soon")

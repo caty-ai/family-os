@@ -905,12 +905,13 @@ def _assert_org_svg_minimal(
 
 
 def assert_org_svg(registry: dict, lang: str, text: str, label: str) -> List[str]:
-    minimal_failures = _assert_org_svg_minimal(registry, lang, text, label)
-    if not minimal_failures:
-        return []
+    visible = html.unescape(re.sub(r"<[^>]+>", "", text))
+    question = registry["org_profile"]["svg_question"][lang]
+    if question in visible:
+        return _assert_org_svg_minimal(registry, lang, text, label)
     if not _assert_org_svg_legacy(registry, lang, text, label):
         return []
-    return minimal_failures
+    return _assert_org_svg_minimal(registry, lang, text, label)
 
 
 def check_registry_footers(
