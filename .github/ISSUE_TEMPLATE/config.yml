@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Questions and discussion
+    url: https://github.com/caty-ai/family-os/discussions/categories/q-a
+    about: Not sure whether it is a bug, or stuck on setup? Ask in family-os Discussions — one shared place for questions across every caty-ai repository.
