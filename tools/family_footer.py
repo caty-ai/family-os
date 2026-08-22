@@ -49,6 +49,7 @@ ORG_SVG_FILES = tuple(
     ("profile/assets/readme-terminal-%s.svg" % lang, lang)
     for lang in ("en", "ja", "zh", "th")
 )
+ORG_PROFILE_LANGUAGES = ("en", "ja", "zh", "th")
 # Keep these badges coupled to the wording emitted by .github/tools/gen_readme_svg.py.
 ORG_SVG_PREPARING_BADGES = {
     "en": "coming soon",
@@ -270,6 +271,29 @@ def validate_org_text_value(label: str, value: str, leading_guard: bool = False)
         raise FooterError("%s may not begin with Markdown bullet or heading syntax" % label)
 
 
+def validate_org_localized_text(
+    failures: List[str], label: str, values: object, leading_guard: bool = False
+) -> None:
+    if not isinstance(values, dict):
+        failures.append("%s must be an object" % label)
+        return
+    if set(values) != set(ORG_PROFILE_LANGUAGES):
+        failures.append(
+            "%s must contain exactly the languages %s"
+            % (label, ", ".join(ORG_PROFILE_LANGUAGES))
+        )
+    for lang in ORG_PROFILE_LANGUAGES:
+        value = values.get(lang)
+        value_label = "%s.%s" % (label, lang)
+        try:
+            validate_org_text_value(value_label, value, leading_guard=leading_guard)
+        except FooterError as exc:
+            failures.append(str(exc))
+            continue
+        if not value.strip():
+            failures.append("%s must be non-empty" % value_label)
+
+
 def lint_registry(registry: dict) -> List[str]:
     failures: List[str] = []
     languages = registry.get("languages")
@@ -441,6 +465,50 @@ def lint_registry(registry: dict) -> List[str]:
             except FooterError as exc:
                 failures.append(str(exc))
 
+    org_status_bare = org_profile.get("status_labels_bare")
+    if not isinstance(org_status_bare, dict):
+        failures.append(
+            "registry/modules.json: org_profile.status_labels_bare must be an object"
+        )
+        org_status_bare = {}
+    for status in ("published", "preparing"):
+        validate_org_localized_text(
+            failures,
+            "registry/modules.json: org_profile.status_labels_bare.%s" % status,
+            org_status_bare.get(status),
+        )
+
+    table_headers = org_profile.get("table_headers")
+    if not isinstance(table_headers, dict):
+        failures.append("registry/modules.json: org_profile.table_headers must be an object")
+        table_headers = {}
+    elif set(table_headers) != set(ORG_PROFILE_LANGUAGES):
+        failures.append(
+            "registry/modules.json: org_profile.table_headers must contain exactly "
+            "the languages %s" % ", ".join(ORG_PROFILE_LANGUAGES)
+        )
+    for lang in ORG_PROFILE_LANGUAGES:
+        headers = table_headers.get(lang)
+        label = "registry/modules.json: org_profile.table_headers.%s" % lang
+        if not isinstance(headers, list) or len(headers) != 3:
+            failures.append("%s must be a three-item list" % label)
+            continue
+        for index, header in enumerate(headers):
+            header_label = "%s[%d]" % (label, index)
+            try:
+                validate_org_text_value(header_label, header)
+            except FooterError as exc:
+                failures.append(str(exc))
+                continue
+            if not header.strip():
+                failures.append("%s must be non-empty" % header_label)
+
+    validate_org_localized_text(
+        failures,
+        "registry/modules.json: org_profile.svg_question",
+        org_profile.get("svg_question"),
+    )
+
     org_map = org_profile.get("map")
     if not isinstance(org_map, dict):
         failures.append("registry/modules.json: org_profile.map must be an object")
@@ -466,6 +534,12 @@ def lint_registry(registry: dict) -> List[str]:
                     )
                 except FooterError as exc:
                     failures.append(str(exc))
+        validate_org_localized_text(
+            failures,
+            "registry/modules.json: org_profile.map.desc_short",
+            org_map.get("desc_short"),
+            leading_guard=True,
+        )
 
     org_modules = org_profile.get("modules")
     if not isinstance(org_modules, dict):
@@ -505,6 +579,12 @@ def lint_registry(registry: dict) -> List[str]:
                 )
             except FooterError as exc:
                 failures.append(str(exc))
+        validate_org_localized_text(
+            failures,
+            "%s.desc_short" % label,
+            text.get("desc_short"),
+            leading_guard=True,
+        )
 
     return failures
 
@@ -599,13 +679,20 @@ def render_org_block(registry: dict, lang: str) -> str:
     profile = registry["org_profile"]
     count = len(published_modules(registry)) + 1
     rows = [profile["intro"][lang].replace("{count}", str(count)), ""]
+    headers = profile["table_headers"][lang]
+    rows.extend(
+        (
+            "| %s | %s | %s |" % tuple(headers),
+            "|---|---|---|",
+        )
+    )
     rows.append(
-        "- **[%s](https://github.com/%s)** — %s%s"
+        "| **[%s](https://github.com/%s)** | %s | %s |"
         % (
             profile["map"]["name"],
             registry["map_repo"],
-            profile["map"]["desc"][lang],
-            profile["status_labels"]["published"][lang],
+            profile["map"]["desc_short"][lang],
+            profile["status_labels_bare"]["published"][lang],
         )
     )
     for module in registry["modules"]:
@@ -617,18 +704,18 @@ def render_org_block(registry: dict, lang: str) -> str:
                 "org_profile.modules" % module["id"]
             )
         if module["status"] == "published":
-            rendered_name = "[%s](https://github.com/%s)" % (
+            rendered_name = "**[%s](https://github.com/%s)**" % (
                 org_module["name"],
                 module["repo"],
             )
         else:
-            rendered_name = org_module["name"]
+            rendered_name = "**%s**" % org_module["name"]
         rows.append(
-            "- **%s** — %s%s"
+            "| %s | %s | %s |"
             % (
                 rendered_name,
-                org_module["desc"][lang],
-                profile["status_labels"][module["status"]][lang],
+                org_module["desc_short"][lang],
+                profile["status_labels_bare"][module["status"]][lang],
             )
         )
     return "\n" + "\n".join(rows) + "\n\n"
@@ -754,7 +841,9 @@ def record_fetch_problem(
     degraded.skip(unit, skip_message + detail)
 
 
-def assert_org_svg(registry: dict, lang: str, text: str, label: str) -> List[str]:
+def _assert_org_svg_legacy(
+    registry: dict, lang: str, text: str, label: str
+) -> List[str]:
     failures = []
     visible = html.unescape(re.sub(r"<[^>]+>", "", text))
     lines = [line.strip() for line in visible.splitlines()]
@@ -793,6 +882,35 @@ def assert_org_svg(registry: dict, lang: str, text: str, label: str) -> List[str
             "%s: %s SVG ecosystem intro does not contain count %s" % (label, lang, count)
         )
     return failures
+
+
+def _assert_org_svg_minimal(
+    registry: dict, lang: str, text: str, label: str
+) -> List[str]:
+    failures = []
+    visible = html.unescape(re.sub(r"<[^>]+>", "", text))
+    for module in registry["modules"]:
+        if module["id"] in visible:
+            failures.append(
+                "%s: %s SVG minimal profile contains module residue '%s'"
+                % (label, lang, module["id"])
+            )
+    question = registry["org_profile"]["svg_question"][lang]
+    if question not in visible:
+        failures.append(
+            "%s: %s SVG minimal profile is missing the question needle '%s'"
+            % (label, lang, question)
+        )
+    return failures
+
+
+def assert_org_svg(registry: dict, lang: str, text: str, label: str) -> List[str]:
+    minimal_failures = _assert_org_svg_minimal(registry, lang, text, label)
+    if not minimal_failures:
+        return []
+    if not _assert_org_svg_legacy(registry, lang, text, label):
+        return []
+    return minimal_failures
 
 
 def check_registry_footers(
