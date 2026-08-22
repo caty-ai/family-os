@@ -1,5 +1,6 @@
 # Family OS
 
+- **Who is this for?** — People who want to grow several AI agents at once. If you are still chatting with ChatGPT or Claude in the browser, or running your first single agent, this may be early for you — but if you want to take it on anyway, you are more than welcome. Start with [the problems](#problems). Hard to picture? Meet the family actually living on this map — one human and their AIs — in [our story and principles](https://github.com/caty-ai).
 - **30 seconds** — [start with the problems](#problems)
 - **5 minutes** — follow the [time axis](#timeline), [growth model](#growth), and [belief-to-build correspondence](#correspondence)
 - **30 minutes** — open the [engineering documentation](docs/engineering.md)
@@ -56,7 +57,7 @@ Go from one AI agent to two, then three, and these moments start piling up.
 - Work you handed over sits quietly waiting for a reply that never comes.
 - Run things in parallel and they fight over the same file until something breaks.
 
-If even one of those rings true, this map is for you. If you use a single agent for short one-off questions, it is overkill — you are fine as you are. One day we want to lower that step itself; when we do, come back and take another look.
+If even one of those rings true, this map is for you. **If you use a single agent for short one-off questions, it is overkill — you are fine as you are.** One day we want to lower that step itself; when we do, come back and take another look.
 
 The problems look separate. The cause is the same one: the relationship with your AI resets every time.
 
