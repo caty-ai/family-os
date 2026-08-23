@@ -562,10 +562,10 @@
       "status": "published",
       "maturity": "product",
       "tagline": {
-        "en": "Babysits delegated agent runs — watches, keeps evidence, restarts",
-        "ja": "委譲したエージェント実行の見張り番 — 監視・証拠の記録・再起動",
-        "zh": "替你盯着委派出去的智能体 — 监视、留证、重启",
-        "th": "พี่เลี้ยงของงานที่มอบหมายให้เอเจนต์ — เฝ้าดู เก็บหลักฐาน และรีสตาร์ต"
+        "en": "Babysits delegated agent runs — watches, keeps evidence, restarts only within declared bounds",
+        "ja": "委譲したエージェント実行の見張り番 — 監視・証拠の記録・宣言した範囲内でのみ再起動",
+        "zh": "替你盯着委派出去的智能体 — 监视、留证、仅在声明范围内重启",
+        "th": "พี่เลี้ยงของงานที่มอบหมายให้เอเจนต์ — เฝ้าดู เก็บหลักฐาน และรีสตาร์ตเฉพาะในขอบเขตที่ประกาศไว้"
       },
       "axis": {
         "group": "horizontal",
