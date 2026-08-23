@@ -37,6 +37,7 @@ The tool for that is a network that connects devices directly, such as [Tailscal
 | Retrieve | session search | search your own past conversations, fast |
 | Retrieve | knowledge graph | follow the **relationships** between people, projects, and decisions |
 | Retrieve | one search entry point | you stop having to remember which index to ask |
+| Retrieve | code symbol query | ask the code "who calls this?" and get the answer at query time, without reading whole files |
 | Deliver | hot cache | the summary that matters most reaches you automatically |
 | Deliver | file sync | the same files, readable and writable from any machine |
 | Protect | file backup | you can roll config and persona files back from history |
@@ -70,6 +71,19 @@ Storing is not enough. **A record becomes memory only once it can be retrieved.*
 - **One search entry point** — a thin layer that queries several of the above in parallel and merges the results; **this one changes how the whole thing feels**
 
 That last entry point does not have to be a product — a few dozen lines of your own script will do. Without it, whoever is searching has to decide "full-text this time, vector that time" every single time, and in the end only the nearest one gets used.
+
+One retrieve-layer role is about code rather than memory. It sits here because it fails the same way: what arrives is everything except the answer.
+
+**Code symbol query.** An agent working an existing codebase constantly needs answers like "where is this function defined?" and "who calls it?" — and the naive move, reading whole files into the context window, floods working memory with everything that is *not* the answer. The role that fixes this is a server that answers symbol-level questions **at query time**, backed by the same language servers editors use (LSP). [Serena](https://github.com/oraios/serena) fills it as an MCP server: the agent asks for a symbol's definition, its references, or a file's symbol overview, and receives just that.
+
+We arrived at this role by failing with the alternative. We compared two tools that build a static map of the codebase up front, and both suffered the same pair of defects: **edges that do not exist in the code**, and **maps that go stale the moment the code moves**. A query-time lookup answered a real "who calls this?" question that both prebuilt maps got wrong — because it resolves the question against the language server's current view of the code, not against a separately generated map.
+
+Two honest caveats from daily use:
+
+- **Quality tracks the language server.** Python works essentially unconfigured; Swift, in an Xcode project, answers reference queries only after a build server is wired up — and until then it fails **silently**, with an empty result rather than an error; shell scripts resolve only down to function granularity
+- **For language servers that lean on build artifacts, the index is only as fresh as the last build.** References into code written minutes ago may not appear until it is rebuilt
+
+As with everything on this page, the tool is swappable. The role — **symbol-level answers resolved at query time, instead of prebuilt maps or whole-file reads** — is the point.
 
 ---
 
