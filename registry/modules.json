@@ -615,7 +615,7 @@
       },
       "license": "MIT",
       "class": {
-        "en": "runtime・autonomous ops loop",
+        "en": "runtime, autonomous ops loop",
         "ja": "runtime・自律運用ループ"
       },
       "owns": {
