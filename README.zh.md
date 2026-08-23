@@ -292,7 +292,7 @@ flowchart TB
 
 Family OS 这边没有要做的事。不用安装，不用注册账号，也没有配置文件。**只要打开一个链接。**
 
-**想手动验证？** 这张地图本身就是刻意设计成不可安装的；要动手检查，只需再打开一个链接，前往 [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（已公开・MIT）：在一个空项目文件夹里打开你的 AI 工具，粘贴其 README 中 Get started 一节的安装提示，AI 就会完成安装、跑完检查并回报结果（贡献者可用 `make test` 跑完整套测试）。
+**想手动验证？** 这张地图本身就是刻意设计成不可安装的；要动手检查，只需再打开一个链接，前往 [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（已公开・MIT）：在一个空项目文件夹里打开你的 AI 工具，粘贴其 README 中 Get started 一节的安装提示，AI 就会完成安装、跑完检查并回报结果（贡献者可用 `make test` 跑完整套测试）。Harness 可在 macOS / Linux 上使用；WSL2 须遵循其 [verified-with-conditions 支持指南](https://github.com/caty-ai/caty-agent-harness/blob/main/docs/wsl2-support.md)，且尚未经过 CI 测试；原生 Windows 不受支持。
 
 如果不知从何入手，就从纵轴的 [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) 开始。它能让一个 AI 从失败中学习，并带着证据把长时间的工作做到最后。它是免费的 MIT，安装步骤在那个仓库的 README 里。如果最让你头疼的是「悄无声息就停住的工作」，那就直接去 [Sitter](https://github.com/caty-ai/sitter) —— 它同样已经公开，同样是 MIT。
 
