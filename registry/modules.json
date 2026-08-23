@@ -324,6 +324,21 @@
           "zh": "看管已托付任务的执行。杜绝「托付的工作下落不明」",
           "th": "ผู้เฝ้าดูงานที่มอบหมายไป ป้องกัน 'งานที่ฝากไว้หายไปไหนไม่รู้'"
         }
+      },
+      "alpha-nightshift": {
+        "name": "alpha-nightshift",
+        "desc": {
+          "en": "A nightly autonomous maintenance loop: overnight observe/implement/verify lanes run in isolated worktrees behind a deny-by-default guard, and humans cherry-pick proven results in the morning",
+          "ja": "夜間自律保守ループ。deny-by-default の guard の内側で観測・実装・検証レーンが隔離 worktree で走り、朝は人間が証明つきの結果だけを cherry-pick する",
+          "zh": "夜间自主维护循环：观测・实现・验证通道在默认拒绝的防护边界内的隔离 worktree 中运行，早晨由人工挑选已验证的成果合并",
+          "th": "ลูปบำรุงรักษาอัตโนมัติยามค่ำคืน: เลนสังเกต/พัฒนา/ตรวจสอบทำงานใน worktree แยกหลังการ์ดแบบปฏิเสธโดยปริยาย ตอนเช้ามนุษย์เลือกรับเฉพาะผลที่พิสูจน์แล้ว"
+        },
+        "desc_short": {
+          "en": "Nightly autonomous maintenance — night lanes behind a deny-by-default guard; humans cherry-pick in the morning",
+          "ja": "夜間の自律保守。deny-by-default の guard の内側で夜レーンが走り、朝は人間が cherry-pick するだけ",
+          "zh": "夜间自主维护——夜间通道在默认拒绝的防护内运行，早晨由人工挑选合并",
+          "th": "งานบำรุงรักษาอัตโนมัติยามค่ำคืน — เลนกลางคืนวิ่งหลังการ์ดแบบปฏิเสธโดยปริยาย ตอนเช้ามนุษย์เลือก cherry-pick"
+        }
       }
     }
   },
@@ -579,6 +594,33 @@
       "owns": {
         "en": "local process and reply facts, dispatch-attempt evidence, delegated same-attempt restart",
         "ja": "ローカルのプロセスと返信の事実・発注試行の証拠・委譲された同一試行の再起動"
+      },
+      "footer": true
+    },
+    {
+      "id": "alpha-nightshift",
+      "name": "Alpha Nightshift",
+      "repo": "caty-ai/alpha-nightshift",
+      "status": "published",
+      "maturity": "reference",
+      "tagline": {
+        "en": "Nightly autonomous maintenance loop — isolated night lanes behind a deny-by-default guard; humans cherry-pick in the morning",
+        "ja": "夜間自律保守ループ — deny-by-default の guard の内側で夜のレーンが走り、朝は人間が cherry-pick するだけ",
+        "zh": "夜间自主维护循环 — 在默认拒绝的防护边界内运行夜间通道，早晨由人工挑选合并",
+        "th": "ลูปบำรุงรักษาอัตโนมัติยามค่ำคืน — เลนกลางคืนทำงานหลังการ์ดแบบปฏิเสธโดยปริยาย ตอนเช้ามนุษย์เลือก cherry-pick"
+      },
+      "axis": {
+        "group": "horizontal",
+        "foundation": false
+      },
+      "license": "MIT",
+      "class": {
+        "en": "runtime, autonomous ops loop",
+        "ja": "runtime・自律運用ループ"
+      },
+      "owns": {
+        "en": "overnight observe/implement/verify lanes, the guard publish boundary, and morning triage",
+        "ja": "夜間の観測・実装・検証レーン、guard の publish 境界、morning triage"
       },
       "footer": true
     }

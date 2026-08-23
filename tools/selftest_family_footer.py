@@ -30,6 +30,7 @@ from family_footer import (
     lint_registry,
     load_registry,
     module_table,
+    published_modules,
     render_org_block,
     render_org_to_target,
     render_region,
@@ -1043,6 +1044,9 @@ def test_org_count_preparing_and_golden_bytes():
 
 
 def test_org_ja_intro_uses_counter_for_eleven():
+    # The live registry plus one fixture module must land in the double-digit
+    # regime, where the ja intro takes the 個 counter, never つ. Counted from
+    # the registry so a new published module does not invalidate this test.
     registry = load_registry()
     registry["modules"].append(
         {"id": "extra", "repo": "fixture/extra", "status": "published"}
@@ -1051,9 +1055,11 @@ def test_org_ja_intro_uses_counter_for_eleven():
         "name": "extra",
         "desc_short": {lang: "extra" for lang in registry["languages"]},
     }
+    count = len(published_modules(registry)) + 1
+    assert count >= 11
     rendered = render_org_block(registry, "ja")
-    assert "このうち11個は" in rendered
-    assert "このうち11つは" not in rendered
+    assert "このうち%d個は" % count in rendered
+    assert "このうち%dつは" % count not in rendered
 
 
 def test_org_degradation_and_svg_assertions():
