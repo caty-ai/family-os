@@ -276,10 +276,9 @@ Reading the map needs nothing but a Markdown viewer. The table below covers the 
 | Aspect | Support |
 | --- | --- |
 | Reading this map | ✅ macOS ／ ✅ Windows ／ ✅ Linux |
-| Agent environments in real use | ✅ Claude Code ／ ✅ Hermes Agent ／ ✅ OpenClaw |
-| Agent environments planned for verification | ⚠️ Kimi Code ／ ⚠️ Codex |
+| Agent environments in real use | ✅ Claude Code ／ ✅ Hermes Agent ／ ✅ OpenClaw ／ ✅ Kimi Code ／ ✅ Codex |
 
-> **Note:** "in real use" means the related mechanisms are actually run in that environment. It is not a guarantee that every Family OS module is fully supported there. Measured 2026-07-28. Per-module support is owned by each module's own README.
+> **Note:** "in real use" means the related mechanisms are actually run in that environment. It is not a guarantee that every Family OS module is fully supported there. Measured 2026-08-19. Per-module support is owned by each module's own README.
 
 ---
 
