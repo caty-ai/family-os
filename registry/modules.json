@@ -332,6 +332,12 @@
           "ja": "夜間自律保守ループ。deny-by-default の guard の内側で観測・実装・検証レーンが隔離 worktree で走り、朝は人間が証明つきの結果だけを cherry-pick する",
           "zh": "夜间自主维护循环：观测・实现・验证通道在默认拒绝的防护边界内的隔离 worktree 中运行，早晨由人工挑选已验证的成果合并",
           "th": "ลูปบำรุงรักษาอัตโนมัติยามค่ำคืน: เลนสังเกต/พัฒนา/ตรวจสอบทำงานใน worktree แยกหลังการ์ดแบบปฏิเสธโดยปริยาย ตอนเช้ามนุษย์เลือกรับเฉพาะผลที่พิสูจน์แล้ว"
+        },
+        "desc_short": {
+          "en": "Nightly autonomous maintenance — night lanes behind a deny-by-default guard; humans cherry-pick in the morning",
+          "ja": "夜間の自律保守。deny-by-default の guard の内側で夜レーンが走り、朝は人間が cherry-pick するだけ",
+          "zh": "夜间自主维护——夜间通道在默认拒绝的防护内运行，早晨由人工挑选合并",
+          "th": "งานบำรุงรักษาอัตโนมัติยามค่ำคืน — เลนกลางคืนวิ่งหลังการ์ดแบบปฏิเสธโดยปริยาย ตอนเช้ามนุษย์เลือก cherry-pick"
         }
       }
     }
@@ -595,7 +601,7 @@
       "id": "alpha-nightshift",
       "name": "Alpha Nightshift",
       "repo": "caty-ai/alpha-nightshift",
-      "status": "preparing",
+      "status": "published",
       "maturity": "reference",
       "tagline": {
         "en": "Nightly autonomous maintenance loop — isolated night lanes behind a deny-by-default guard; humans cherry-pick in the morning",
@@ -616,7 +622,7 @@
         "en": "overnight observe/implement/verify lanes, the guard publish boundary, and morning triage",
         "ja": "夜間の観測・実装・検証レーン、guard の publish 境界、morning triage"
       },
-      "footer": false
+      "footer": true
     }
   ],
   "adjacent": [

@@ -146,7 +146,7 @@ the generated block directly.
 | Self Growth Loop | `caty-ai/self-growth-loop` | published, MIT |
 | Family Memory Architecture | `caty-ai/family-memory-architecture` | published, MIT |
 | Sitter | `caty-ai/sitter` | published, MIT |
-| Alpha Nightshift | `caty-ai/alpha-nightshift` | publication in preparation |
+| Alpha Nightshift | `caty-ai/alpha-nightshift` | published, MIT |
 <!-- family:generated:repository-links:end -->
 
 ## Deliberate palette split

@@ -67,7 +67,7 @@ flowchart TB
 | [Self Growth Loop](https://github.com/caty-ai/self-growth-loop) | runtime・アプリケーション | 提案・ガバナンス・採用記録・成長の解釈 | 公開・MIT |
 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) | runtime・横方向の基盤 | 記憶バス・登録されたスケジュールの期待・check-in・来歴 | 公開・MIT |
 | [Sitter](https://github.com/caty-ai/sitter) | runtime・観測 | ローカルのプロセスと返信の事実・発注試行の証拠・委譲された同一試行の再起動 | 公開・MIT |
-| [Alpha Nightshift](https://github.com/caty-ai/alpha-nightshift) | runtime・自律運用ループ | 夜間の観測・実装・検証レーン、guard の publish 境界、morning triage | 公開準備中 |
+| [Alpha Nightshift](https://github.com/caty-ai/alpha-nightshift) | runtime・自律運用ループ | 夜間の観測・実装・検証レーン、guard の publish 境界、morning triage | 公開・MIT |
 <!-- family:generated:module-inventory:end -->
 
 この表は [`registry/modules.json`](../registry/modules.json) から生成しています。「公開準備中」のリンクは、いまはまだ開けません。何が存在し、どこに置かれるのかを地図として正直に保つために載せています。
