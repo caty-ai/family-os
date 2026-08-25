@@ -18,9 +18,13 @@ name: repository state
 #   cancel-in-progress: false
 # jobs:
 #   repo-state:
-#     uses: caty-ai/family-os/.github/workflows/repo-state.yml@v0.11.0
+#     uses: caty-ai/family-os/.github/workflows/repo-state.yml@v0.11.1
 #     with:
-#       generator_ref: v0.11.0
+#       generator_ref: v0.11.1
+#
+# The `uses:` ref and `generator_ref` must always move together: a v0.11.0
+# workflow with a v0.11.1 generator fails at `git add` on a repository whose
+# agents entry is null.
 
 on:
   workflow_call:
@@ -107,7 +111,11 @@ jobs:
 
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- status.json 'README*.md' "$agents_entry"
+          if [ "$agents_entry" = null ]; then
+            git add -- status.json 'README*.md'
+          else
+            git add -- status.json 'README*.md' "$agents_entry"
+          fi
           git commit -m "chore(repo-state): $short_sha"
 
           if git push origin "HEAD:$TARGET_BRANCH"; then
@@ -125,7 +133,11 @@ jobs:
           agents_entry=$(jq -r '.agents_entry' status.json)
           describes_commit=$(jq -r '.describes_commit' status.json)
           short_sha=$(printf '%s' "$describes_commit" | cut -c1-7)
-          git add -- status.json 'README*.md' "$agents_entry"
+          if [ "$agents_entry" = null ]; then
+            git add -- status.json 'README*.md'
+          else
+            git add -- status.json 'README*.md' "$agents_entry"
+          fi
           git commit -m "chore(repo-state): $short_sha"
           git push origin "HEAD:$TARGET_BRANCH"
 

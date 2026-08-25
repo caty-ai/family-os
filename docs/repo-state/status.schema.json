@@ -63,8 +63,8 @@
       "format": "uri"
     },
     "agents_entry": {
-      "type": "string",
-      "enum": ["FOR-AGENTS.md", "AGENTS.md"]
+      "type": ["string", "null"],
+      "enum": ["FOR-AGENTS.md", "AGENTS.md", null]
     },
     "canonical_api": {
       "type": "string",
