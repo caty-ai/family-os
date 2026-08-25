@@ -129,6 +129,8 @@ AI ทุกวันนี้อยู่ที่ขั้นที่สอ�
 
 นี่ไม่ใช่แค่เรื่องเล่า: ในเบนช์มาร์กแบบปิดผนึกและลงทะเบียนล่วงหน้า อัตรางานที่ยืนยันการเสร็จสิ้นได้จริงบนงานที่ล้นคอนเท็กซ์เพิ่มจาก 13% (โมเดลเปล่า) เป็น 43% เมื่อใช้ฮาร์เนส (+30 pt, p = 0.0079) — ดู [EV-006](docs/evidence.md#ev-006--the-first-true-product-test-improved-verified-completion-on-context-overflowing-work-with-limitations-stated) และ[ตัวเลขทั้งหมดรวมถึงจุดที่ฮาร์เนสไม่ได้ชนะ](https://github.com/caty-ai/caty-agent-harness/blob/main/docs/benchmark.md)
 
+ภายใต้วินัยการปิดผนึกเดียวกัน เรายังเผยแพร่โปรไฟล์การเปิดใช้งานแบบปรับตัวรายโมเดล — โมเดลใดที่ overflow sentinel ช่วยได้ และที่ใดไม่ควรเปิดใช้ (ชื่อการทดลองในริก EV-008 / บัญชีหลักฐาน [EV-009](docs/evidence.md#ev-009--adaptive-activation-overflow-sentinel-was-pre-measured-per-model-under-seal-and-the-default-on-decision-was-published-with-its-limits)): [ตัวเลขรายโมเดล](https://github.com/caty-ai/caty-agent-harness/blob/main/docs/benchmark.md#ev-008)
+
 รายละเอียดฉบับเต็มมีให้อ่านเป็น[ภาษาอังกฤษ](docs/growth-model.md)และ[ภาษาญี่ปุ่น](docs/growth-model.ja.md)
 
 ---

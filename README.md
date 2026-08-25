@@ -129,6 +129,8 @@ Family OS gathers the pieces that exist today, in one place, pointed at that wor
 
 This is not only narrative: in a sealed, pre-registered benchmark, verified completion on context-overflowing work went from 13% (bare model) to 43% with the harness (+30 pt, p = 0.0079) — see [EV-006](docs/evidence.md#ev-006--the-first-true-product-test-improved-verified-completion-on-context-overflowing-work-with-limitations-stated) and the [full numbers, including where the harness did not win](https://github.com/caty-ai/caty-agent-harness/blob/main/docs/benchmark.md).
 
+Under the same sealed discipline, per-model adaptive-activation profiles — which models the overflow sentinel helps, and where it should not be switched on — are also published (rig experiment EV-008 / ledger [EV-009](docs/evidence.md#ev-009--adaptive-activation-overflow-sentinel-was-pre-measured-per-model-under-seal-and-the-default-on-decision-was-published-with-its-limits)): [the per-model numbers](https://github.com/caty-ai/caty-agent-harness/blob/main/docs/benchmark.md#ev-008).
+
 Read the full model in [English](docs/growth-model.md) or [Japanese](docs/growth-model.ja.md).
 
 ---

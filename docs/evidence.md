@@ -71,6 +71,7 @@ Weekly CI flags stale evidence, humans edit this file, and CI never edits it.
 | counter-evidence | none |
 
 <!-- The multi-environment install verification record will be added under a NEW claim-id (EV-008 expected) after https://github.com/caty-ai/family-os/issues/45 and https://github.com/caty-ai/family-os/issues/46 complete. Claim-ids are identifiers, not file order. -->
+<!-- EV-008 stays reserved for that install verification. The caty-agent-harness rig separately runs an experiment NAMED "EV-008" (overflow sentinel); this ledger records that experiment as EV-009 — the two are different claims and must not be merged. -->
 
 ## EV-007 — The shared-memory horizontal layer ran across three environments and two runtimes, and the newest adoption was accepted on artifacts, not self-report
 
@@ -119,3 +120,19 @@ Weekly CI flags stale evidence, humans edit this file, and CI never edits it.
 | last-reviewed | 2026-08-20 |
 | owner | maintainers |
 | counter-evidence | EV-005 is the preceding instrument-level null; in the product test, S size showed no advantage with bare 10/15 (67%) vs harness 9/15 (60%), p3 was 0/10 in both arms, wrong-answer rates did not improve at bare 22–31% vs harness 24–38%, and unsupported quotes were higher under the harness at 166 vs 138. |
+
+## EV-009 — Adaptive activation (overflow sentinel) was pre-measured per model under seal, and the default-on decision was published with its limits
+
+| field | value |
+| --- | --- |
+| claim-id | EV-009 — **rig experiment name: EV-008.** The harness-side pre-registration, seal, and every published page use the name "EV-008"; this ledger's EV-008 is reserved for the multi-environment install verification (see the comment above EV-007), so the sentinel experiment is recorded here as EV-009. |
+| believe | Whether a mechanism should be on by default is a measurable question, and it should be measured per model — with the decision rule registered before the runs — rather than decided by taste after shipping. |
+| built | A sealed, pre-registered experiment on the harness's overflow sentinel (adaptive activation: fire only when the measured per-turn context level crosses a threshold, then decompose the job before the context overflows). Per model: 4 sealed cells (M/L sizes × 2 instances), arms bare / always-on harness / sentinel, 20 hidden-key questions per cell; numbers regenerated deterministically from the primary ledgers (`step5-reconcile.py`, 2026-08-25). |
+| actually happened | Default-on GO was declared on 2026-08-25 on four pre-registered conditions: codex fire rate 0 (0/127 turns; rule-of-three 95% upper bound 2.4%/turn) · codex tap-overhead GM 0.9944 ≤ 1.05 · claude-sonnet-5 all-pair median token ratio 0.801 < 1.0 (best cell −71%) · no consistent harmful false-fire (1/4 pairs only). Search-type runtimes never fired — by design (qwen adds 0 fires across ≈770 sentinel turns); grok-4.6 fired correctly on 4/4 cells at 20/20 correctness but never paid (median sentinel/bare 2.145) — firing is not the same as paying. |
+| still don't know | The codex condition FAILed first: M4 (n=1 per pair) came out at GM 1.337 and was sent back per protocol; the passing 0.9944 comes from M4′ (n=3 per M-tier pair, a data-informed post-design sealed via a 3-seat delta review) — the FAIL is history to carry, not to erase. The sonnet stretch goal (< 0.8) was missed at 0.801. Standard cells are n=1 per pair; between-run SD ≈ 30–40% of the mean at M-tier, so 0.9944 is "inside the threshold", not "clearly below it". The product implementation is not yet shipped: this is a pre-measurement of the mechanism on an experiment rig, not a measurement of a shipped feature. All runs were on author-controlled machines. |
+| state (delivery · visibility · evidence) | implemented · published · observed |
+| evidence | primary: https://github.com/caty-ai/caty-agent-harness/issues/159#issuecomment-5405431660 (GO report, 2026-08-25) ; published analysis: https://github.com/caty-ai/caty-agent-harness/blob/main/docs/benchmark.md#ev-008 ; shipped docs: https://github.com/caty-ai/caty-agent-harness/pull/176 and https://github.com/caty-ai/caty-agent-harness/releases/tag/v0.14.1 |
+| observed-at | 2026-08-25 |
+| last-reviewed | 2026-08-25 |
+| owner | maintainers |
+| counter-evidence | M4 (codex, n=1) FAILed the tap-overhead condition at GM 1.337 before M4′ (n=3) passed at 0.9944; grok-4.6 fires correctly but never pays (median sentinel/bare 2.145), so default-on is not recommended there; the sonnet stretch goal (< 0.8) was missed at 0.801. |

@@ -129,6 +129,8 @@ AIエージェントを1体から2体、3体と増やしていくと、こうい
 
 これは物語だけではありません。封印済みの事前登録ベンチマークでは、コンテキストあふれを起こす作業で検証済み完了率が 13%（素のモデル）から 43%（ハーネスあり）へ伸びました（+30 pt, p = 0.0079）— [EV-006](docs/evidence.md#ev-006--the-first-true-product-test-improved-verified-completion-on-context-overflowing-work-with-limitations-stated) と[勝てなかった条件も含む全数値](https://github.com/caty-ai/caty-agent-harness/blob/main/docs/benchmark.md)を確認してください。
 
+同じ封印流儀で、モデル別の適応発火プロファイル — オーバーフロー・センチネルがどのモデルで効き、どこでは有効化すべきでないか — も公開しています（rig 実験名 EV-008 / 台帳 [EV-009](docs/evidence.md#ev-009--adaptive-activation-overflow-sentinel-was-pre-measured-per-model-under-seal-and-the-default-on-decision-was-published-with-its-limits)）: [モデル別の数値](https://github.com/caty-ai/caty-agent-harness/blob/main/docs/benchmark.md#ev-008)。
+
 完全版は[英語](docs/growth-model.md)と[日本語](docs/growth-model.ja.md)で読めます。
 
 ---
