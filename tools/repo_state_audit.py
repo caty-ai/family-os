@@ -3,7 +3,7 @@
 
 The org universe is deliberately enumerated without authentication.  The
 Actions sub-check is the one exception: GitHub does not expose workflow state
-reliably to anonymous callers, so it uses GH_TOKEN/GITHUB_TOKEN when present.
+reliably to anonymous callers, so it prefers GH_TOKEN/GITHUB_TOKEN when present.
 
 Python 3.9+, standard library only.
 """
@@ -444,11 +444,9 @@ def check_regeneration(
             nullable_without_agents
             and "neither FOR-AGENTS.md nor AGENTS.md exists" in completed.stderr
         ):
-            # v0.11's generator predates nullable agents_entry.  It was still
-            # executed; #133's generator will continue through the normal
-            # regeneration checks once the sibling lane lands.
             return Check(
-                "PASS", "nullable agents_entry accepted during generator rollout"
+                "UNKNOWN",
+                "regeneration skipped: v0.11.0 generator cannot run without an agents entry",
             )
         return Check("FAIL", "canonical generator failed")
 
@@ -492,20 +490,27 @@ def check_regeneration(
     )
 
 
-def _http_json(url: str, token: str, timeout: float):
-    request = urllib.request.Request(
-        url,
-        headers={
+def _http_json(url: str, token: Optional[str], timeout: float):
+    opener = urllib.request.build_opener()
+
+    def fetch(auth_token: Optional[str]):
+        headers = {
             "Accept": "application/vnd.github+json",
-            "Authorization": "Bearer %s" % token,
             "User-Agent": "family-os-repo-state-audit",
             "X-GitHub-Api-Version": "2022-11-28",
-        },
-    )
-    with urllib.request.build_opener().open(request, timeout=timeout) as response:
-        if response.status != 200:
-            raise AuditError("Actions API returned HTTP %s" % response.status)
-        return json.loads(response.read().decode("utf-8"))
+        }
+        if auth_token:
+            headers["Authorization"] = "Bearer %s" % auth_token
+        request = urllib.request.Request(url, headers=headers)
+        with opener.open(request, timeout=timeout) as response:
+            return json.loads(response.read().decode("utf-8"))
+
+    try:
+        return fetch(token)
+    except urllib.error.HTTPError:
+        if not token:
+            raise
+        return fetch(None)
 
 
 def check_actions(repo: str, token: Optional[str], timeout: float) -> Check:
@@ -661,9 +666,12 @@ def _clone_main(
         return Check("UNKNOWN", "clone unavailable")
     try:
         run_git(destination, "rev-parse", "--verify", "refs/remotes/origin/main")
+    except AuditError:
+        return Check("PENDING", "no main branch (empty or non-main default)")
+    try:
         run_git(destination, "checkout", "--quiet", "--detach", "refs/remotes/origin/main")
     except AuditError:
-        return Check("FAIL", "main branch is missing or cannot be checked out")
+        return Check("FAIL", "main branch cannot be checked out")
     return None
 
 
@@ -818,7 +826,23 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             print("repo-state audit: error: could not write report: %s" % error, file=sys.stderr)
             return 2
 
-    return 1 if any(result.status == "FAIL" for result in results) else 0
+    if any(result.status == "FAIL" for result in results):
+        return 1
+    if (
+        args.require_reality
+        and results
+        and all(
+            result.status == "UNKNOWN" and result.details == ("clone unavailable",)
+            for result in results
+        )
+    ):
+        print(
+            "repo-state audit: error: all repositories are clone-unavailable; "
+            "--require-reality rejects this unreachable universe",
+            file=sys.stderr,
+        )
+        return 2
+    return 0
 
 
 if __name__ == "__main__":

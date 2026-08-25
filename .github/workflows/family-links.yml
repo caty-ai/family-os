@@ -79,7 +79,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: >-
           python3 -B tools/repo_state_audit.py
-          ${{ github.event_name == 'schedule' && '--require-reality' || '' }}
+          ${{ (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && '--require-reality' || '' }}
           --report-file "$RUNNER_TEMP/repo-state-audit.txt"
 
       - name: expose heartbeat lines to the report job
@@ -399,15 +399,17 @@ jobs:
     name: open an issue if the scheduled run failed
     runs-on: ubuntu-latest
     needs: [registry, repo-state-audit, family-footer, publication-gate, links, evidence-freshness]
-    if: always() && github.event_name == 'schedule'
+    if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
     steps:
       # Both labels (stale-pointer and severity:high) are assumed to exist;
       # do not delete them from the repository.
+      # Manual dispatch reports heartbeat only; failure issues remain schedule-only.
       - name: file a stale-pointer issue
-        if: contains(needs.*.result, 'failure')
+        if: github.event_name == 'schedule' && contains(needs.*.result, 'failure')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          REPO_STATE_AUDIT_RESULT: ${{ needs.repo-state-audit.result }}
         run: |
           existing_issue="$(gh issue list \
             --repo "${{ github.repository }}" \
@@ -417,10 +419,25 @@ jobs:
             --jq '[.[] | select(.title | startswith("Weekly check failed"))][0].number // empty')"
 
           if [ -n "$existing_issue" ]; then
-            gh issue comment "$existing_issue" \
-              --repo "${{ github.repository }}" \
-              --body "Another weekly family-links run failed: $RUN_URL"
+            if [ "$REPO_STATE_AUDIT_RESULT" = 'failure' ]; then
+              gh issue comment "$existing_issue" \
+                --repo "${{ github.repository }}" \
+                --body "Another weekly family-links run failed: $RUN_URL
+
+          The repo-state-audit job failed; inspect the linked run."
+            else
+              gh issue comment "$existing_issue" \
+                --repo "${{ github.repository }}" \
+                --body "Another weekly family-links run failed: $RUN_URL"
+            fi
             exit 0
+          fi
+
+          repo_state_note=''
+          if [ "$REPO_STATE_AUDIT_RESULT" = 'failure' ]; then
+            repo_state_note='
+
+          The repo-state-audit job failed; inspect the linked run.'
           fi
 
           gh issue create \
@@ -439,10 +456,10 @@ jobs:
 
           Run: $RUN_URL
 
-          To fix: update \`registry/modules.json\`, run \`python3 -B tools/render.py\`, and commit."
+          To fix: update \`registry/modules.json\`, run \`python3 -B tools/render.py\`, and commit.$repo_state_note"
 
-      - name: append successful repo-state heartbeat
-        if: needs.repo-state-audit.result == 'success'
+      - name: append repo-state heartbeat
+        if: needs.repo-state-audit.result != 'skipped' && needs.repo-state-audit.outputs.report_b64 != ''
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPORT_B64: ${{ needs.repo-state-audit.outputs.report_b64 }}
@@ -452,7 +469,7 @@ jobs:
           report_title='Weekly repo-state audit heartbeat'
           report_lines="$(printf '%s' "$REPORT_B64" | base64 --decode)"
           [ -n "$report_lines" ] || {
-            echo 'repo-state audit succeeded without heartbeat lines' >&2
+            echo 'repo-state audit completed without heartbeat lines' >&2
             exit 1
           }
 

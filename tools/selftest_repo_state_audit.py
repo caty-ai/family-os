@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import datetime
+import io
 import json
 import os
 import pathlib
@@ -183,16 +184,30 @@ class RepoStateAuditSelfTest(unittest.TestCase):
             json.dumps(status, indent=2) + "\n",
             encoding="utf-8",
         )
-
-        result = audit.audit_checkout(
-            "fixture/repo",
-            self.root,
-            schema,
-            audit.DEFAULT_GENERATOR,
-            None,
-            1.0,
+        subprocess.run(
+            ["git", "-C", str(self.root), "add", "README.md", "status.json"],
+            check=True,
         )
-        self.assertEqual("TRANSIENT", result.status)
+        self.fixture.commit_staged(
+            "chore(repo-state): %s" % described[:7], audit.BOT_COMMITTER
+        )
+
+        with mock.patch.object(
+            audit, "check_actions", return_value=audit.Check("PASS", "caller success")
+        ):
+            result = audit.audit_checkout(
+                "fixture/repo",
+                self.root,
+                schema,
+                audit.DEFAULT_GENERATOR,
+                "fixture-token",
+                1.0,
+            )
+        self.assertEqual("UNKNOWN", result.status)
+        self.assertIn(
+            "regeneration skipped: v0.11.0 generator cannot run without an agents entry",
+            result.details,
+        )
         self.assertFalse((self.root / "AGENTS.md").exists())
         self.assertFalse((self.root / "FOR-AGENTS.md").exists())
 
@@ -276,6 +291,106 @@ class RepoStateAuditSelfTest(unittest.TestCase):
             )
         self.assertIsNone(repos)
         self.assertEqual("caty-ai", degraded_org)
+
+    def test_actions_api_retries_anonymously_after_token_http_error(self) -> None:
+        url = "https://api.github.com/repos/fixture/repo/actions/workflows"
+        response = mock.MagicMock()
+        response.__enter__.return_value.read.return_value = b'{"workflows": []}'
+        forbidden = audit.urllib.error.HTTPError(url, 403, "Forbidden", {}, None)
+        opener = mock.MagicMock()
+        opener.open.side_effect = [forbidden, response]
+
+        with mock.patch.object(
+            audit.urllib.request, "build_opener", return_value=opener
+        ):
+            payload = audit._http_json(url, "fixture-token", 1.0)
+        forbidden.close()
+
+        self.assertEqual({"workflows": []}, payload)
+        self.assertEqual(2, opener.open.call_count)
+        first_request = opener.open.call_args_list[0].args[0]
+        second_request = opener.open.call_args_list[1].args[0]
+        self.assertEqual(
+            "Bearer fixture-token", first_request.get_header("Authorization")
+        )
+        self.assertIsNone(second_request.get_header("Authorization"))
+
+    def test_actions_api_is_unknown_when_token_and_anonymous_calls_fail(self) -> None:
+        url = "https://api.github.com/repos/fixture/repo/actions/workflows"
+        forbidden = audit.urllib.error.HTTPError(url, 403, "Forbidden", {}, None)
+        opener = mock.MagicMock()
+        opener.open.side_effect = [forbidden, forbidden]
+
+        with mock.patch.object(
+            audit.urllib.request, "build_opener", return_value=opener
+        ):
+            result = audit.check_actions("fixture/repo", "fixture-token", 1.0)
+        forbidden.close()
+
+        self.assertEqual("UNKNOWN", result.status)
+        self.assertEqual("caller UNKNOWN(api-error)", result.detail)
+        self.assertEqual(2, opener.open.call_count)
+
+    def test_clone_without_origin_main_is_pending(self) -> None:
+        source = pathlib.Path(self.temporary.name) / "trunk-source"
+        source_fixture = RepoFixture(source)
+        source_fixture.commit("feat: trunk content")
+        subprocess.run(
+            ["git", "-C", str(source), "branch", "-m", "trunk"], check=True
+        )
+        destination = pathlib.Path(self.temporary.name) / "trunk-clone"
+        real_run = subprocess.run
+
+        def clone_fixture(command, **kwargs):
+            command = list(command)
+            if command[:2] == ["git", "clone"]:
+                command[-2] = str(source)
+            return real_run(command, **kwargs)
+
+        with mock.patch.object(audit.subprocess, "run", side_effect=clone_fixture):
+            result = audit._clone_main("fixture/repo", destination, 5.0)
+
+        self.assertEqual(
+            audit.Check("PENDING", "no main branch (empty or non-main default)"),
+            result,
+        )
+
+    def test_required_all_clone_unknown_is_fail_closed_but_mixed_is_not(self) -> None:
+        clone_unknown = audit.Check("UNKNOWN", "clone unavailable")
+        argv = [
+            "--repo",
+            "fixture/one",
+            "--repo",
+            "fixture/two",
+            "--require-reality",
+        ]
+        stderr = io.StringIO()
+        with mock.patch.object(audit, "_clone_main", return_value=clone_unknown):
+            with mock.patch.object(audit.sys, "stdout", io.StringIO()):
+                with mock.patch.object(audit.sys, "stderr", stderr):
+                    exit_code = audit.main(argv)
+        self.assertEqual(2, exit_code)
+        self.assertIn("all repositories are clone-unavailable", stderr.getvalue())
+
+        pending = audit.RepoResult(
+            "fixture/two", "PENDING", ("status.json absent (rollout not landed)",)
+        )
+        with mock.patch.object(
+            audit, "_clone_main", side_effect=[clone_unknown, None]
+        ):
+            with mock.patch.object(audit, "audit_checkout", return_value=pending):
+                with mock.patch.object(audit.sys, "stdout", io.StringIO()):
+                    mixed_exit_code = audit.main(argv)
+        self.assertEqual(0, mixed_exit_code)
+
+        drift = audit.RepoResult("fixture/two", "FAIL", ("drift",))
+        with mock.patch.object(
+            audit, "_clone_main", side_effect=[clone_unknown, None]
+        ):
+            with mock.patch.object(audit, "audit_checkout", return_value=drift):
+                with mock.patch.object(audit.sys, "stdout", io.StringIO()):
+                    drift_exit_code = audit.main(argv)
+        self.assertEqual(1, drift_exit_code)
 
     def test_actions_known_drift_fails_but_no_token_is_unknown(self) -> None:
         self.assertEqual("UNKNOWN", audit.check_actions("fixture/repo", None, 1).status)
