@@ -31,7 +31,7 @@ assert_eq() {
 }
 
 new_repo() {
-    local agents_file=$1
+    local agents_file=${1-}
     local repo
     repo=$(mktemp -d "$TEST_TMP/repo.XXXXXX")
     git -C "$repo" init -q -b main
@@ -61,11 +61,13 @@ EOF
 
 Thai introduction.
 EOF
-    cat > "$repo/$agents_file" <<'EOF'
+    if [[ -n "$agents_file" ]]; then
+        cat > "$repo/$agents_file" <<'EOF'
 # Agent guide
 
 Route: read the repository guide first.
 EOF
+    fi
 
     git -C "$repo" add .
     GIT_AUTHOR_DATE=2026-08-25T01:02:03Z \
@@ -204,6 +206,39 @@ test_agents_resolution() {
     assert_eq FOR-AGENTS.md "$(jq -r '.agents_entry' "$repo/status.json")" 'FOR-AGENTS.md was not resolved'
     [[ -f "$repo/FOR-AGENTS.md" && ! -e "$repo/AGENTS.md" ]] || fail 'FOR-AGENTS.md fixture was altered incorrectly'
     printf '%s\n' 'agents entry resolution: ok'
+}
+
+test_no_agents_entry() {
+    local repo first second file
+    repo=$(new_repo)
+    run_gen "$repo" > /dev/null
+    jq -e '.agents_entry == null' "$repo/status.json" > /dev/null \
+        || fail 'no-agents fixture did not record agents_entry as null'
+    for file in README.md README.ja.md README.zh.md README.th.md; do
+        [[ $(grep -c '<!-- repo-state:begin' "$repo/$file") -eq 1 ]] \
+            || fail "$file was not stamped exactly once in the no-agents fixture"
+    done
+    [[ ! -e "$repo/AGENTS.md" && ! -e "$repo/FOR-AGENTS.md" ]] \
+        || fail 'no-agents fixture unexpectedly gained an agents entry file'
+
+    first=$(managed_digest "$repo")
+    run_gen "$repo" > /dev/null
+    second=$(managed_digest "$repo")
+    assert_eq "$first" "$second" 'two no-agents generator runs were not byte-identical'
+    run_gen "$repo" --check > /dev/null
+
+    cp "$repo/README.ja.md" "$repo/AGENTS.md"
+    expect_fail '--check accepted agents_entry null after AGENTS.md was added' run_gen "$repo" --check
+    grep -q 'status.json agents_entry does not match the repository' "$TEST_TMP/expected-failure.err" \
+        || fail 'null-to-file agents-entry mismatch error was unclear'
+
+    rm "$repo/AGENTS.md"
+    jq '.agents_entry = "AGENTS.md"' "$repo/status.json" > "$repo/status.json.tmp"
+    mv "$repo/status.json.tmp" "$repo/status.json"
+    expect_fail '--check accepted an agents_entry naming a missing AGENTS.md' run_gen "$repo" --check
+    grep -q 'status.json agents_entry does not match the repository' "$TEST_TMP/expected-failure.err" \
+        || fail 'file-to-null agents-entry mismatch error was unclear'
+    printf '%s\n' 'no agents entry: null, deterministic, and mismatch-safe'
 }
 
 test_github_repository_precedence() {
@@ -535,6 +570,7 @@ test_marker_idempotency
 test_chained_stamp_walk
 test_four_locale_set
 test_agents_resolution
+test_no_agents_entry
 test_github_repository_precedence
 test_agents_entry_conflict
 test_anchorless_readme_error

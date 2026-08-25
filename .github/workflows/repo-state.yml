@@ -107,7 +107,11 @@ jobs:
 
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -- status.json 'README*.md' "$agents_entry"
+          if [ "$agents_entry" = null ]; then
+            git add -- status.json 'README*.md'
+          else
+            git add -- status.json 'README*.md' "$agents_entry"
+          fi
           git commit -m "chore(repo-state): $short_sha"
 
           if git push origin "HEAD:$TARGET_BRANCH"; then
@@ -125,7 +129,11 @@ jobs:
           agents_entry=$(jq -r '.agents_entry' status.json)
           describes_commit=$(jq -r '.describes_commit' status.json)
           short_sha=$(printf '%s' "$describes_commit" | cut -c1-7)
-          git add -- status.json 'README*.md' "$agents_entry"
+          if [ "$agents_entry" = null ]; then
+            git add -- status.json 'README*.md'
+          else
+            git add -- status.json 'README*.md' "$agents_entry"
+          fi
           git commit -m "chore(repo-state): $short_sha"
           git push origin "HEAD:$TARGET_BRANCH"
 

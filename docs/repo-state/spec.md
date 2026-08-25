@@ -11,7 +11,10 @@ The stamped-file set is exactly:
 
 1. every existing `README*.md` at the repository root, including every locale; and
 2. the file named by `agents_entry`: either `FOR-AGENTS.md` or `AGENTS.md`, according to
-   which file the repository has.
+   which file the repository has, when present.
+
+When the repository has neither agents entry file, the stamped-file set contains only
+the root `README*.md` files and `agents_entry` is `null`.
 
 Each stamped file contains exactly one block with these marker comments:
 
@@ -49,7 +52,7 @@ Its schema is [`status.schema.json`](./status.schema.json). Field semantics are:
 | `branch` | Branch whose API HEAD is the comparison target, normally the default branch. |
 | `latest_tag` | Carried forward from the existing `status.json` on ordinary runs. It becomes `null` when no prior value exists, and it is refreshed from GitHub only during an explicit release refresh. |
 | `latest_release_url` | Carried forward from the existing `status.json` on ordinary runs. It becomes `null` when no prior value exists, maps to `null` on an explicit GitHub 404 during release refresh, and any other refresh failure is fatal. |
-| `agents_entry` | The stamped agent entry file, exactly `FOR-AGENTS.md` or `AGENTS.md`. |
+| `agents_entry` | The stamped agent entry file, exactly `FOR-AGENTS.md` or `AGENTS.md`, or `null` when the repository has neither file. |
 | `canonical_api` | CDN-independent GitHub commits API URL for `repo` and `branch`. |
 | `canonical_raw` | Immutable raw URL for `status.json` at `describes_commit`. |
 | `freshness_contract` | Exactly `SHA comparison only; dates may only ever trigger distrust. Protocol: docs/repo-state/spec.md, section 'Reader protocol'.` |

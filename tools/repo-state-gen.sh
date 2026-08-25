@@ -72,7 +72,7 @@ resolve_agents_entry() {
     elif [ -f AGENTS.md ]; then
         printf '%s\n' AGENTS.md
     else
-        fail "neither FOR-AGENTS.md nor AGENTS.md exists"
+        :
     fi
 }
 
@@ -83,7 +83,9 @@ for readme_file in README*.md; do
 done | LC_ALL=C sort > "$tmp_root/readmes"
 [ -s "$tmp_root/readmes" ] || fail "no root README*.md files found"
 cp "$tmp_root/readmes" "$tmp_root/targets"
-printf '%s\n' "$agents_entry" >> "$tmp_root/targets"
+if [ -n "$agents_entry" ]; then
+    printf '%s\n' "$agents_entry" >> "$tmp_root/targets"
+fi
 
 marker_state() {
     awk '
@@ -193,7 +195,8 @@ validate_status() {
           (.latest_tag | type == "string" and length > 0)) and
         ((has("latest_release_url") | not) or .latest_release_url == null or
           (.latest_release_url | type == "string" and test("^https://github[.]com/"))) and
-        (.agents_entry == "FOR-AGENTS.md" or .agents_entry == "AGENTS.md") and
+        (.agents_entry == "FOR-AGENTS.md" or .agents_entry == "AGENTS.md" or
+          .agents_entry == null) and
         (.canonical_api | type == "string") and
         (.canonical_raw | type == "string") and
         .freshness_contract == $freshness
@@ -205,7 +208,7 @@ validate_status() {
     status_branch=$(jq -r '.branch' status.json)
     status_sha=$(jq -r '.describes_commit' status.json)
     status_time=$(jq -r '.generated_at' status.json)
-    status_agents=$(jq -r '.agents_entry' status.json)
+    status_agents=$(jq -r '.agents_entry // ""' status.json)
     status_api=$(jq -r '.canonical_api' status.json)
     status_raw=$(jq -r '.canonical_raw' status.json)
     expected_api="https://api.github.com/repos/$status_repo/commits/$status_branch"
@@ -402,6 +405,11 @@ if [ -n "$latest_release_url" ]; then
 else
     latest_release_url_json=null
 fi
+if [ -n "$agents_entry" ]; then
+    agents_entry_json="\"$agents_entry\""
+else
+    agents_entry_json=null
+fi
 
 cat > "$tmp_root/status.json" <<EOF
 {
@@ -416,7 +424,7 @@ cat > "$tmp_root/status.json" <<EOF
   "branch": "$branch_json",
   "latest_tag": $latest_tag_json,
   "latest_release_url": $latest_release_url_json,
-  "agents_entry": "$agents_entry",
+  "agents_entry": $agents_entry_json,
   "canonical_api": "$canonical_api",
   "canonical_raw": "$canonical_raw",
   "freshness_contract": "$FRESHNESS_CONTRACT"
