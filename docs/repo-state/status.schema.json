@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/caty-ai/family-os/main/docs/repo-state/status.schema.json",
+  "title": "caty-ai repository state",
+  "description": "Machine-readable state referenced by repository generation stamps.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schema_version",
+    "generator_version",
+    "repo",
+    "stamp_mode",
+    "generated_at",
+    "describes_commit",
+    "describes_commit_date",
+    "branch",
+    "agents_entry",
+    "canonical_api",
+    "canonical_raw",
+    "freshness_contract"
+  ],
+  "properties": {
+    "$schema": {
+      "const": "https://raw.githubusercontent.com/caty-ai/family-os/main/docs/repo-state/status.schema.json"
+    },
+    "schema_version": {
+      "const": 1
+    },
+    "generator_version": {
+      "const": "repo-state-gen v1"
+    },
+    "repo": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+    },
+    "stamp_mode": {
+      "type": "string",
+      "enum": ["auto", "verify-only"]
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "describes_commit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "describes_commit_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "branch": {
+      "type": "string",
+      "minLength": 1
+    },
+    "latest_tag": {
+      "type": ["string", "null"],
+      "minLength": 1
+    },
+    "latest_release_url": {
+      "type": ["string", "null"],
+      "format": "uri"
+    },
+    "agents_entry": {
+      "type": "string",
+      "enum": ["FOR-AGENTS.md", "AGENTS.md"]
+    },
+    "canonical_api": {
+      "type": "string",
+      "format": "uri"
+    },
+    "canonical_raw": {
+      "type": "string",
+      "format": "uri"
+    },
+    "freshness_contract": {
+      "const": "See reader protocol in §2.3; SHA comparison only. A date may only ever trigger distrust, never trust."
+    }
+  }
+}

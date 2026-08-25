@@ -1,0 +1,146 @@
+name: repository state
+
+# Caller contract: grant `permissions: contents: write` and serialize with
+# `concurrency: group: repo-state-${{ github.ref }}`. Example caller:
+#
+# name: repository state
+# on:
+#   push:
+#     branches: [main]
+#   release:
+#     types: [published]
+#   workflow_dispatch:
+#   pull_request:
+# permissions:
+#   contents: write
+# concurrency:
+#   group: repo-state-${{ github.ref }}
+#   cancel-in-progress: false
+# jobs:
+#   repo-state:
+#     uses: caty-ai/family-os/.github/workflows/repo-state.yml@v0.11.0
+#     with:
+#       generator_ref: v0.11.0
+
+on:
+  workflow_call:
+    inputs:
+      generator_ref:
+        description: Pinned family-os tag containing tools/repo-state-gen.sh
+        required: true
+        type: string
+
+jobs:
+  update:
+    name: update repository state
+    if: >-
+      github.event_name == 'release' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' &&
+       github.actor != 'github-actions[bot]' &&
+       !startsWith(github.event.head_commit.message, 'chore(repo-state):'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: check out default branch for release or dispatch
+        if: github.event_name != 'push'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: check out pushed commit
+        if: github.event_name == 'push'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: fetch pinned generator
+        env:
+          GENERATOR_REF: ${{ inputs.generator_ref }}
+        run: |
+          case "$GENERATOR_REF" in
+            ''|*[!A-Za-z0-9._-]*)
+              echo "invalid generator_ref; use a pinned tag" >&2
+              exit 1
+              ;;
+          esac
+          curl --fail --silent --show-error --location \
+            "https://raw.githubusercontent.com/caty-ai/family-os/$GENERATOR_REF/tools/repo-state-gen.sh" \
+            --output "$RUNNER_TEMP/repo-state-gen.sh"
+          chmod +x "$RUNNER_TEMP/repo-state-gen.sh"
+
+      - name: regenerate and push when changed
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO_STATE_BRANCH: ${{ github.event.repository.default_branch }}
+          TARGET_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          set -eu
+
+          generator="$RUNNER_TEMP/repo-state-gen.sh"
+          "$generator" --stamp-mode auto
+
+          if [ -z "$(git status --porcelain -- status.json 'README*.md' AGENTS.md FOR-AGENTS.md)" ]; then
+            echo "repo-state is already current; no commit"
+            exit 0
+          fi
+
+          agents_entry=$(jq -r '.agents_entry' status.json)
+          describes_commit=$(jq -r '.describes_commit' status.json)
+          short_sha=$(printf '%s' "$describes_commit" | cut -c1-7)
+
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- status.json 'README*.md' "$agents_entry"
+          git commit -m "chore(repo-state): $short_sha"
+
+          if git push origin "HEAD:$TARGET_BRANCH"; then
+            exit 0
+          fi
+
+          echo "initial push rejected; rebasing once and regenerating" >&2
+          git reset --hard HEAD^
+          git pull --rebase origin "$TARGET_BRANCH"
+          "$generator" --stamp-mode auto
+          if [ -z "$(git status --porcelain -- status.json 'README*.md' AGENTS.md FOR-AGENTS.md)" ]; then
+            echo "repo-state was refreshed by the racing run; no retry commit"
+            exit 0
+          fi
+          agents_entry=$(jq -r '.agents_entry' status.json)
+          describes_commit=$(jq -r '.describes_commit' status.json)
+          short_sha=$(printf '%s' "$describes_commit" | cut -c1-7)
+          git add -- status.json 'README*.md' "$agents_entry"
+          git commit -m "chore(repo-state): $short_sha"
+          git push origin "HEAD:$TARGET_BRANCH"
+
+  check:
+    name: check repository state contract
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: fetch pinned generator
+        env:
+          GENERATOR_REF: ${{ inputs.generator_ref }}
+        run: |
+          case "$GENERATOR_REF" in
+            ''|*[!A-Za-z0-9._-]*)
+              echo "invalid generator_ref; use a pinned tag" >&2
+              exit 1
+              ;;
+          esac
+          curl --fail --silent --show-error --location \
+            "https://raw.githubusercontent.com/caty-ai/family-os/$GENERATOR_REF/tools/repo-state-gen.sh" \
+            --output "$RUNNER_TEMP/repo-state-gen.sh"
+          chmod +x "$RUNNER_TEMP/repo-state-gen.sh"
+
+      - name: check repository state contract
+        run: '"$RUNNER_TEMP/repo-state-gen.sh" --check'
