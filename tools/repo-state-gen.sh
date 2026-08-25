@@ -24,6 +24,7 @@ EOF
 check_only=false
 stamp_mode=${REPO_STATE_STAMP_MODE:-auto}
 refresh_release=${REPO_STATE_REFRESH_RELEASE:-0}
+gh_bin=${REPO_STATE_GH_BIN:-gh}
 case $refresh_release in
     0|1) ;;
     *) fail "REPO_STATE_REFRESH_RELEASE must be 0 or 1" ;;
@@ -342,11 +343,11 @@ load_existing_release_fields() {
 refresh_release_fields() {
     [ "${REPO_STATE_NO_GH:-0}" != 1 ] \
         || fail "release refresh requires gh access; REPO_STATE_NO_GH=1 disables it"
-    command -v gh >/dev/null 2>&1 || fail "gh is required to refresh release metadata"
+    command -v "$gh_bin" >/dev/null 2>&1 || fail "gh is required to refresh release metadata"
 
     gh_error_file=$tmp_root/gh-release.err
     if release_fields=$(GH_PROMPT_DISABLED=1 GH_HTTP_TIMEOUT=5 \
-        gh api "repos/$repo_slug/releases/latest" \
+        "$gh_bin" api "repos/$repo_slug/releases/latest" \
         --jq '[.tag_name, .html_url] | @tsv' 2>"$gh_error_file"); then
         tab=$(printf '\t')
         case $release_fields in

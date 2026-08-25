@@ -26,7 +26,7 @@ new_repo() {
     repo=$(mktemp -d "$TEST_TMP/repo.XXXXXX")
     git -C "$repo" init -q -b main
     git -C "$repo" config user.name 'Fixture Author'
-    git -C "$repo" config user.email 'fixture@example.invalid'
+    git -C "$repo" config user.email 'fixture@localhost'
     git -C "$repo" remote add origin https://github.com/fixture/repo.git
 
     cat > "$repo/README.md" <<'EOF'
@@ -92,23 +92,6 @@ managed_digest() {
             | shasum -a 256 \
             | awk '{print $1}'
     )
-}
-
-path_without_gh() {
-    local gh_path gh_dir filtered path_entry
-    gh_path=$(command -v gh 2>/dev/null || true)
-    [[ -n "$gh_path" ]] || {
-        printf '%s\n' "$PATH"
-        return 0
-    }
-    gh_dir=$(dirname "$gh_path")
-    filtered=
-    IFS=':' read -r -a path_parts <<< "$PATH"
-    for path_entry in "${path_parts[@]}"; do
-        [[ "$path_entry" == "$gh_dir" ]] && continue
-        filtered=${filtered:+$filtered:}$path_entry
-    done
-    printf '%s\n' "$filtered"
 }
 
 seed_release_fields() {
@@ -346,7 +329,7 @@ exit 96
 EOF
     chmod +x "$mock_dir/gh"
 
-    PATH="$mock_dir:$PATH" REPO_STATE_NO_GH=0 run_gen "$repo" > /dev/null
+    PATH="$mock_dir:$PATH" REPO_STATE_GH_BIN="$mock_dir/gh" REPO_STATE_NO_GH=0 run_gen "$repo" > /dev/null
     after=$(managed_digest "$repo")
 
     assert_eq 'v1.2.3' "$(jq -r '.latest_tag' "$repo/status.json")" 'ordinary run did not preserve latest_tag'
@@ -361,7 +344,7 @@ EOF
 test_normal_run_without_gh_on_path() {
     local repo
     repo=$(new_repo FOR-AGENTS.md)
-    PATH="$(path_without_gh)" REPO_STATE_NO_GH=0 run_gen "$repo" > /dev/null
+    REPO_STATE_GH_BIN=/nonexistent/gh REPO_STATE_NO_GH=0 run_gen "$repo" > /dev/null
     run_gen "$repo" --check > /dev/null
     printf '%s\n' 'ordinary run without gh on PATH: green'
 }
@@ -370,7 +353,7 @@ test_refresh_release_without_gh_on_path_fails() {
     local repo
     repo=$(new_repo FOR-AGENTS.md)
     expect_fail 'refresh-release without gh on PATH was accepted' \
-        env PATH="$(path_without_gh)" REPO_STATE_NO_GH=0 \
+        env REPO_STATE_GH_BIN=/nonexistent/gh REPO_STATE_NO_GH=0 \
         bash -lc "cd \"\$1\" && exec \"\$2\" --refresh-release" _ "$repo" "$GENERATOR"
     grep -q 'gh is required to refresh release metadata' "$TEST_TMP/expected-failure.err" \
         || fail 'refresh-release without gh on PATH did not emit a clear gh-missing error'
@@ -398,7 +381,7 @@ exit 98
 EOF
     chmod +x "$mock_dir/gh"
 
-    PATH="$mock_dir:$PATH" REPO_STATE_NO_GH=0 run_gen "$repo" --refresh-release > /dev/null
+    PATH="$mock_dir:$PATH" REPO_STATE_GH_BIN="$mock_dir/gh" REPO_STATE_NO_GH=0 run_gen "$repo" --refresh-release > /dev/null
 
     assert_eq 'v2.0.0' "$(jq -r '.latest_tag' "$repo/status.json")" '--refresh-release did not update latest_tag'
     assert_eq 'https://github.com/fixture/repo/releases/tag/v2.0.0' "$(jq -r '.latest_release_url' "$repo/status.json")" \
@@ -427,7 +410,7 @@ exit 98
 EOF
     chmod +x "$mock_dir/gh"
 
-    PATH="$mock_dir:$PATH" REPO_STATE_NO_GH=0 REPO_STATE_REFRESH_RELEASE=1 run_gen "$repo" > /dev/null
+    PATH="$mock_dir:$PATH" REPO_STATE_GH_BIN="$mock_dir/gh" REPO_STATE_NO_GH=0 REPO_STATE_REFRESH_RELEASE=1 run_gen "$repo" > /dev/null
 
     assert_eq 'v3.0.0' "$(jq -r '.latest_tag' "$repo/status.json")" 'REPO_STATE_REFRESH_RELEASE=1 did not update latest_tag'
     assert_eq 'https://github.com/fixture/repo/releases/tag/v3.0.0' "$(jq -r '.latest_release_url' "$repo/status.json")" \
@@ -453,7 +436,7 @@ exit 1
 EOF
     chmod +x "$mock_dir/gh"
 
-    PATH="$mock_dir:$PATH" REPO_STATE_NO_GH=0 run_gen "$repo" --refresh-release > /dev/null
+    PATH="$mock_dir:$PATH" REPO_STATE_GH_BIN="$mock_dir/gh" REPO_STATE_NO_GH=0 run_gen "$repo" --refresh-release > /dev/null
 
     jq -e '.latest_tag == null and .latest_release_url == null' "$repo/status.json" > /dev/null \
         || fail 'HTTP 404 did not map release fields to null'
@@ -476,7 +459,7 @@ EOF
 
     before=$(shasum -a 256 "$repo/README.md" | awk '{print $1}')
     expect_fail 'transport failure during release refresh was accepted' \
-        env PATH="$mock_dir:$PATH" REPO_STATE_NO_GH=0 \
+        env PATH="$mock_dir:$PATH" REPO_STATE_GH_BIN="$mock_dir/gh" REPO_STATE_NO_GH=0 \
         bash -lc "cd \"\$1\" && exec \"\$2\" --refresh-release" _ "$repo" "$GENERATOR"
     after=$(shasum -a 256 "$repo/README.md" | awk '{print $1}')
     assert_eq "$before" "$after" 'transport refresh failure modified README.md'
@@ -500,7 +483,7 @@ EOF
     chmod +x "$mock_dir/gh"
 
     expect_fail 'HTTP 500 during release refresh was accepted' \
-        env PATH="$mock_dir:$PATH" REPO_STATE_NO_GH=0 \
+        env PATH="$mock_dir:$PATH" REPO_STATE_GH_BIN="$mock_dir/gh" REPO_STATE_NO_GH=0 \
         bash -lc "cd \"\$1\" && exec \"\$2\" --refresh-release" _ "$repo" "$GENERATOR"
     [[ ! -e "$repo/status.json" ]] || fail 'HTTP 500 refresh failure wrote status.json'
     grep -q 'could not refresh latest release metadata' "$TEST_TMP/expected-failure.err" \

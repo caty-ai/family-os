@@ -180,7 +180,7 @@ nobody later mistakes it for a bug.
 1. family-os: schema + generator + reusable workflow + spec page + readme-standard
    amendment + L0-5 exception PR (handbook) + parent issue.
 2. Child issues per repo. Every caller PR touches `.github/workflows/**` → risk gate
-   requires 翔さん's human label (verified: `review-labels.yml` risk_paths_gates) — batch
+   requires the repository owner's human label (verified: `review-labels.yml` risk_paths_gates) — batch
    all label clicks into one sitting [rev: GLM F8d].
 3. New-repo template gains caller + stamp stanza (D1 future-repos; backstop = registry
    orphan check, which already enforces org-wide accounting).
