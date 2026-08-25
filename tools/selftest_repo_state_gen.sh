@@ -2,6 +2,16 @@
 
 set -euo pipefail
 
+unset \
+    GITHUB_REPOSITORY \
+    GH_REPO \
+    REPO_STATE_BRANCH \
+    REPO_STATE_GH_BIN \
+    REPO_STATE_NO_GH \
+    REPO_STATE_REFRESH_RELEASE \
+    REPO_STATE_REPO \
+    REPO_STATE_STAMP_MODE
+
 ROOT_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
 GENERATOR="$ROOT_DIR/tools/repo-state-gen.sh"
 TEST_TMP=$(mktemp -d "${TMPDIR:-/tmp}/selftest-repo-state.XXXXXX")
@@ -194,6 +204,15 @@ test_agents_resolution() {
     assert_eq FOR-AGENTS.md "$(jq -r '.agents_entry' "$repo/status.json")" 'FOR-AGENTS.md was not resolved'
     [[ -f "$repo/FOR-AGENTS.md" && ! -e "$repo/AGENTS.md" ]] || fail 'FOR-AGENTS.md fixture was altered incorrectly'
     printf '%s\n' 'agents entry resolution: ok'
+}
+
+test_github_repository_precedence() {
+    local repo
+    repo=$(new_repo FOR-AGENTS.md)
+    GITHUB_REPOSITORY=explicit/repository run_gen "$repo" > /dev/null
+    assert_eq explicit/repository "$(jq -r '.repo' "$repo/status.json")" \
+        'GITHUB_REPOSITORY did not override the fixture remote'
+    printf '%s\n' 'GITHUB_REPOSITORY precedence: ok'
 }
 
 test_malformed_marker_error() {
@@ -516,6 +535,7 @@ test_marker_idempotency
 test_chained_stamp_walk
 test_four_locale_set
 test_agents_resolution
+test_github_repository_precedence
 test_agents_entry_conflict
 test_anchorless_readme_error
 test_malformed_marker_error
