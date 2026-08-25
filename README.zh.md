@@ -129,6 +129,8 @@ Family OS 是一张地图，告诉你解决每一个问题的部件**在哪里**
 
 这不只是叙事：在一次封印并预注册的基准测试里，面对会发生上下文溢出的工作，经过验证的完成率从 13%（裸模型）提升到 43%（使用 harness，+30 pt, p = 0.0079）—— 见 [EV-006](docs/evidence.md#ev-006--the-first-true-product-test-improved-verified-completion-on-context-overflowing-work-with-limitations-stated) 与[完整数据，包括 harness 没赢的地方](https://github.com/caty-ai/caty-agent-harness/blob/main/docs/benchmark.md)。
 
+在同一套封印流程下，我们还公开了按模型划分的自适应触发画像——溢出哨兵对哪些模型有效、在哪些模型上不应开启（rig 实验名 EV-008 / 台账 [EV-009](docs/evidence.md#ev-009--adaptive-activation-overflow-sentinel-was-pre-measured-per-model-under-seal-and-the-default-on-decision-was-published-with-its-limits)）：[按模型的数据](https://github.com/caty-ai/caty-agent-harness/blob/main/docs/benchmark.md#ev-008)。
+
 完整模型可阅读[英文版](docs/growth-model.md)或[日文版](docs/growth-model.ja.md)。
 
 ---
