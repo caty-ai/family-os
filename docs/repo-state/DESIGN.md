@@ -35,7 +35,7 @@ convention line:
 
 ```markdown
 <!-- repo-state:begin (generated; do not edit) -->
-<p align="center"><sub>generation: <code>48aa5ca</code> (2026-08-25T13:00Z) · verify: <a href="https://api.github.com/repos/caty-ai/caty-agent-harness/commits/main">API HEAD</a> · <a href="./status.json">status.json</a></sub></p>
+<p align="center"><sub>generation: <code>48aa5ca</code> (2026-08-25T13:00:00Z) · verify: <a href="https://api.github.com/repos/caty-ai/caty-agent-harness/commits/main">API HEAD</a> · <a href="./status.json">status.json</a></sub></p>
 <!-- repo-state:end -->
 ```
 
@@ -63,15 +63,16 @@ convention line:
   "agents_entry": "AGENTS.md",
   "canonical_api": "https://api.github.com/repos/caty-ai/caty-agent-harness/commits/main",
   "canonical_raw": "https://raw.githubusercontent.com/caty-ai/caty-agent-harness/48aa5ca5ac773925bbb21c0839b55acc079740b3/status.json",
-  "freshness_contract": "See reader protocol in §2.3; SHA comparison only. A date may only ever trigger distrust, never trust."
+  "freshness_contract": "SHA comparison only; dates may only ever trigger distrust. Protocol: docs/repo-state/spec.md, section 'Reader protocol'."
 }
 ```
 
 Changes vs v0.1: `canonical_api` added (CDN-free); `canonical_raw` now points at
 raw@describes_commit (immutable), not raw@branch; `generator_version`, `stamp_mode`,
 `describes_commit_date`, `$schema` added. `generated_at` is set to the committer date of
-`describes_commit`, NOT wall clock — regeneration is fully deterministic, so an unchanged
-content state produces a byte-identical file [rev: GLM F2].
+`describes_commit`, NOT wall clock. Ordinary runs carry forward the existing release
+fields, so regeneration of an unchanged content state without explicit release refresh is
+fully deterministic and produces a byte-identical file [rev: GLM F2].
 
 ### 2.3 Reader protocol — SHA-based, never date-based [rev: Kimi F1 + Grok F2 + GLM F3/F7 — 3-seat convergent CRITICAL]
 
@@ -87,8 +88,9 @@ Written into the spec page, the FOR-AGENTS/AGENTS stanza, and `freshness_contrac
    fetched at a branch ref [rev: GLM F3].
 4. Dates/`generated_at` may only ever trigger DIStrust, never trust. Two dates from two
    caches are not comparable evidence [rev: Kimi F1 scenario].
-5. For commissioned reviews, hand reviewers SHA-pinned raw URLs / clone-at-SHA up front
-   (§2.6) — the stamps are the safety net for uncommissioned readers, not the primary path.
+5. For commissioned reviews, hand reviewers SHA-pinned raw URLs / clone-at-SHA up front;
+   see `docs/repo-state/spec.md`, handover paragraph following Reader protocol. The stamps
+   are the safety net for uncommissioned readers, not the primary path.
 
 ## 3. CI mechanism
 
@@ -105,13 +107,20 @@ Written into the spec page, the FOR-AGENTS/AGENTS stanza, and `freshness_contrac
   the release path and failed to stop loops]:
   - `push` events only: skip when `github.actor == 'github-actions[bot]'` (primary) or the
     head commit message starts with `chore(repo-state):` (backup) [rev: Kimi F6, GLM F2].
-  - `release` / `workflow_dispatch` / `pull_request` events: never skipped. Release runs
-    check out **main HEAD** (GITHUB_SHA for release events is the last commit on the
-    default branch — confirmed against GitHub docs by two seats) and refresh release
-    fields; they do not stamp the tag SHA [rev: Kimi F2 MAJOR].
-  - Determinism is the real loop-stopper: regeneration of an unchanged content state is
-    byte-identical (§2.2) → no diff → no commit, on every trigger and every token type
-    [rev: Grok F1 — prefix guard alone is lethal with PAT/App tokens].
+    Push regeneration preserves the existing `latest_tag` / `latest_release_url` fields and
+    does not probe GitHub releases or `git describe`.
+  - `release` / `workflow_dispatch` events: never skipped. Release and
+    manual-dispatch runs check out **main HEAD** (GITHUB_SHA for release events is the last
+    commit on the default branch — confirmed against GitHub docs by two seats) and refresh
+    release fields by querying `gh api repos/{owner}/{repo}/releases/latest`; explicit 404
+    maps both fields to `null`, while any other transport or HTTP failure is fatal. These
+    runs do not stamp the tag SHA [rev: Kimi F2 MAJOR].
+  - Determinism is the real loop-stopper for ordinary push regeneration: when content and
+    carried-forward release metadata are unchanged, output is byte-identical (§2.2) → no
+    diff → no commit, regardless of token type [rev: Grok F1 — prefix guard alone is lethal
+    with PAT/App tokens]. `release` / `workflow_dispatch` are explicit metadata refresh
+    points; they diff only when content or refreshed metadata changes, and they fail
+    instead of writing partial state when refresh errors occur.
 - `describes_commit` := nearest non-stamp ancestor of the checked-out HEAD (walk past
   consecutive `chore(repo-state):` commits) [rev: Grok F1, GLM F6a].
 - Stamp commits: message `chore(repo-state): <short-sha>`; author/committer =
@@ -134,7 +143,7 @@ Handbook L0-5 says main is merge-only. Resolution, in order of preference:
    Verify-only repos are stale-by-construction at every HEAD (safe direction); the spec
    says so explicitly [rev: Kimi Q4]. No third mode exists.
 
-### 3.3 Check job (PR + push) vs weekly audit — division of labor [rev: Grok F3 vs GLM F1, synthesized]
+### 3.3 Check job (PR) vs weekly audit — division of labor [rev: Grok F3 vs GLM F1, synthesized]
 
 - **PR check (`pull_request`, required status via org ruleset)**: presence + schema-valid +
   markers present in the full stamped set (§2.1) + cross-file consistency (stamp SHA/time
@@ -197,3 +206,13 @@ nobody later mistakes it for a bug.
   4-locale stamp set (3 seats); audit dead-man's switch (3 seats); event-scoped loop
   guards + release-path unblocking (Grok+GLM); L0-5 conflict (Grok+Kimi); identity-based
   health invariant (Grok+GLM).
+
+## v0.2.1 amendments (2026-08-25 merge review)
+
+- R1: Ordinary generation carries forward existing `latest_tag` / `latest_release_url`
+  values; only explicit release refresh (`release`, `workflow_dispatch`, or
+  `--refresh-release`) queries GitHub, with explicit 404 mapping to `null`.
+- R2: `freshness_contract` now uses the exact required literal, and the handover citation
+  points to `docs/repo-state/spec.md`, handover paragraph following Reader protocol.
+- R3: Repo-state self-tests were hardened for ambiguity, missing anchors, `--check`
+  marker corruption, PATH-without-`gh`, and deterministic timestamp coverage.

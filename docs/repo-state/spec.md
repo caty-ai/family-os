@@ -47,15 +47,15 @@ Its schema is [`status.schema.json`](./status.schema.json). Field semantics are:
 | `describes_commit` | Full lowercase 40-character SHA of the nearest ancestor whose commit message does not start with `chore(repo-state):`. |
 | `describes_commit_date` | Committer date of `describes_commit`, in ISO-8601 UTC. |
 | `branch` | Branch whose API HEAD is the comparison target, normally the default branch. |
-| `latest_tag` | Latest detected tag. It may be omitted or `null` when no tag is available. |
-| `latest_release_url` | Latest detected GitHub release URL. It may be omitted or `null` when no release is available or GitHub cannot be reached. |
+| `latest_tag` | Carried forward from the existing `status.json` on ordinary runs. It becomes `null` when no prior value exists, and it is refreshed from GitHub only during an explicit release refresh. |
+| `latest_release_url` | Carried forward from the existing `status.json` on ordinary runs. It becomes `null` when no prior value exists, maps to `null` on an explicit GitHub 404 during release refresh, and any other refresh failure is fatal. |
 | `agents_entry` | The stamped agent entry file, exactly `FOR-AGENTS.md` or `AGENTS.md`. |
 | `canonical_api` | CDN-independent GitHub commits API URL for `repo` and `branch`. |
 | `canonical_raw` | Immutable raw URL for `status.json` at `describes_commit`. |
-| `freshness_contract` | A reminder that only the SHA protocol below can establish currentness. |
+| `freshness_contract` | Exactly `SHA comparison only; dates may only ever trigger distrust. Protocol: docs/repo-state/spec.md, section 'Reader protocol'.` |
 
 Because both time fields derive from the described commit, regenerating an unchanged
-content state with unchanged release metadata produces byte-identical output.
+content state without `--refresh-release` produces byte-identical output.
 
 ## 3. Reader protocol — SHA-based, never date-based
 
@@ -69,8 +69,9 @@ content state with unchanged release metadata produces byte-identical output.
    fetched at a branch ref [rev: GLM F3].
 4. Dates/`generated_at` may only ever trigger DIStrust, never trust. Two dates from two
    caches are not comparable evidence [rev: Kimi F1 scenario].
-5. For commissioned reviews, hand reviewers SHA-pinned raw URLs / clone-at-SHA up front
-   (§2.6) — the stamps are the safety net for uncommissioned readers, not the primary path.
+5. For commissioned reviews, hand reviewers SHA-pinned raw URLs / clone-at-SHA up front;
+   see the handover paragraph immediately below. The stamps are the safety net for
+   uncommissioned readers, not the primary path.
 
 The review handover mechanism is therefore explicit: resolve one commit SHA first, then
 hand every reviewer raw URLs pinned to that SHA, or a clone checked out at that SHA. Do
@@ -81,9 +82,12 @@ not hand reviewers branch-pinned raw URLs and do not use dates as evidence of fr
 The reusable workflow has two jobs. `update` runs for default-branch pushes, published
 releases, and manual dispatches. Push events alone are skipped when the actor is
 `github-actions[bot]` or the head commit message begins `chore(repo-state):`. Release and
-manual events are never skipped. Release runs check out the default branch HEAD, not the
-release tag, so publishing a release refreshes release metadata without stamping the tag
-SHA.
+manual events are never skipped. Push runs preserve the existing release fields and do
+not query GitHub releases. Release and manual-dispatch runs check out the default branch
+HEAD, not the release tag, and they refresh release metadata by running
+`repo-state-gen.sh --stamp-mode auto --refresh-release`. An explicit GitHub 404 maps the
+release fields to `null`; any other refresh failure fails the run without writing a
+partial update.
 
 An update regenerates deterministic output and exits without a commit when the managed
 files have no diff. Otherwise it commits as `github-actions[bot]` with message

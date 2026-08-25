@@ -75,7 +75,7 @@
       "format": "uri"
     },
     "freshness_contract": {
-      "const": "See reader protocol in §2.3; SHA comparison only. A date may only ever trigger distrust, never trust."
+      "const": "SHA comparison only; dates may only ever trigger distrust. Protocol: docs/repo-state/spec.md, section 'Reader protocol'."
     }
   }
 }

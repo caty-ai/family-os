@@ -5,7 +5,7 @@ set -eu
 PROGRAM=${0##*/}
 SCHEMA_URL=https://raw.githubusercontent.com/caty-ai/family-os/main/docs/repo-state/status.schema.json
 GENERATOR_VERSION='repo-state-gen v1'
-FRESHNESS_CONTRACT='See reader protocol in §2.3; SHA comparison only. A date may only ever trigger distrust, never trust.'
+FRESHNESS_CONTRACT="SHA comparison only; dates may only ever trigger distrust. Protocol: docs/repo-state/spec.md, section 'Reader protocol'."
 BEGIN_MARKER='<!-- repo-state:begin (generated; do not edit) -->'
 END_MARKER='<!-- repo-state:end -->'
 
@@ -16,17 +16,25 @@ fail() {
 
 usage() {
     cat >&2 <<EOF
-usage: $PROGRAM [--check] [--stamp-mode auto|verify-only]
+usage: $PROGRAM [--check] [--refresh-release] [--stamp-mode auto|verify-only]
 EOF
     exit 2
 }
 
 check_only=false
 stamp_mode=${REPO_STATE_STAMP_MODE:-auto}
+refresh_release=${REPO_STATE_REFRESH_RELEASE:-0}
+case $refresh_release in
+    0|1) ;;
+    *) fail "REPO_STATE_REFRESH_RELEASE must be 0 or 1" ;;
+esac
 while [ "$#" -gt 0 ]; do
     case $1 in
         --check)
             check_only=true
+            ;;
+        --refresh-release)
+            refresh_release=1
             ;;
         --stamp-mode)
             [ "$#" -ge 2 ] || usage
@@ -286,20 +294,92 @@ fi
 printf '%s\n' "$branch" | grep -Eq '^[A-Za-z0-9._/-]+$' \
     || fail "branch contains characters that cannot be represented safely: $branch"
 
-latest_tag=$(git describe --tags --abbrev=0 "$describes_commit" 2>/dev/null || :)
 latest_release_url=
-if [ "${REPO_STATE_NO_GH:-0}" != 1 ] && command -v gh >/dev/null 2>&1; then
+latest_tag=
+
+decode_json_string_literal() {
+    value=$1
+    value=${value#\"}
+    value=${value%\"}
+    printf '%s' "$value" | sed 's/\\"/"/g; s/\\\\/\\/g'
+}
+
+read_existing_release_field_with_shell() {
+    field_name=$1
+    [ -f status.json ] || return 1
+    field_literal=$(
+        sed -n "s/^[[:space:]]*\"$field_name\"[[:space:]]*:[[:space:]]*//p" status.json \
+            | sed -n '1p' \
+            | sed 's/[[:space:]]*$//; s/,$//'
+    )
+    case $field_literal in
+        '') return 1 ;;
+        null) printf '%s' "" ;;
+        \"*\") decode_json_string_literal "$field_literal" ;;
+        *) return 1 ;;
+    esac
+}
+
+load_existing_release_fields() {
+    [ -f status.json ] || return 0
+    if command -v jq >/dev/null 2>&1; then
+        if existing_tag=$(jq -r 'if has("latest_tag") then .latest_tag // "" else "" end' status.json 2>/dev/null) &&
+            existing_url=$(jq -r 'if has("latest_release_url") then .latest_release_url // "" else "" end' status.json 2>/dev/null); then
+            latest_tag=$existing_tag
+            latest_release_url=$existing_url
+            return 0
+        fi
+    fi
+
+    if existing_tag=$(read_existing_release_field_with_shell latest_tag); then
+        latest_tag=$existing_tag
+    fi
+    if existing_url=$(read_existing_release_field_with_shell latest_release_url); then
+        latest_release_url=$existing_url
+    fi
+}
+
+refresh_release_fields() {
+    [ "${REPO_STATE_NO_GH:-0}" != 1 ] \
+        || fail "release refresh requires gh access; REPO_STATE_NO_GH=1 disables it"
+    command -v gh >/dev/null 2>&1 || fail "gh is required to refresh release metadata"
+
+    gh_error_file=$tmp_root/gh-release.err
     if release_fields=$(GH_PROMPT_DISABLED=1 GH_HTTP_TIMEOUT=5 \
         gh api "repos/$repo_slug/releases/latest" \
-        --jq '[.tag_name, .html_url] | @tsv' 2>/dev/null); then
+        --jq '[.tag_name, .html_url] | @tsv' 2>"$gh_error_file"); then
         tab=$(printf '\t')
         case $release_fields in
             *"$tab"*)
                 latest_tag=${release_fields%%"$tab"*}
                 latest_release_url=${release_fields#*"$tab"}
+                [ -n "$latest_tag" ] || fail "latest release response did not include tag_name"
+                [ -n "$latest_release_url" ] || fail "latest release response did not include html_url"
+                ;;
+            *)
+                fail "latest release response was malformed"
                 ;;
         esac
+        return 0
     fi
+
+    gh_error=$(cat "$gh_error_file")
+    case $gh_error in
+        *"HTTP 404"*)
+            latest_tag=
+            latest_release_url=
+            ;;
+        *)
+            [ -n "$gh_error" ] && printf '%s\n' "$gh_error" >&2
+            fail "could not refresh latest release metadata"
+            ;;
+    esac
+}
+
+if [ "$refresh_release" = 1 ]; then
+    refresh_release_fields
+else
+    load_existing_release_fields
 fi
 
 canonical_api="https://api.github.com/repos/$repo_slug/commits/$branch"

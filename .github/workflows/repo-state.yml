@@ -83,7 +83,18 @@ jobs:
           set -eu
 
           generator="$RUNNER_TEMP/repo-state-gen.sh"
-          "$generator" --stamp-mode auto
+          regenerate() {
+            case "${GITHUB_EVENT_NAME:-}" in
+              release|workflow_dispatch)
+                REPO_STATE_REFRESH_RELEASE=1 "$generator" --stamp-mode auto
+                ;;
+              *)
+                "$generator" --stamp-mode auto
+                ;;
+            esac
+          }
+
+          regenerate
 
           if [ -z "$(git status --porcelain -- status.json 'README*.md' AGENTS.md FOR-AGENTS.md)" ]; then
             echo "repo-state is already current; no commit"
@@ -106,7 +117,7 @@ jobs:
           echo "initial push rejected; rebasing once and regenerating" >&2
           git reset --hard HEAD^
           git pull --rebase origin "$TARGET_BRANCH"
-          "$generator" --stamp-mode auto
+          regenerate
           if [ -z "$(git status --porcelain -- status.json 'README*.md' AGENTS.md FOR-AGENTS.md)" ]; then
             echo "repo-state was refreshed by the racing run; no retry commit"
             exit 0
