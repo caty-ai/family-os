@@ -26,6 +26,9 @@ Family OS は、その一つひとつに効く仕組みが**どこにあるか**
 🔧 [エンジニア向けドキュメント](docs/engineering.ja.md) ｜ 📘 [詳細仕様](docs/reference.ja.md)
 
 </div>
+<!-- repo-state:begin (generated; do not edit) -->
+<p align="center"><sub>generation: <code>105f91d</code> (2026-08-25T16:04:43Z) · verify: <a href="https://api.github.com/repos/caty-ai/family-os/commits/feat/repo-state-caller-131">API HEAD</a> · <a href="./status.json">status.json</a></sub></p>
+<!-- repo-state:end -->
 
 - [こんな経験はありませんか？](#problems)
 - [作り直すのではなく、育てる](#why)
