@@ -1,6 +1,6 @@
 # Protected literals use publication-safe notation per option (a), owner decision 2026-08-20.
 # Edits must preserve this property: no protected literal may appear contiguous in this file.
-# This exception is coupled to LICENSE's first three byte-exact lines.
+# The LICENSE-coupled exception is retired (holder is "Sho Jikumaru" since 2026-08-25); the patterns still block the legacy spelling anywhere.
 personal-real-name-en	(?:(?<!(?-i:\AMIT License\n\nCopyright \(c\) 2026 ))\bShoj[i]\b|(?<!(?-i:\AMIT License\n\nCopyright \(c\) 2026 Shoj[i] ))\bKumar[u]\b)
 personal-real-name-ja	翔さ[ん]|翔[士]|翔ど[ん]
 approval-record	承認記[録]|オーナー承[認]|approved\s+by|CP-\d+[A-Za-z]{0,2}\s*(?:GO|承[認])
