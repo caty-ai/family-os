@@ -271,7 +271,7 @@ flowchart TB
 | 观察点 | 支持情况 | 确认日期 |
 | --- | --- | --- |
 | 阅读这张地图 | ✅ macOS ／ ✅ Windows ／ ✅ Linux（能看 Markdown 就够了） | 2026-08-19 |
-| 注册表与链接检查工具 | ✅ Linux ／ ✅ macOS（每次变更都在两个系统的 CI 上运行） | 2026-08-19 |
+| 注册表与链接检查工具 | ✅ Linux ／ ✅ macOS（每次变更都在两个系统的 CI 上运行）／ ✅ WSL2（由 Ubuntu 检查覆盖；请把仓库 clone 到 ext4 上的 `~` 下，不要放在 `/mnt/c`） | 2026-08-25 |
 | 已在实际运行中确认的 AI 智能体环境 | ✅ Claude Code ／ ✅ Hermes Agent ／ ✅ OpenClaw ／ ✅ Kimi Code ／ ✅ Codex | 2026-08-19 |
 
 > **备注:** 「已在实际运行中确认」指的是我们确实在该环境里运行了相关机制，并不保证 Family OS 的全部模块都完全适配。各模块的适配情况，请以你所选仓库的 README 为准。

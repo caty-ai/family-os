@@ -277,9 +277,10 @@ Reading the map needs nothing but a Markdown viewer. The table below covers the 
 | Aspect | Support |
 | --- | --- |
 | Reading this map | ✅ macOS ／ ✅ Windows ／ ✅ Linux |
+| Registry & link-check tools | ✅ Linux ／ ✅ macOS ／ ✅ WSL2 (covered by the Ubuntu checks; clone under `~` on ext4, not `/mnt/c`) |
 | Agent environments in real use | ✅ Claude Code ／ ✅ Hermes Agent ／ ✅ OpenClaw ／ ✅ Kimi Code ／ ✅ Codex |
 
-> **Note:** "in real use" means the related mechanisms are actually run in that environment. It is not a guarantee that every Family OS module is fully supported there. Measured 2026-08-19. Per-module support is owned by each module's own README.
+> **Note:** "in real use" means the related mechanisms are actually run in that environment. It is not a guarantee that every Family OS module is fully supported there. Agent-environment row measured 2026-08-19; tools/WSL2 row 2026-08-25. Per-module support is owned by each module's own README.
 
 ---
 

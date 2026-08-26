@@ -21,7 +21,7 @@ If you are unsure which side a report falls on, open it here and we will move it
 ## Prerequisites
 
 - `git`
-- GNU `make` or BSD `make`
+- GNU `make` or BSD `make` (minimal Ubuntu images, including default WSL2, do not ship it — `sudo apt-get install make`)
 - Python 3.9+ using only the standard library; do not install anything with `pip`
 - Network access only if you intentionally run `python3 -B tools/check_registry.py` without `--offline`
 - `actionlint` if your change edits files under `.github/workflows/` (optional, but recommended)

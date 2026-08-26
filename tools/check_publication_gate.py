@@ -733,6 +733,43 @@ def selftest_policy_parsers():
             raise RuntimeError("selftest failed: non-object registry accepted")
 
 
+def selftest_shipped_denylist():
+    root = Path(__file__).resolve().parent.parent
+    if not (root / DENYLIST_NAME).exists():
+        print(
+            "skip: selftest_shipped_denylist "
+            "(copied-single-file: .publication-denylist absent)"
+        )
+        return
+    rules = tuple(
+        rule for rule in load_denylist(root) if rule[0] == "absolute-personal-path"
+    )
+    _selftest_check(len(rules) == 1, "shipped absolute-personal-path rule")
+    violating_paths = (
+        "/" + "Users/" + "alice/project",
+        "/mnt/c" + "/" + "Users/" + "alice/project",
+        "/" + "home/" + "alice/project",
+    )
+    safe_paths = (
+        "/" + "home/" + "<user>/project",
+        "/" + "home/" + "{user}/project",
+        "/" + "home/" + "$USER/bin",
+        "a sentence mentioning the " + "/" + "home/" + " directory bare",
+    )
+    for path in violating_paths:
+        failures = []
+        _selftest_check(
+            check_denylist({"README.md": path}, rules, failures) == 1,
+            "shipped absolute-personal-path detects personal path",
+        )
+    for path in safe_paths:
+        failures = []
+        _selftest_check(
+            check_denylist({"README.md": path}, rules, failures) == 0,
+            "shipped absolute-personal-path permits placeholder or bare path",
+        )
+
+
 def selftest_scanners():
     rules = (("private marker", re.compile("private" + "[- ]marker", re.IGNORECASE)),)
     failures = []
@@ -1186,11 +1223,29 @@ def selftest_end_to_end():
                 "copied-single-file selftest: %r" % result.stdout,
             )
 
+        environment = dict(os.environ)
+        environment["PUBLICATION_GATE_SELFTEST_COPY_PROBE"] = "1"
+        result = subprocess.run(
+            [sys.executable, "-B", str(Path(__file__).resolve()), "--selftest"],
+            cwd=str(Path(__file__).resolve().parent.parent),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            env=environment,
+            check=False,
+            text=True,
+        )
+        _selftest_check(
+            result.returncode == 0
+            and "PASS (publication gate selftest; assertions: 67)" in result.stdout
+            and "skip: selftest_shipped_denylist" not in result.stdout,
+            "real-root copy-probe runs shipped-denylist selftest: %r" % result.stdout,
+        )
+
 
 def run_selftests():
     global SELFTEST_ASSERTIONS
     SELFTEST_ASSERTIONS = 0
-    tests = (selftest_policy_parsers, selftest_scanners, selftest_registry_checks, selftest_end_to_end)
+    tests = (selftest_policy_parsers, selftest_shipped_denylist, selftest_scanners, selftest_registry_checks, selftest_end_to_end)
     for test in tests:
         test()
         print("ok: %s" % test.__name__)
