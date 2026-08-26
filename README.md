@@ -268,7 +268,7 @@ Reading the Family OS map itself takes no preparation at all.
 | Aspect | Support | Verified |
 | --- | --- | --- |
 | Reading this map | ✅ macOS ／ ✅ Windows ／ ✅ Linux (anything that renders Markdown) | 2026-08-19 |
-| Registry & link-check tools | ✅ Linux ／ ✅ macOS (both run in CI on every change) | 2026-08-19 |
+| Registry & link-check tools | ✅ Linux ／ ✅ macOS (both run in CI on every change) ／ ✅ WSL2 (covered by the Ubuntu checks; clone under `~` on ext4, not `/mnt/c`) | 2026-08-25 |
 | Agent environments in real use | ✅ Claude Code ／ ✅ Hermes Agent ／ ✅ OpenClaw ／ ✅ Kimi Code ／ ✅ Codex | 2026-08-19 |
 
 > **Note:** "In real use" means the related mechanisms are actually being run in that environment; it is not a guarantee of full support for every Family OS module. For per-module support, treat the README of the repository you choose as canonical.
