@@ -38,6 +38,9 @@ STAMP_PREFIX = "chore(repo-state):"
 BOT_COMMITTER = "github-actions[bot]"
 TRANSIENT_MAX_AGE = datetime.timedelta(days=7)
 ACTIONS_UNKNOWN_MAX_AGE = datetime.timedelta(days=14)
+ACTIONS_UNKNOWN_DETAIL_EXEMPTIONS = frozenset(
+    {"caller UNKNOWN(no-token)", "caller UNKNOWN(api-error)"}
+)
 BEGIN_MARKER = "<!-- repo-state:begin (generated; do not edit) -->"
 END_MARKER = "<!-- repo-state:end -->"
 
@@ -600,12 +603,12 @@ def check_actions(
                     "FAIL", "latest repo-state caller conclusion is %s" % conclusion
                 )
             return Check("PASS", "latest repo-state caller conclusion is success")
+        if saw_in_progress:
+            return Check("UNKNOWN", "no terminal caller run yet")
         if runs_truncated:
             return Check(
                 "UNKNOWN", "repo-state caller runs truncated; verdict unreliable"
             )
-        if saw_in_progress:
-            return Check("UNKNOWN", "no terminal caller run yet")
         return Check(
             "UNKNOWN",
             "only skipped/cancelled/stale/neutral caller runs in the latest page",
@@ -626,6 +629,8 @@ def _escalate_actions_unknown(
     now: Optional[datetime.datetime] = None,
 ) -> Check:
     if check.status != "UNKNOWN":
+        return check
+    if check.detail in ACTIONS_UNKNOWN_DETAIL_EXEMPTIONS:
         return check
     generated = datetime.datetime.fromisoformat(generated_at.replace("Z", "+00:00"))
     current_time = now or datetime.datetime.now(datetime.timezone.utc)
@@ -681,6 +686,7 @@ def audit_checkout(
         status, _targets = _load_status(repo_dir, schema, repo)
         identity = classify_identity(repo_dir, status)
         regeneration = check_regeneration(repo_dir, repo, status, generator, identity)
+        # validate_status pins status["branch"] to main; this parameter is future-proofing, not multi-branch support.
         actions = check_actions(repo, token, timeout, status["branch"])
         actions = _escalate_actions_unknown(actions, status["generated_at"])
         overall, details = _combine((identity, regeneration, actions))

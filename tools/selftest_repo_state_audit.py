@@ -478,6 +478,20 @@ class RepoStateAuditSelfTest(unittest.TestCase):
                     "fixture/repo", "fixture-token", 1.0, "trunk"
                 )
 
+        for detail in ("caller UNKNOWN(no-token)", "caller UNKNOWN(api-error)"):
+            with self.subTest(detail=detail):
+                exempt = audit.Check("UNKNOWN", detail)
+                self.assertIs(
+                    exempt,
+                    audit._escalate_actions_unknown(
+                        exempt,
+                        (now - datetime.timedelta(days=30)).strftime(
+                            "%Y-%m-%dT%H:%M:%SZ"
+                        ),
+                        now=now,
+                    ),
+                )
+
         healthy = audit.Check("PASS", "latest repo-state caller conclusion is success")
         self.assertIs(
             healthy,
