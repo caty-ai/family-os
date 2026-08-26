@@ -559,7 +559,7 @@ def check_actions(repo: str, token: Optional[str], timeout: float) -> Check:
             return Check("FAIL", "repo-state caller workflow id is unparseable")
 
         runs = _http_json(
-            "https://api.github.com/repos/%s/actions/workflows/%d/runs?branch=main&per_page=1"
+            "https://api.github.com/repos/%s/actions/workflows/%d/runs?branch=main&per_page=100"
             % (encoded_repo, workflow_id),
             token,
             timeout,
@@ -568,19 +568,27 @@ def check_actions(repo: str, token: Optional[str], timeout: float) -> Check:
         if not isinstance(workflow_runs, list):
             return Check("FAIL", "repo-state caller run list is unparseable")
         if not workflow_runs:
-            return Check("FAIL", "repo-state caller has no main-branch runs")
-        latest = workflow_runs[0]
-        if not isinstance(latest, dict):
-            return Check("FAIL", "latest repo-state caller run is unparseable")
-        run_status = latest.get("status")
-        conclusion = latest.get("conclusion")
-        if run_status != "completed":
-            if not isinstance(run_status, str):
-                return Check("FAIL", "latest repo-state caller status is unparseable")
-            return Check("UNKNOWN", "caller UNKNOWN(%s)" % (run_status or "unparseable"))
-        if conclusion != "success":
-            return Check("FAIL", "latest repo-state caller conclusion is %s" % conclusion)
-        return Check("PASS", "latest repo-state caller conclusion is success")
+            return Check("UNKNOWN", "no main-branch caller runs yet")
+        saw_in_progress = False
+        for run in workflow_runs:
+            if not isinstance(run, dict):
+                return Check("FAIL", "latest repo-state caller run is unparseable")
+            conclusion = run.get("conclusion")
+            if conclusion in {"skipped", "cancelled"}:
+                continue
+            if conclusion is None:
+                saw_in_progress = True
+                continue
+            if conclusion != "success":
+                return Check(
+                    "FAIL", "latest repo-state caller conclusion is %s" % conclusion
+                )
+            return Check("PASS", "latest repo-state caller conclusion is success")
+        if saw_in_progress:
+            return Check("UNKNOWN", "no terminal caller run yet")
+        return Check(
+            "UNKNOWN", "only skipped/cancelled caller runs in the latest page"
+        )
     except (
         AuditError,
         OSError,
