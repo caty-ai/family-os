@@ -27,7 +27,7 @@ Every part runs on its own, so you can take just the one you need today.
 
 </div>
 <!-- repo-state:begin (generated; do not edit) -->
-<p align="center"><sub>generation: <code>07b5a58</code> (2026-08-26T19:09:08Z) · verify: <a href="https://api.github.com/repos/caty-ai/family-os/commits/main">API HEAD</a> · <a href="./status.json">status.json</a></sub></p>
+<p align="center"><sub>generation: <code>86b347d</code> (2026-08-26T19:38:41Z) · verify: <a href="https://api.github.com/repos/caty-ai/family-os/commits/main">API HEAD</a> · <a href="./status.json">status.json</a></sub></p>
 <!-- repo-state:end -->
 
 - [Does any of this sound familiar?](#problems)
