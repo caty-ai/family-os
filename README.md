@@ -26,6 +26,9 @@ Every part runs on its own, so you can take just the one you need today.
 🔧 [Engineering documentation](docs/engineering.md) ｜ 📘 [Full reference](docs/reference.md)
 
 </div>
+<!-- repo-state:begin (generated; do not edit) -->
+<p align="center"><sub>generation: <code>105f91d</code> (2026-08-25T16:04:43Z) · verify: <a href="https://api.github.com/repos/caty-ai/family-os/commits/feat/repo-state-caller-131">API HEAD</a> · <a href="./status.json">status.json</a></sub></p>
+<!-- repo-state:end -->
 
 - [Does any of this sound familiar?](#problems)
 - [Grow it, don't rebuild it](#why)

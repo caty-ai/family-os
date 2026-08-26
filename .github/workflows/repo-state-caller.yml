@@ -1,0 +1,23 @@
+name: repository state
+
+on:
+  push:
+    branches: [main]
+  release:
+    types: [published]
+  workflow_dispatch:
+  pull_request:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: repo-state-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  repo-state:
+    uses: caty-ai/family-os/.github/workflows/repo-state.yml@v0.12.1
+    secrets: inherit
+    with:
+      generator_ref: v0.12.1

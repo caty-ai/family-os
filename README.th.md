@@ -26,6 +26,9 @@ Family OS คือแผนที่ที่บอกว่ากลไกซ�
 🔧 [เอกสารสำหรับวิศวกร](docs/engineering.md) (ภาษาอังกฤษ) ｜ 📘 [ข้อกำหนดฉบับเต็ม](docs/reference.md) (ภาษาอังกฤษ)
 
 </div>
+<!-- repo-state:begin (generated; do not edit) -->
+<p align="center"><sub>generation: <code>105f91d</code> (2026-08-25T16:04:43Z) · verify: <a href="https://api.github.com/repos/caty-ai/family-os/commits/feat/repo-state-caller-131">API HEAD</a> · <a href="./status.json">status.json</a></sub></p>
+<!-- repo-state:end -->
 
 - [คุณเคยเจอเรื่องแบบนี้ไหม](#problems)
 - [ไม่ใช่สร้างใหม่ แต่คือเลี้ยงให้โต](#why)

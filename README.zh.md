@@ -26,6 +26,9 @@ Family OS 是一张地图，告诉你解决每一个问题的部件**在哪里**
 🔧 [面向工程师的文档](docs/engineering.md)（英文） ｜ 📘 [详细规格](docs/reference.md)（英文）
 
 </div>
+<!-- repo-state:begin (generated; do not edit) -->
+<p align="center"><sub>generation: <code>105f91d</code> (2026-08-25T16:04:43Z) · verify: <a href="https://api.github.com/repos/caty-ai/family-os/commits/feat/repo-state-caller-131">API HEAD</a> · <a href="./status.json">status.json</a></sub></p>
+<!-- repo-state:end -->
 
 - [你是否也遇到过这些情况？](#problems)
 - [不是重做，而是养成](#why)
