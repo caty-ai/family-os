@@ -153,7 +153,7 @@ class RepoStateAuditSelfTest(unittest.TestCase):
         )
         self.assertEqual("PENDING", result.status)
 
-    def test_nullable_agents_entry_is_forward_compatible(self) -> None:
+    def test_nullable_agents_entry_generator_failure_is_unknown(self) -> None:
         schema = json.loads(audit.DEFAULT_SCHEMA.read_text(encoding="utf-8"))
         described = self.fixture.commit("feat: content")
         status = {
@@ -191,6 +191,62 @@ class RepoStateAuditSelfTest(unittest.TestCase):
         self.fixture.commit_staged(
             "chore(repo-state): %s" % described[:7], audit.BOT_COMMITTER
         )
+        stub_generator = pathlib.Path(self.temporary.name) / "stub-generator.sh"
+        stub_generator.write_text(
+            "#!/bin/sh\n"
+            "printf '%s\\n' 'neither FOR-AGENTS.md nor AGENTS.md exists' >&2\n"
+            "exit 1\n",
+            encoding="utf-8",
+        )
+
+        with mock.patch.object(
+            audit, "check_actions", return_value=audit.Check("PASS", "caller success")
+        ):
+            result = audit.audit_checkout(
+                "fixture/repo",
+                self.root,
+                schema,
+                stub_generator,
+                "fixture-token",
+                1.0,
+            )
+        self.assertEqual("UNKNOWN", result.status)
+        self.assertIn(
+            "regeneration skipped: v0.11.0 generator cannot run without an agents entry",
+            result.details,
+        )
+        self.assertFalse((self.root / "AGENTS.md").exists())
+        self.assertFalse((self.root / "FOR-AGENTS.md").exists())
+
+    def test_nullable_agents_entry_real_generator_is_byte_clean(self) -> None:
+        schema = json.loads(audit.DEFAULT_SCHEMA.read_text(encoding="utf-8"))
+        (self.root / "README.md").write_text("# Fixture\n", encoding="utf-8")
+        subprocess.run(
+            ["git", "-C", str(self.root), "add", "README.md"], check=True
+        )
+        described = self.fixture.commit("feat: content")
+        environment = os.environ.copy()
+        environment.update(
+            {
+                "REPO_STATE_NO_GH": "1",
+                "REPO_STATE_REPO": "fixture/repo",
+                "REPO_STATE_BRANCH": "main",
+            }
+        )
+        subprocess.run(
+            ["sh", str(audit.DEFAULT_GENERATOR), "--stamp-mode", "auto"],
+            cwd=str(self.root),
+            check=True,
+            env=environment,
+            stdout=subprocess.DEVNULL,
+        )
+        subprocess.run(
+            ["git", "-C", str(self.root), "add", "README.md", "status.json"],
+            check=True,
+        )
+        self.fixture.commit_staged(
+            "chore(repo-state): %s" % described[:7], audit.BOT_COMMITTER
+        )
 
         with mock.patch.object(
             audit, "check_actions", return_value=audit.Check("PASS", "caller success")
@@ -203,13 +259,12 @@ class RepoStateAuditSelfTest(unittest.TestCase):
                 "fixture-token",
                 1.0,
             )
-        self.assertEqual("UNKNOWN", result.status)
-        self.assertIn(
-            "regeneration skipped: v0.11.0 generator cannot run without an agents entry",
-            result.details,
-        )
+        status = json.loads((self.root / "status.json").read_text(encoding="utf-8"))
+        self.assertEqual("PASS", result.status)
+        self.assertIn("canonical regeneration is byte-clean", result.details)
         self.assertFalse((self.root / "AGENTS.md").exists())
         self.assertFalse((self.root / "FOR-AGENTS.md").exists())
+        self.assertIsNone(status["agents_entry"])
 
     def test_regeneration_allows_transient_managed_diff_only(self) -> None:
         (self.root / "README.md").write_text("# Fixture\n", encoding="utf-8")
