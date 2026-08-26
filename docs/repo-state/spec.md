@@ -84,8 +84,9 @@ not hand reviewers branch-pinned raw URLs and do not use dates as evidence of fr
 
 The reusable workflow has two jobs. `update` runs for default-branch pushes, published
 releases, and manual dispatches. Push events alone are skipped when the actor is
-`github-actions[bot]` or the head commit message begins `chore(repo-state):`. Release and
-manual events are never skipped. Push runs preserve the existing release fields and do
+`github-actions[bot]` or the organization's stamp app, or the head commit message begins
+`chore(repo-state):`. Release and manual events are never skipped. Push runs preserve the
+existing release fields and do
 not query GitHub releases. Release and manual-dispatch runs check out the default branch
 HEAD, not the release tag, and they refresh release metadata by running
 `repo-state-gen.sh --stamp-mode auto --refresh-release`. An explicit GitHub 404 maps the

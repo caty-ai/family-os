@@ -50,14 +50,25 @@ jobs:
       contents: write
     env:
       APP_ID: ${{ secrets.REPO_STATE_APP_ID }}
+      APP_KEY: ${{ secrets.REPO_STATE_APP_PRIVATE_KEY }}
     steps:
       - name: mint stamp push token
         id: app-token
-        if: env.APP_ID != ''
+        if: env.APP_ID != '' && env.APP_KEY != ''
         uses: actions/create-github-app-token@v2
         with:
           app-id: ${{ secrets.REPO_STATE_APP_ID }}
           private-key: ${{ secrets.REPO_STATE_APP_PRIVATE_KEY }}
+
+      - name: report push credential mode
+        env:
+          TOKEN_PRESENT: ${{ steps.app-token.outputs.token != '' }}
+        run: |
+          if [ "$TOKEN_PRESENT" = "true" ]; then
+            echo "stamp pushes authenticate as the org app"
+          else
+            echo "no complete app credentials; falling back to GITHUB_TOKEN (v0.11.1 behavior)"
+          fi
 
       - name: check out default branch for release or dispatch
         if: github.event_name != 'push'
