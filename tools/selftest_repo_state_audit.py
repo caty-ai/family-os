@@ -11,6 +11,7 @@ import pathlib
 import subprocess
 import tempfile
 import unittest
+import urllib.parse
 from types import SimpleNamespace
 from unittest import mock
 
@@ -75,24 +76,53 @@ class RepoStateAuditSelfTest(unittest.TestCase):
     def tearDown(self) -> None:
         self.temporary.cleanup()
 
-    def _check_actions_with_runs(self, workflow_runs):
+    def _check_actions_with_runs(
+        self,
+        workflow_runs,
+        *,
+        runs_total_count=None,
+        workflows=None,
+        default_branch="main",
+        expected_workflow_id=1,
+    ):
         active = {
-            "total_count": 1,
-            "workflows": [
-                {
-                    "id": 1,
-                    "name": "repository state",
-                    "path": ".github/workflows/repo-state.yml",
-                    "state": "active",
-                }
-            ],
+            "total_count": len(workflows) if workflows is not None else 1,
+            "workflows": (
+                workflows
+                if workflows is not None
+                else [
+                    {
+                        "id": 1,
+                        "name": "repository state",
+                        "path": ".github/workflows/repo-state.yml",
+                        "state": "active",
+                    }
+                ]
+            ),
         }
-        runs = {"workflow_runs": workflow_runs}
+        runs = {
+            "total_count": (
+                len(workflow_runs)
+                if runs_total_count is None
+                else runs_total_count
+            ),
+            "workflow_runs": workflow_runs,
+        }
         with mock.patch.object(
             audit, "_http_json", side_effect=[active, runs]
         ) as http_json:
-            result = audit.check_actions("fixture/repo", "fixture-token", 1)
+            result = audit.check_actions(
+                "fixture/repo", "fixture-token", 1, default_branch
+            )
         self.assertIn("per_page=100", http_json.call_args_list[1].args[0])
+        self.assertIn(
+            "/actions/workflows/%d/runs" % expected_workflow_id,
+            http_json.call_args_list[1].args[0],
+        )
+        self.assertIn(
+            "branch=%s" % urllib.parse.quote(default_branch, safe=""),
+            http_json.call_args_list[1].args[0],
+        )
         return result
 
     def test_stamp_commit_parsing_and_auto_identity(self) -> None:
@@ -399,12 +429,64 @@ class RepoStateAuditSelfTest(unittest.TestCase):
         with mock.patch.object(
             audit.urllib.request, "build_opener", return_value=opener
         ):
-            result = audit.check_actions("fixture/repo", "fixture-token", 1.0)
+            result = audit.check_actions("fixture/repo", "fixture-token", 1.0, "main")
         forbidden.close()
 
         self.assertEqual("UNKNOWN", result.status)
         self.assertEqual("caller UNKNOWN(api-error)", result.detail)
         self.assertEqual(2, opener.open.call_count)
+
+    def test_persistent_actions_unknown_escalates_after_freshness_window(self) -> None:
+        (self.root / "status.json").write_text("{}\n", encoding="utf-8")
+        now = datetime.datetime.now(datetime.timezone.utc)
+        unknown = audit.Check("UNKNOWN", "no default-branch caller runs yet")
+        cases = [
+            ("past-window", now - datetime.timedelta(days=15), "FAIL"),
+            ("within-window", now - datetime.timedelta(days=13), "UNKNOWN"),
+        ]
+        for label, generated_at, expected in cases:
+            with self.subTest(label=label):
+                status = {
+                    "branch": "trunk",
+                    "generated_at": generated_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                }
+                with mock.patch.multiple(
+                    audit,
+                    _load_status=mock.DEFAULT,
+                    classify_identity=mock.DEFAULT,
+                    check_regeneration=mock.DEFAULT,
+                    check_actions=mock.DEFAULT,
+                ) as patched:
+                    patched["_load_status"].return_value = (status, [])
+                    patched["classify_identity"].return_value = audit.Check(
+                        "PASS", "identity healthy"
+                    )
+                    patched["check_regeneration"].return_value = audit.Check(
+                        "PASS", "regeneration healthy"
+                    )
+                    patched["check_actions"].return_value = unknown
+                    result = audit.audit_checkout(
+                        "fixture/repo",
+                        self.root,
+                        {},
+                        pathlib.Path("unused-generator"),
+                        "fixture-token",
+                        1.0,
+                    )
+                self.assertEqual(expected, result.status)
+                patched["check_actions"].assert_called_once_with(
+                    "fixture/repo", "fixture-token", 1.0, "trunk"
+                )
+
+        healthy = audit.Check("PASS", "latest repo-state caller conclusion is success")
+        self.assertIs(
+            healthy,
+            audit._escalate_actions_unknown(
+                healthy,
+                (now - datetime.timedelta(days=30)).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                now=now,
+            ),
+        )
 
     def test_clone_without_origin_main_is_pending(self) -> None:
         source = pathlib.Path(self.temporary.name) / "trunk-source"
@@ -468,12 +550,15 @@ class RepoStateAuditSelfTest(unittest.TestCase):
         self.assertEqual(1, drift_exit_code)
 
     def test_actions_known_drift_fails_but_no_token_is_unknown(self) -> None:
-        self.assertEqual("UNKNOWN", audit.check_actions("fixture/repo", None, 1).status)
+        self.assertEqual(
+            "UNKNOWN", audit.check_actions("fixture/repo", None, 1, "main").status
+        )
 
         unparseable = {"total_count": 1, "workflows": {}}
         with mock.patch.object(audit, "_http_json", return_value=unparseable):
             self.assertEqual(
-                "FAIL", audit.check_actions("fixture/repo", "fixture-token", 1).status
+                "FAIL",
+                audit.check_actions("fixture/repo", "fixture-token", 1, "main").status,
             )
 
         truncated = {
@@ -489,13 +574,15 @@ class RepoStateAuditSelfTest(unittest.TestCase):
         }
         with mock.patch.object(audit, "_http_json", return_value=truncated):
             self.assertEqual(
-                "FAIL", audit.check_actions("fixture/repo", "fixture-token", 1).status
+                "FAIL",
+                audit.check_actions("fixture/repo", "fixture-token", 1, "main").status,
             )
 
         missing = {"total_count": 0, "workflows": []}
         with mock.patch.object(audit, "_http_json", return_value=missing):
             self.assertEqual(
-                "FAIL", audit.check_actions("fixture/repo", "fixture-token", 1).status
+                "FAIL",
+                audit.check_actions("fixture/repo", "fixture-token", 1, "main").status,
             )
 
         disabled = {
@@ -511,7 +598,8 @@ class RepoStateAuditSelfTest(unittest.TestCase):
         }
         with mock.patch.object(audit, "_http_json", return_value=disabled):
             self.assertEqual(
-                "FAIL", audit.check_actions("fixture/repo", "fixture-token", 1).status
+                "FAIL",
+                audit.check_actions("fixture/repo", "fixture-token", 1, "main").status,
             )
 
         active = {
@@ -531,13 +619,15 @@ class RepoStateAuditSelfTest(unittest.TestCase):
         }
         with mock.patch.object(audit, "_http_json", return_value=bad_id):
             self.assertEqual(
-                "FAIL", audit.check_actions("fixture/repo", "fixture-token", 1).status
+                "FAIL",
+                audit.check_actions("fixture/repo", "fixture-token", 1, "main").status,
             )
 
         bad_runs = {"workflow_runs": {}}
         with mock.patch.object(audit, "_http_json", side_effect=[active, bad_runs]):
             self.assertEqual(
-                "FAIL", audit.check_actions("fixture/repo", "fixture-token", 1).status
+                "FAIL",
+                audit.check_actions("fixture/repo", "fixture-token", 1, "main").status,
             )
 
         failed_run = {
@@ -545,12 +635,14 @@ class RepoStateAuditSelfTest(unittest.TestCase):
         }
         with mock.patch.object(audit, "_http_json", side_effect=[active, failed_run]):
             self.assertEqual(
-                "FAIL", audit.check_actions("fixture/repo", "fixture-token", 1).status
+                "FAIL",
+                audit.check_actions("fixture/repo", "fixture-token", 1, "main").status,
             )
 
         with mock.patch.object(audit, "_http_json", side_effect=OSError):
             self.assertEqual(
-                "UNKNOWN", audit.check_actions("fixture/repo", "fixture-token", 1).status
+                "UNKNOWN",
+                audit.check_actions("fixture/repo", "fixture-token", 1, "main").status,
             )
 
     def test_actions_uses_success_behind_newest_skipped_run(self) -> None:
@@ -586,7 +678,8 @@ class RepoStateAuditSelfTest(unittest.TestCase):
         )
         self.assertEqual(
             audit.Check(
-                "UNKNOWN", "only skipped/cancelled caller runs in the latest page"
+                "UNKNOWN",
+                "only skipped/cancelled/stale/neutral caller runs in the latest page",
             ),
             result,
         )
@@ -594,8 +687,79 @@ class RepoStateAuditSelfTest(unittest.TestCase):
     def test_actions_empty_run_list_is_unknown(self) -> None:
         result = self._check_actions_with_runs([])
         self.assertEqual(
-            audit.Check("UNKNOWN", "no main-branch caller runs yet"), result
+            audit.Check("UNKNOWN", "no default-branch caller runs yet"), result
         )
+
+    def test_actions_reports_truncated_runs_when_terminal_verdict_is_buried(self) -> None:
+        result = self._check_actions_with_runs(
+            [
+                {"status": "completed", "conclusion": "skipped"},
+                {"status": "completed", "conclusion": "neutral"},
+            ],
+            runs_total_count=101,
+        )
+        self.assertEqual(
+            audit.Check(
+                "UNKNOWN", "repo-state caller runs truncated; verdict unreliable"
+            ),
+            result,
+        )
+
+    def test_actions_non_string_conclusion_is_unknown_instead_of_crashing(self) -> None:
+        for conclusion in ([], {}):
+            with self.subTest(conclusion=conclusion):
+                result = self._check_actions_with_runs(
+                    [{"status": "completed", "conclusion": conclusion}]
+                )
+                self.assertEqual(
+                    audit.Check("UNKNOWN", "no terminal caller run yet"), result
+                )
+
+    def test_actions_stale_and_neutral_conclusions_are_skipped(self) -> None:
+        for conclusion in ("stale", "neutral"):
+            with self.subTest(conclusion=conclusion):
+                result = self._check_actions_with_runs(
+                    [
+                        {"status": "completed", "conclusion": conclusion},
+                        {"status": "completed", "conclusion": "success"},
+                    ]
+                )
+                self.assertEqual(
+                    audit.Check(
+                        "PASS", "latest repo-state caller conclusion is success"
+                    ),
+                    result,
+                )
+
+    def test_actions_prefers_host_caller_and_keeps_standard_name(self) -> None:
+        reusable = {
+            "id": 1,
+            "name": "repository state",
+            "path": ".github/workflows/repo-state.yml",
+            "state": "active",
+        }
+        caller = {
+            "id": 2,
+            "name": "repository state",
+            "path": ".github/workflows/repo-state-caller.yml",
+            "state": "active",
+        }
+        success = [{"status": "completed", "conclusion": "success"}]
+
+        host_result = self._check_actions_with_runs(
+            success,
+            workflows=[reusable, caller],
+            expected_workflow_id=2,
+        )
+        self.assertEqual("PASS", host_result.status)
+
+        standard_result = self._check_actions_with_runs(
+            success,
+            workflows=[reusable],
+            default_branch="release/v2",
+            expected_workflow_id=1,
+        )
+        self.assertEqual("PASS", standard_result.status)
 
     def test_actions_uses_success_behind_in_progress_run(self) -> None:
         result = self._check_actions_with_runs(
