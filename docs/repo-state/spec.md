@@ -115,7 +115,8 @@ fails closed when reality cannot be enumerated. It verifies schema presence, app
 mode-specific health invariant by commit identity, regenerates and diffs the managed
 state, checks the latest caller-run conclusion, and appends dated results to the weekly
 report issue. An external schedule-liveness probe treats a report older than eight days
-as an alert, including GitHub's scheduled-workflow auto-disable failure mode.
+as an alert, including GitHub's scheduled-workflow auto-disable failure mode. A TRANSIENT
+content-commit HEAD escalates to FAIL after it remains unstamped for seven days.
 
 For `auto`, audit health means HEAD is a bot stamp commit and `describes_commit` is its
 nearest non-stamp ancestor; position alone is insufficient. The automatic mechanism
