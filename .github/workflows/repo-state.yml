@@ -18,9 +18,10 @@ name: repository state
 #   cancel-in-progress: false
 # jobs:
 #   repo-state:
-#     uses: caty-ai/family-os/.github/workflows/repo-state.yml@v0.11.1
+#     uses: caty-ai/family-os/.github/workflows/repo-state.yml@v0.11.2
+#     secrets: inherit
 #     with:
-#       generator_ref: v0.11.1
+#       generator_ref: v0.11.2
 #
 # The `uses:` ref and `generator_ref` must always move together: a v0.11.0
 # workflow with a v0.11.1 generator fails at `git add` on a repository whose
@@ -42,11 +43,22 @@ jobs:
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'push' &&
        github.actor != 'github-actions[bot]' &&
+       github.actor != 'caty-repo-state-bot[bot]' &&
        !startsWith(github.event.head_commit.message, 'chore(repo-state):'))
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      APP_ID: ${{ secrets.REPO_STATE_APP_ID }}
     steps:
+      - name: mint stamp push token
+        id: app-token
+        if: env.APP_ID != ''
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.REPO_STATE_APP_ID }}
+          private-key: ${{ secrets.REPO_STATE_APP_PRIVATE_KEY }}
+
       - name: check out default branch for release or dispatch
         if: github.event_name != 'push'
         uses: actions/checkout@v4
@@ -54,6 +66,7 @@ jobs:
           ref: ${{ github.event.repository.default_branch }}
           fetch-depth: 0
           fetch-tags: true
+          token: ${{ steps.app-token.outputs.token || github.token }}
 
       - name: check out pushed commit
         if: github.event_name == 'push'
@@ -62,6 +75,7 @@ jobs:
           ref: ${{ github.sha }}
           fetch-depth: 0
           fetch-tags: true
+          token: ${{ steps.app-token.outputs.token || github.token }}
 
       - name: fetch pinned generator
         env:

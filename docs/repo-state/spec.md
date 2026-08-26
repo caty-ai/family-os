@@ -103,6 +103,7 @@ Automatic mode requires the recorded, scoped canon exception that allows
 `github-actions[bot]` to push only `chore(repo-state):` commits to the default branch;
 all other direct pushes remain forbidden. Branch protection must grant that bot the
 corresponding allowance where protection exists.
+Where a repository provides dedicated credentials, automatic-mode pushes authenticate as an organization-dedicated GitHub App and any ruleset bypass is scoped to that app.
 
 The `check` job runs for pull requests and invokes only `repo-state-gen.sh --check`. It
 requires a schema-valid `status.json`, a valid marker block in the entire stamped-file
