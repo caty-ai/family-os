@@ -75,6 +75,26 @@ class RepoStateAuditSelfTest(unittest.TestCase):
     def tearDown(self) -> None:
         self.temporary.cleanup()
 
+    def _check_actions_with_runs(self, workflow_runs):
+        active = {
+            "total_count": 1,
+            "workflows": [
+                {
+                    "id": 1,
+                    "name": "repository state",
+                    "path": ".github/workflows/repo-state.yml",
+                    "state": "active",
+                }
+            ],
+        }
+        runs = {"workflow_runs": workflow_runs}
+        with mock.patch.object(
+            audit, "_http_json", side_effect=[active, runs]
+        ) as http_json:
+            result = audit.check_actions("fixture/repo", "fixture-token", 1)
+        self.assertIn("per_page=100", http_json.call_args_list[1].args[0])
+        return result
+
     def test_stamp_commit_parsing_and_auto_identity(self) -> None:
         content = self.fixture.commit("feat: content")
         first_stamp = self.fixture.commit(
@@ -532,6 +552,62 @@ class RepoStateAuditSelfTest(unittest.TestCase):
             self.assertEqual(
                 "UNKNOWN", audit.check_actions("fixture/repo", "fixture-token", 1).status
             )
+
+    def test_actions_uses_success_behind_newest_skipped_run(self) -> None:
+        result = self._check_actions_with_runs(
+            [
+                {"status": "completed", "conclusion": "skipped"},
+                {"status": "completed", "conclusion": "success"},
+            ]
+        )
+        self.assertEqual(
+            audit.Check("PASS", "latest repo-state caller conclusion is success"),
+            result,
+        )
+
+    def test_actions_uses_failure_behind_newest_skipped_run(self) -> None:
+        result = self._check_actions_with_runs(
+            [
+                {"status": "completed", "conclusion": "skipped"},
+                {"status": "completed", "conclusion": "failure"},
+            ]
+        )
+        self.assertEqual(
+            audit.Check("FAIL", "latest repo-state caller conclusion is failure"),
+            result,
+        )
+
+    def test_actions_all_skipped_or_cancelled_runs_are_unknown(self) -> None:
+        result = self._check_actions_with_runs(
+            [
+                {"status": "completed", "conclusion": "skipped"},
+                {"status": "completed", "conclusion": "cancelled"},
+            ]
+        )
+        self.assertEqual(
+            audit.Check(
+                "UNKNOWN", "only skipped/cancelled caller runs in the latest page"
+            ),
+            result,
+        )
+
+    def test_actions_empty_run_list_is_unknown(self) -> None:
+        result = self._check_actions_with_runs([])
+        self.assertEqual(
+            audit.Check("UNKNOWN", "no main-branch caller runs yet"), result
+        )
+
+    def test_actions_uses_success_behind_in_progress_run(self) -> None:
+        result = self._check_actions_with_runs(
+            [
+                {"status": "in_progress", "conclusion": None},
+                {"status": "completed", "conclusion": "success"},
+            ]
+        )
+        self.assertEqual(
+            audit.Check("PASS", "latest repo-state caller conclusion is success"),
+            result,
+        )
 
 
 if __name__ == "__main__":
