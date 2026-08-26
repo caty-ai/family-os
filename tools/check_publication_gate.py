@@ -734,9 +734,13 @@ def selftest_policy_parsers():
 
 
 def selftest_shipped_denylist():
-    if os.environ.get("PUBLICATION_GATE_SELFTEST_COPY_PROBE"):
-        return
     root = Path(__file__).resolve().parent.parent
+    if not (root / DENYLIST_NAME).exists():
+        print(
+            "skip: selftest_shipped_denylist "
+            "(copied-single-file: .publication-denylist absent)"
+        )
+        return
     rules = tuple(
         rule for rule in load_denylist(root) if rule[0] == "absolute-personal-path"
     )
@@ -748,6 +752,7 @@ def selftest_shipped_denylist():
     )
     safe_paths = (
         "/" + "home/" + "<user>/project",
+        "/" + "home/" + "{user}/project",
         "/" + "home/" + "$USER/bin",
         "a sentence mentioning the " + "/" + "home/" + " directory bare",
     )
@@ -1217,6 +1222,24 @@ def selftest_end_to_end():
                 result.returncode == 0 and "PASS (publication gate selftest" in result.stdout,
                 "copied-single-file selftest: %r" % result.stdout,
             )
+
+        environment = dict(os.environ)
+        environment["PUBLICATION_GATE_SELFTEST_COPY_PROBE"] = "1"
+        result = subprocess.run(
+            [sys.executable, "-B", str(Path(__file__).resolve()), "--selftest"],
+            cwd=str(Path(__file__).resolve().parent.parent),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            env=environment,
+            check=False,
+            text=True,
+        )
+        _selftest_check(
+            result.returncode == 0
+            and "PASS (publication gate selftest; assertions: 67)" in result.stdout
+            and "skip: selftest_shipped_denylist" not in result.stdout,
+            "real-root copy-probe runs shipped-denylist selftest: %r" % result.stdout,
+        )
 
 
 def run_selftests():
