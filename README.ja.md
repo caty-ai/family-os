@@ -27,7 +27,7 @@ Family OS は、その一つひとつに効く仕組みが**どこにあるか**
 
 </div>
 <!-- repo-state:begin (generated; do not edit) -->
-<p align="center"><sub>generation: <code>86b347d</code> (2026-08-26T19:38:41Z) · verify: <a href="https://api.github.com/repos/caty-ai/family-os/commits/main">API HEAD</a> · <a href="./status.json">status.json</a></sub></p>
+<p align="center"><sub>generation: <code>4c90d0c</code> (2026-08-27T02:55:06Z) · verify: <a href="https://api.github.com/repos/caty-ai/family-os/commits/main">API HEAD</a> · <a href="./status.json">status.json</a></sub></p>
 <!-- repo-state:end -->
 
 - [こんな経験はありませんか？](#problems)
