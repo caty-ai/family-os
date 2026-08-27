@@ -37,6 +37,10 @@ REPOSITORY_PATH = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 STAMP_PREFIX = "chore(repo-state):"
 BOT_COMMITTER = "github-actions[bot]"
 TRANSIENT_MAX_AGE = datetime.timedelta(days=7)
+ACTIONS_UNKNOWN_MAX_AGE = datetime.timedelta(days=14)
+ACTIONS_UNKNOWN_DETAIL_EXEMPTIONS = frozenset(
+    {"caller UNKNOWN(no-token)", "caller UNKNOWN(api-error)"}
+)
 BEGIN_MARKER = "<!-- repo-state:begin (generated; do not edit) -->"
 END_MARKER = "<!-- repo-state:end -->"
 
@@ -513,7 +517,9 @@ def _http_json(url: str, token: Optional[str], timeout: float):
         return fetch(None)
 
 
-def check_actions(repo: str, token: Optional[str], timeout: float) -> Check:
+def check_actions(
+    repo: str, token: Optional[str], timeout: float, default_branch: str
+) -> Check:
     if not token:
         return Check("UNKNOWN", "caller UNKNOWN(no-token)")
     encoded_repo = urllib.parse.quote(repo, safe="/")
@@ -533,6 +539,11 @@ def check_actions(repo: str, token: Optional[str], timeout: float) -> Check:
             return Check("FAIL", "repo-state caller workflow list is truncated")
 
         exact = [
+            workflow
+            for workflow in workflows
+            if workflow.get("path") == ".github/workflows/repo-state-caller.yml"
+        ]
+        exact = exact or [
             workflow
             for workflow in workflows
             if workflow.get("path") == ".github/workflows/repo-state.yml"
@@ -558,23 +569,31 @@ def check_actions(repo: str, token: Optional[str], timeout: float) -> Check:
         if not isinstance(workflow_id, int):
             return Check("FAIL", "repo-state caller workflow id is unparseable")
 
+        runs_query = urllib.parse.urlencode(
+            {"branch": default_branch, "per_page": 100}
+        )
         runs = _http_json(
-            "https://api.github.com/repos/%s/actions/workflows/%d/runs?branch=main&per_page=100"
-            % (encoded_repo, workflow_id),
+            "https://api.github.com/repos/%s/actions/workflows/%d/runs?%s"
+            % (encoded_repo, workflow_id, runs_query),
             token,
             timeout,
         )
         workflow_runs = runs.get("workflow_runs") if isinstance(runs, dict) else None
         if not isinstance(workflow_runs, list):
             return Check("FAIL", "repo-state caller run list is unparseable")
-        if not workflow_runs:
-            return Check("UNKNOWN", "no main-branch caller runs yet")
+        total_count = runs.get("total_count")
+        runs_truncated = (
+            isinstance(total_count, int) and total_count > len(workflow_runs)
+        )
+        if not workflow_runs and not runs_truncated:
+            return Check("UNKNOWN", "no default-branch caller runs yet")
         saw_in_progress = False
         for run in workflow_runs:
             if not isinstance(run, dict):
                 return Check("FAIL", "latest repo-state caller run is unparseable")
             conclusion = run.get("conclusion")
-            if conclusion in {"skipped", "cancelled"}:
+            conclusion = conclusion if isinstance(conclusion, str) else None
+            if conclusion in {"skipped", "cancelled", "stale", "neutral"}:
                 continue
             if conclusion is None:
                 saw_in_progress = True
@@ -586,8 +605,13 @@ def check_actions(repo: str, token: Optional[str], timeout: float) -> Check:
             return Check("PASS", "latest repo-state caller conclusion is success")
         if saw_in_progress:
             return Check("UNKNOWN", "no terminal caller run yet")
+        if runs_truncated:
+            return Check(
+                "UNKNOWN", "repo-state caller runs truncated; verdict unreliable"
+            )
         return Check(
-            "UNKNOWN", "only skipped/cancelled caller runs in the latest page"
+            "UNKNOWN",
+            "only skipped/cancelled/stale/neutral caller runs in the latest page",
         )
     except (
         AuditError,
@@ -597,6 +621,27 @@ def check_actions(repo: str, token: Optional[str], timeout: float) -> Check:
         UnicodeDecodeError,
     ):
         return Check("UNKNOWN", "caller UNKNOWN(api-error)")
+
+
+def _escalate_actions_unknown(
+    check: Check,
+    generated_at: str,
+    now: Optional[datetime.datetime] = None,
+) -> Check:
+    if check.status != "UNKNOWN":
+        return check
+    if check.detail in ACTIONS_UNKNOWN_DETAIL_EXEMPTIONS:
+        return check
+    generated = datetime.datetime.fromisoformat(generated_at.replace("Z", "+00:00"))
+    current_time = now or datetime.datetime.now(datetime.timezone.utc)
+    age = current_time - generated.astimezone(datetime.timezone.utc)
+    if age <= ACTIONS_UNKNOWN_MAX_AGE:
+        return check
+    return Check(
+        "FAIL",
+        "%s; stamp is older than %d days"
+        % (check.detail, ACTIONS_UNKNOWN_MAX_AGE.days),
+    )
 
 
 def _combine(checks: Iterable[Check]) -> Tuple[str, Tuple[str, ...]]:
@@ -641,7 +686,9 @@ def audit_checkout(
         status, _targets = _load_status(repo_dir, schema, repo)
         identity = classify_identity(repo_dir, status)
         regeneration = check_regeneration(repo_dir, repo, status, generator, identity)
-        actions = check_actions(repo, token, timeout)
+        # validate_status pins status["branch"] to main; this parameter is future-proofing, not multi-branch support.
+        actions = check_actions(repo, token, timeout, status["branch"])
+        actions = _escalate_actions_unknown(actions, status["generated_at"])
         overall, details = _combine((identity, regeneration, actions))
         return RepoResult(repo, overall, details)
     except AuditError as error:
