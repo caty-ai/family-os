@@ -882,7 +882,7 @@ def selftest_shipped_denylist():
                 wsl_backslash_leak,
             )
         ),
-        "shipped wsl-drvfs-user-path detects authority-qualified and UNC shapes",
+        "shipped wsl-drvfs-user-path detects authority-qualified, UNC and all-backslash shapes",
     )
     wsl_dotted_leak = "/mn" + "t/c/us" + "ers/j.doe/family-os/.env"
     wsl_dotted_match = wsl_drvfs_user_path.search(wsl_dotted_leak)
@@ -910,6 +910,8 @@ def selftest_shipped_denylist():
         "https://api.github.com/users/alice",
         "mailto:Users/alice",
         "/opt/c/users/alice",
+        "/mno/c/users/alice",
+        "/mnt/c/Windows/System32",
         "/mnt/1/users/foo",
         "/mnt/wsl/users/foo",
         "/mnt/backup/users/shared",
