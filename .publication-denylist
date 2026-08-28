@@ -6,6 +6,17 @@ personal-real-name-ja	翔さ[ん]|翔[士]|翔ど[ん]
 approval-record	承認記[録]|オーナー承[認]|approved\s+by|CP-\d+[A-Za-z]{0,2}\s*(?:GO|承[認])
 absolute-personal-path	(?-i:/Users/|/home/(?![<{])[A-Za-z0-9._-]+)
 windows-user-path	\b[A-Za-z]:[\\/]+Users[\\/]+(?![<{])[\w.-]+
+# `wsl-drvfs-user-path` = caty-ai/x-collector#75 (PR#76 / v0.1.7) で凍結した family 形をそのまま採用。
+# WSL2 の DrvFs ビュー `/mnt/<drive>/users/<name>` を対象にする。Windows 側は大文字小文字を区別しないため
+# 小文字綴りも同じ漏洩だが、`absolute-personal-path` の case-sensitive 部にも `windows-user-path` の
+# ドライブ文字前提にも掛からない。`absolute-personal-path` を case-insensitive 化して代用してはならない
+# (`api.github.com/users/...` の FP クラスが再び開く)。
+# 先頭にアンカーを置かない形は凍結時の 5席裁定。4席が独立に、先頭 lookbehind が UNC・`vscode-remote://`・
+# `file://localhost/`・相対や省略形を取りこぼす fail-open を作ると実証した。`absolute-personal-path` も
+# 先頭アンカーを持たないため、これが family の既定形。**戻してはならない。**
+# 先頭セパレータが単数 `[\\/]` なのも意図的（`+` は長いセパレータ連続で二次バックトラッキングを起こす）。
+# 代償は URL パス形の過検出だが fail-closed 側であり、3リポ537ファイルの実測で誤検出ゼロ。
+wsl-drvfs-user-path	[\\/]mnt[\\/]+[A-Za-z][\\/]+users[\\/]+(?![<{])[\w.-]+
 private-network-address	\b100\.(?:6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\.\d+\.\d+\b
 local-service-host-port	localhost:\d+
 local-service-loopback	\b(?:127\.0\.0\.1|0\.0\.0\.0)\b
