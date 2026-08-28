@@ -769,11 +769,11 @@ def selftest_shipped_denylist():
             "shipped absolute-personal-path permits placeholder or bare path",
         )
 
-    rules = tuple(
+    windows_rules = tuple(
         rule for rule in load_denylist(root) if rule[0] == "windows-user-path"
     )
-    _selftest_check(len(rules) == 1, "shipped windows-user-path rule")
-    windows_user_path = rules[0][1]
+    _selftest_check(len(windows_rules) == 1, "shipped windows-user-path rule")
+    windows_user_path = windows_rules[0][1]
     windows_backslash_leak = "C:\\Us" + "ers\\alice\\family-os\\.env"
     windows_mixed_sep_leak = "C:\\Us" + "ers/alice\\family-os\\.env"
     windows_cjk_leak = "C:\\Us" + "ers\\翔太郎\\family-os\\.env"
@@ -819,7 +819,7 @@ def selftest_shipped_denylist():
     windows_failures = []
     _selftest_check(
         check_denylist(
-            {"win.txt": windows_backslash_leak}, rules, windows_failures
+            {"win.txt": windows_backslash_leak}, windows_rules, windows_failures
         )
         == 1
         and windows_failures
@@ -830,7 +830,7 @@ def selftest_shipped_denylist():
     _selftest_check(
         check_denylist(
             {"enc.txt": "C:%5CUs" + "ers%5Calice"},
-            rules,
+            windows_rules,
             windows_decoded_failures,
         )
         == 1
