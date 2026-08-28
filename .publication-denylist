@@ -5,6 +5,7 @@ personal-real-name-en	(?:(?<!(?-i:\AMIT License\n\nCopyright \(c\) 2026 ))\bShoj
 personal-real-name-ja	翔さ[ん]|翔[士]|翔ど[ん]
 approval-record	承認記[録]|オーナー承[認]|approved\s+by|CP-\d+[A-Za-z]{0,2}\s*(?:GO|承[認])
 absolute-personal-path	(?-i:/Users/|/home/(?![<{])[A-Za-z0-9._-]+)
+windows-user-path	\b[A-Za-z]:[\\/]+Users[\\/]+(?![<{])[\w.-]+
 private-network-address	\b100\.(?:6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\.\d+\.\d+\b
 local-service-host-port	localhost:\d+
 local-service-loopback	\b(?:127\.0\.0\.1|0\.0\.0\.0)\b
