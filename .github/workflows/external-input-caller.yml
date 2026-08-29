@@ -34,3 +34,4 @@ jobs:
     secrets:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      EVTD_INBOX_TICKET_TOKEN: ${{ secrets.EVTD_INBOX_TICKET_TOKEN }}
