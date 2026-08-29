@@ -435,10 +435,10 @@
       "status": "published",
       "maturity": "product",
       "tagline": {
-        "en": "Gives an agent a persona — layered personality and graded emotion",
-        "ja": "エージェントに人格を与える — 人格レイヤーと感情のグラデーション",
-        "zh": "为智能体赋予人格 — 分层人格与情感渐变",
-        "th": "มอบบุคลิกให้เอเจนต์ — เลเยอร์บุคลิกและอารมณ์แบบไล่ระดับ"
+        "en": "Layers relationship and emotion onto an agent's existing persona",
+        "ja": "エージェントの既存人格に関係と感情のレイヤーを重ねる",
+        "zh": "在智能体已有人格之上叠加关系与情感层",
+        "th": "ซ้อนเลเยอร์ความสัมพันธ์และอารมณ์บนบุคลิกเดิมของเอเจนต์"
       },
       "axis": {
         "group": "vertical",
