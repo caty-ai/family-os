@@ -212,6 +212,8 @@ flowchart TB
 
 > **Note:** Everything marked "published, MIT" is open right now — you can click it today. Modules marked "publication in preparation" are listed without links until they are public.
 
+> **As a house** — The rules are the family precepts framed on the wall. The vertical axis is each agent's own room — a desk where work runs to a verified finish (Harness), the equipment beside it (context-kit), a diary and a growth album (Persona), the morning newspaper (X Collector). The horizontal axis is the living room — the note on the fridge the whole family reads (FMA), and the babysitter who notices when a job has stalled (Sitter). And Family OS is the **floor plan** of this house. The fridge note never operates anyone, and the babysitter never grades the work. That, too, is a rule of this house.
+
 Let's start with the vertical axis, which is where most people arrive first.
 
 ---
@@ -311,7 +313,7 @@ Before you go, here is what this map will never do.
 
 ## What will not change
 
-However far Family OS spreads, these five stay fixed.
+However far Family OS spreads, these six stay fixed.
 
 - **It will not take over execution**
 
@@ -332,6 +334,10 @@ However far Family OS spreads, these five stay fixed.
 - **It will not turn "we don't know" into success**
 
   Missing evidence is treated as `unknown`. It is never filled in by guesswork.
+
+- **The furniture may change; the resident never does**
+
+  Every module on this map is furniture — replaceable as the times change, and what we build ourselves is no exception. What carries over is the agent's own memory, experience, and relationships — the personality they form.
 
 That is the entrance. The exact boundaries, and everything more detailed, are through here.
 
