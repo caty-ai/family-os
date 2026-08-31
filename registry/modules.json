@@ -113,10 +113,10 @@
       "README.th.md": "th"
     },
     "intro": {
-      "en": "Ecosystem — the infrastructure behind a family's daily life. {count} of these are open today, and the map checks itself weekly:",
-      "ja": "エコシステム — 家族ぐるみの暮らしを、裏で支える基盤群。このうち{count}個は今日から開けます。地図は週次の自己点検で正直さを保ちます:",
-      "zh": "生态系统 — 支撑一家人日常的底层设施。其中{count}个今天就能打开，地图每周自检以保持诚实:",
-      "th": "อีโคซิสเต็ม — โครงสร้างพื้นฐานที่ค้ำจุนชีวิตประจำวันของครอบครัว {count} ตัวในนี้เปิดให้ใช้ได้แล้ววันนี้ และแผนที่ตรวจสอบตัวเองทุกสัปดาห์:"
+      "en": "Ecosystem — the furniture and household workings that support a family's daily life. None of it touches the agent itself, and every piece can be removed on its own. {count} of these are open today, and the map checks itself weekly:",
+      "ja": "エコシステム — 家族の暮らしを支える、家具と暮らしの仕組み。どれもエージェント本人には触れず、どれも単体で外せます。このうち{count}個は今日から開けます。地図は週次の自己点検で正直さを保ちます:",
+      "zh": "生态系统 — 支撑一家人日常生活的家具与生活装置。它们都不会触及智能体本人，也都能单独拆下。其中{count}个今天就能打开，地图每周自检以保持诚实:",
+      "th": "อีโคซิสเต็ม — เฟอร์นิเจอร์และกลไกในชีวิตประจำวันที่ค้ำจุนครอบครัว ไม่มีชิ้นไหนแตะตัวเอเจนต์เอง และแต่ละชิ้นถอดออกได้ด้วยตัวเอง {count} ตัวในนี้เปิดให้ใช้ได้แล้ววันนี้ และแผนที่ตรวจสอบตัวเองทุกสัปดาห์:"
     },
     "status_labels": {
       "published": {
