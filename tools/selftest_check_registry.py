@@ -948,11 +948,27 @@ def check_schema_rejects_bad_contract_fields() -> None:
 
     assert checked == 4, checked
     assert failures == [
-        "schema: missing-maturity: maturity must be 'product' or 'reference'",
-        "schema: bad-maturity: maturity must be 'product' or 'reference'",
+        "schema: missing-maturity: maturity must be 'product', 'public preview', or 'reference'",
+        "schema: bad-maturity: maturity must be 'product', 'public preview', or 'reference'",
         "schema: bad-dependency: depends_on must be a list of {repo, pin} entries",
         "schema: bad-ci: ci must be {required: true, workflow: '<file>.yml'}",
     ], failures
+
+
+def check_schema_accepts_public_preview_maturity() -> None:
+    registry = {
+        "modules": [
+            {
+                "id": "preview-module",
+                "maturity": "public preview",
+            }
+        ]
+    }
+    failures = []
+    checked = check_schema(registry, failures)
+
+    assert checked == 1, checked
+    assert failures == [], failures
 
 
 def check_schema_accepts_missing_adjacent_key() -> None:
@@ -1096,6 +1112,7 @@ if __name__ == "__main__":
     check_ci_workflow_helper_does_not_follow_redirects()
     check_ci_workflow_helper_network_faults_degrade()
     check_schema_rejects_bad_contract_fields()
+    check_schema_accepts_public_preview_maturity()
     check_schema_accepts_missing_adjacent_key()
     check_schema_rejects_bad_adjacent_entries()
     check_schema_rejects_missing_adjacent_text_when_adjacent_exists()
