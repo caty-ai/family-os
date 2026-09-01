@@ -84,7 +84,7 @@ SUPPORT_IN_USE_ENVIRONMENTS = (
 # Contract #62: maturity is the single required registry-contract field for
 # every module. Changing this closed vocabulary requires owner approval — do
 # not edit it in an implementation lane.
-MODULE_MATURITIES = ("product", "reference")
+MODULE_MATURITIES = ("product", "public preview", "reference")
 
 FOR_AGENTS_TOUR_HEADING = re.compile(r"^## 5\.")
 FOR_AGENTS_NEXT_HEADING = re.compile(r"^## ")
@@ -453,7 +453,8 @@ def check_schema(registry: dict, failures: list) -> int:
 
         if module.get("maturity") not in MODULE_MATURITIES:
             failures.append(
-                "schema: %s: maturity must be 'product' or 'reference'" % module_id
+                "schema: %s: maturity must be 'product', 'public preview', or 'reference'"
+                % module_id
             )
 
         if "aliases" in module:
