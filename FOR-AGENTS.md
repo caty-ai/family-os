@@ -1,6 +1,6 @@
 # FOR-AGENTS.md — for the AI agent visiting this repository
 <!-- repo-state:begin (generated; do not edit) -->
-<p align="center"><sub>generation: <code>df9b436</code> (2026-08-31T11:29:14Z) · verify: <a href="https://api.github.com/repos/caty-ai/family-os/commits/main">API HEAD</a> · <a href="./status.json">status.json</a></sub></p>
+<p align="center"><sub>generation: <code>e1a3193</code> (2026-09-01T07:20:55Z) · verify: <a href="https://api.github.com/repos/caty-ai/family-os/commits/main">API HEAD</a> · <a href="./status.json">status.json</a></sub></p>
 <!-- repo-state:end -->
 
 ## 1. About this file
