@@ -382,6 +382,7 @@ Every module on this map, with its current state — generated from the same reg
 | Horizontal · foundation | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) | The memory bus — how the family shares what it knows | published, MIT |
 | Horizontal | [Sitter](https://github.com/caty-ai/sitter) | Babysits delegated agent runs — watches, keeps evidence, restarts only within declared bounds | published, MIT |
 | Horizontal | [Alpha Nightshift](https://github.com/caty-ai/alpha-nightshift) | Nightly autonomous maintenance loop — isolated night lanes behind a deny-by-default guard; humans cherry-pick in the morning | published, MIT |
+| Vertical | **Caty Gateway** | PC-side gateway for CatyPhone — one-line install; pairs your phone with the agent running on your machine (Claude Code / Codex CLI / OpenClaw / Hermes / OpenAI-compatible) | publication in preparation |
 <!-- family:generated:family-table:end -->
 
 ---

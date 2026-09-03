@@ -382,6 +382,7 @@ Family OS が広がっても、次の6つは変わりません。
 | 横軸・基盤 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) | 記憶バス — 家族が知っていることを共有する層 | 公開・MIT |
 | 横軸 | [Sitter](https://github.com/caty-ai/sitter) | 委譲したエージェント実行の見張り番 — 監視・証拠の記録・宣言した範囲内でのみ再起動 | 公開・MIT |
 | 横軸 | [Alpha Nightshift](https://github.com/caty-ai/alpha-nightshift) | 夜間自律保守ループ — deny-by-default の guard の内側で夜のレーンが走り、朝は人間が cherry-pick するだけ | 公開・MIT |
+| 縦軸 | **Caty Gateway** | CatyPhone の PC 側 gateway — 1 行インストールで、手元の PC で動くエージェント（Claude Code / Codex CLI / OpenClaw / Hermes / OpenAI 互換）とスマホをつなぐ | 公開準備中 |
 <!-- family:generated:family-table:end -->
 
 ---

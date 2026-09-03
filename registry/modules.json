@@ -339,6 +339,21 @@
           "zh": "夜间自主维护——夜间通道在默认拒绝的防护内运行，早晨由人工挑选合并",
           "th": "งานบำรุงรักษาอัตโนมัติยามค่ำคืน — เลนกลางคืนวิ่งหลังการ์ดแบบปฏิเสธโดยปริยาย ตอนเช้ามนุษย์เลือก cherry-pick"
         }
+      },
+      "caty-gateway": {
+        "name": "caty-gateway",
+        "desc": {
+          "en": "The PC-side gateway for CatyPhone: a one-line install that pairs your phone with the agent already running on your machine (Claude Code, Codex CLI, OpenClaw, Hermes, or any OpenAI-compatible server) and carries the conversation by voice",
+          "ja": "CatyPhone の PC 側 gateway。1 行インストールで、手元の PC で動いているエージェント（Claude Code・Codex CLI・OpenClaw・Hermes・OpenAI 互換サーバ）とスマホをペアリングし、声で会話をつなぐ",
+          "zh": "CatyPhone 的电脑端网关：一行命令安装，把手机与本机已在运行的智能体（Claude Code、Codex CLI、OpenClaw、Hermes 或任何 OpenAI 兼容服务）配对，并用语音承载对话",
+          "th": "เกตเวย์ฝั่ง PC ของ CatyPhone: ติดตั้งด้วยคำสั่งบรรทัดเดียว จับคู่โทรศัพท์กับเอเจนต์ที่รันอยู่บนเครื่องของคุณแล้ว (Claude Code, Codex CLI, OpenClaw, Hermes หรือเซิร์ฟเวอร์ที่เข้ากันได้กับ OpenAI) และส่งต่อบทสนทนาด้วยเสียง"
+        },
+        "desc_short": {
+          "en": "PC-side gateway for CatyPhone — one-line install; pairs your phone with the agent on your machine",
+          "ja": "CatyPhone の PC 側 gateway。1 行インストールで、手元のエージェントとスマホをつなぐ",
+          "zh": "CatyPhone 的电脑端网关——一行命令安装，把手机接到本机的智能体",
+          "th": "เกตเวย์ฝั่ง PC ของ CatyPhone — ติดตั้งบรรทัดเดียว เชื่อมโทรศัพท์กับเอเจนต์บนเครื่องของคุณ"
+        }
       }
     }
   },
@@ -623,6 +638,33 @@
         "ja": "夜間の観測・実装・検証レーン、guard の publish 境界、morning triage"
       },
       "footer": true
+    },
+    {
+      "id": "caty-gateway",
+      "name": "Caty Gateway",
+      "repo": "caty-ai/caty-gateway",
+      "status": "preparing",
+      "maturity": "public preview",
+      "tagline": {
+        "en": "PC-side gateway for CatyPhone — one-line install; pairs your phone with the agent running on your machine (Claude Code / Codex CLI / OpenClaw / Hermes / OpenAI-compatible)",
+        "ja": "CatyPhone の PC 側 gateway — 1 行インストールで、手元の PC で動くエージェント（Claude Code / Codex CLI / OpenClaw / Hermes / OpenAI 互換）とスマホをつなぐ",
+        "zh": "CatyPhone 的电脑端网关 — 一行命令安装，把手机与本机运行的智能体（Claude Code / Codex CLI / OpenClaw / Hermes / OpenAI 兼容）连接起来",
+        "th": "เกตเวย์ฝั่ง PC ของ CatyPhone — ติดตั้งด้วยคำสั่งบรรทัดเดียว เชื่อมโทรศัพท์กับเอเจนต์ที่รันบนเครื่องของคุณ (Claude Code / Codex CLI / OpenClaw / Hermes / OpenAI-compatible)"
+      },
+      "axis": {
+        "group": "vertical",
+        "foundation": false
+      },
+      "license": "MIT",
+      "class": {
+        "en": "runtime, phone-facing interface",
+        "ja": "runtime・スマホ向けインターフェース"
+      },
+      "owns": {
+        "en": "phone pairing, the voice session between CatyPhone and a local agent backend, and the backend adapters (Claude Code / Codex CLI / OpenClaw / Hermes / OpenAI-compatible)",
+        "ja": "スマホとのペアリング、CatyPhone とローカルエージェント backend の間の音声セッション、backend アダプタ（Claude Code / Codex CLI / OpenClaw / Hermes / OpenAI 互換）"
+      },
+      "footer": false
     }
   ],
   "adjacent": [
