@@ -27,7 +27,7 @@ Family OS 是一张地图，告诉你解决每一个问题的部件**在哪里**
 
 </div>
 <!-- repo-state:begin (generated; do not edit) -->
-<p align="center"><sub>generation: <code>e1a3193</code> (2026-09-01T07:20:55Z) · verify: <a href="https://api.github.com/repos/caty-ai/family-os/commits/main">API HEAD</a> · <a href="./status.json">status.json</a></sub></p>
+<p align="center"><sub>generation: <code>b222989</code> (2026-09-04T15:04:08Z) · verify: <a href="https://api.github.com/repos/caty-ai/family-os/commits/main">API HEAD</a> · <a href="./status.json">status.json</a></sub></p>
 <!-- repo-state:end -->
 
 - [你是否也遇到过这些情况？](#problems)
