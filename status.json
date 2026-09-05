@@ -4,14 +4,14 @@
   "generator_version": "repo-state-gen v1",
   "repo": "caty-ai/family-os",
   "stamp_mode": "auto",
-  "generated_at": "2026-09-04T15:04:08Z",
-  "describes_commit": "b2229893f663d22cea8cf749d0113bbd5f137fbe",
-  "describes_commit_date": "2026-09-04T15:04:08Z",
+  "generated_at": "2026-09-05T06:59:36Z",
+  "describes_commit": "c19971675418c25c59c54b6a52afbb5cdd1d2ad2",
+  "describes_commit_date": "2026-09-05T06:59:36Z",
   "branch": "main",
   "latest_tag": "v0.15.0",
   "latest_release_url": "https://github.com/caty-ai/family-os/releases/tag/v0.15.0",
   "agents_entry": "FOR-AGENTS.md",
   "canonical_api": "https://api.github.com/repos/caty-ai/family-os/commits/main",
-  "canonical_raw": "https://raw.githubusercontent.com/caty-ai/family-os/b2229893f663d22cea8cf749d0113bbd5f137fbe/status.json",
+  "canonical_raw": "https://raw.githubusercontent.com/caty-ai/family-os/c19971675418c25c59c54b6a52afbb5cdd1d2ad2/status.json",
   "freshness_contract": "SHA comparison only; dates may only ever trigger distrust. Protocol: docs/repo-state/spec.md, section 'Reader protocol'."
 }
