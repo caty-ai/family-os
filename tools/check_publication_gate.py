@@ -1149,6 +1149,141 @@ def selftest_shipped_denylist():
         and wsl_drvfs_user_path.search(wsl_lowercase_leak) is not None,
         "shipped wsl-drvfs-user-path complements case-sensitive rules",
     )
+    absolute_string_escape_failures = []
+    _selftest_check(
+        check_denylist(
+            {"esc.txt": "\\u002fUs" + "ers\\u002falice"},
+            rules,
+            absolute_string_escape_failures,
+        )
+        == 1
+        and absolute_string_escape_failures
+        == ["denylist: esc.txt:1 contains absolute-personal-path (decoded view)"],
+        "shipped absolute-personal-path string-escape scan finding",
+    )
+    nested_php_string_escape_failures = []
+    _selftest_check(
+        check_denylist(
+            {"esc.txt": "\"\\\"\\\\\\/Us" + "ers\\\\\\/alice\\\"\""},
+            rules,
+            nested_php_string_escape_failures,
+        )
+        == 1
+        and nested_php_string_escape_failures
+        == ["denylist: esc.txt:1 contains absolute-personal-path (decoded view)"],
+        "shipped absolute-personal-path nested serialisation PHP json_encode",
+    )
+    nested_unicode_string_escape_failures = []
+    _selftest_check(
+        check_denylist(
+            {"esc.txt": "\\u005cu002fUs" + "ers\\u005cu002falice"},
+            rules,
+            nested_unicode_string_escape_failures,
+        )
+        == 1
+        and nested_unicode_string_escape_failures
+        == ["denylist: esc.txt:1 contains absolute-personal-path (decoded view)"],
+        "shipped absolute-personal-path nested serialisation unicode backslash",
+    )
+    nested_backslash_string_escape_failures = []
+    _selftest_check(
+        check_denylist(
+            {"esc.txt": "\\\\u002fUs" + "ers\\\\u002falice"},
+            rules,
+            nested_backslash_string_escape_failures,
+        )
+        == 1
+        and nested_backslash_string_escape_failures
+        == ["denylist: esc.txt:1 contains absolute-personal-path (decoded view)"],
+        "shipped absolute-personal-path nested serialisation double backslash",
+    )
+    absolute_solidus_escape_failures = []
+    _selftest_check(
+        check_denylist(
+            {"esc.txt": "\\/Us" + "ers\\/alice"},
+            rules,
+            absolute_solidus_escape_failures,
+        )
+        == 1
+        and absolute_solidus_escape_failures
+        == ["denylist: esc.txt:1 contains absolute-personal-path (decoded view)"],
+        "shipped absolute-personal-path solidus-escape scan finding",
+    )
+    wsl_string_escape_failures = []
+    _selftest_check(
+        check_denylist(
+            {"esc.txt": "\\u002fmn" + "t\\u002fc\\u002fusers\\u002falice"},
+            wsl_rules,
+            wsl_string_escape_failures,
+        )
+        == 1
+        and wsl_string_escape_failures
+        == ["denylist: esc.txt:1 contains wsl-drvfs-user-path (decoded view)"],
+        "shipped wsl-drvfs-user-path string-escape scan finding",
+    )
+    wsl_backslash_escape_failures = []
+    _selftest_check(
+        check_denylist(
+            {"esc.txt": "\\u005cmn" + "t\\u005cc\\u005cusers\\u005calice"},
+            wsl_rules,
+            wsl_backslash_escape_failures,
+        )
+        == 1
+        and wsl_backslash_escape_failures
+        == ["denylist: esc.txt:1 contains wsl-drvfs-user-path (decoded view)"],
+        "shipped wsl-drvfs-user-path backslash string-escape scan finding",
+    )
+    windows_string_escape_failures = []
+    _selftest_check(
+        check_denylist(
+            {"esc.txt": "C:\\u005cUs" + "ers\\u005calice"},
+            windows_rules,
+            windows_string_escape_failures,
+        )
+        == 1
+        and windows_string_escape_failures
+        == ["denylist: esc.txt:1 contains windows-user-path (decoded view)"],
+        "shipped windows-user-path string-escape scan finding",
+    )
+    string_escape_clean_failures = []
+    path_rules = rules + windows_rules + wsl_rules
+    _selftest_check(
+        check_denylist(
+            {
+                "placeholder.txt": "\\u002fhome\\u002f<user>\\u002fproject",
+                "url.txt": "https:\\/\\/api.github.com\\/users\\/alice",
+                "regex.txt": "regex: [\\\\/]mn" + "t[\\\\/]+",
+                "i18n.txt": "\\u00e9\\u00e8 caf\\u00e9",
+                "usr.txt": "\\u002fusr\\u002flocal\\u002fbin",
+                "etc.txt": "\\u002fetc\\u002fhosts",
+                "emoji.txt": "\\ud83d\\ude00 emoji only",
+                "unc.txt": "\\\\\\\\server\\\\share",
+            },
+            path_rules,
+            string_escape_clean_failures,
+        )
+        == 0
+        and string_escape_clean_failures == [],
+        "shipped path rules string-escape clean controls",
+    )
+    mixed_separator = "/Us" + "ers\\alice/project"
+    _selftest_check(
+        absolute_personal_path.search(mixed_separator) is None
+        and windows_user_path.search(mixed_separator) is None
+        and wsl_drvfs_user_path.search(mixed_separator) is None,
+        "shipped path rules recorded miss: mixed separator (decided in #164, not widened)",
+    )
+    depth_boundary_failures = []
+    _selftest_check(
+        check_denylist(
+            {"esc.txt": "\\\\\\\\u002fUs" + "ers\\\\\\\\u002falice"},
+            rules,
+            depth_boundary_failures,
+        )
+        == 0
+        and depth_boundary_failures == [],
+        "shipped absolute-personal-path string-escape depth boundary (four layers, documented miss)",
+    )
 
 
 def selftest_scanners():
@@ -2583,7 +2718,7 @@ def selftest_end_to_end():
         )
         _selftest_check(
             result.returncode == 0
-            and "PASS (publication gate selftest; assertions: 190)" in result.stdout
+            and "PASS (publication gate selftest; assertions: 201)" in result.stdout
             and "skip: selftest_shipped_denylist" not in result.stdout,
             "real-root copy-probe runs shipped-denylist selftest: %r" % result.stdout,
         )
