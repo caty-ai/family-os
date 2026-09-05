@@ -6,6 +6,9 @@ on:
   release:
     types: [published]
   workflow_dispatch:
+  workflow_run:
+    workflows: [release-sync]
+    types: [completed]
   pull_request:
 
 permissions:

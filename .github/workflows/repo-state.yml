@@ -10,6 +10,9 @@ name: repository state
 #   release:
 #     types: [published]
 #   workflow_dispatch:
+#   workflow_run:
+#     workflows: [release-sync]
+#     types: [completed]
 #   pull_request:
 # permissions:
 #   contents: write
@@ -23,6 +26,7 @@ name: repository state
 #     with:
 #       generator_ref: v0.18.0
 #
+# Releases created by release-sync with `GITHUB_TOKEN` fire no `release` event; `workflow_run` is the platform event that does fire.
 # The `uses:` ref and `generator_ref` must always move together: a v0.11.0
 # workflow with a v0.11.1 generator fails at `git add` on a repository whose
 # agents entry is null.
@@ -41,6 +45,7 @@ jobs:
     if: >-
       github.event_name == 'release' ||
       github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||
       (github.event_name == 'push' &&
        github.actor != 'github-actions[bot]' &&
        github.actor != 'caty-repo-state-bot[bot]' &&
@@ -70,7 +75,7 @@ jobs:
             echo "no complete app credentials; falling back to GITHUB_TOKEN (v0.11.1 behavior)"
           fi
 
-      - name: check out default branch for release or dispatch
+      - name: check out default branch for release, dispatch, or release-sync completion
         if: github.event_name != 'push'
         uses: actions/checkout@v4
         with:

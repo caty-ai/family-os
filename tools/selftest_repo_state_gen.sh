@@ -534,6 +534,57 @@ test_workflow_refreshes_release_on_every_update_run() {
     printf '%s\n' 'workflow refresh contract: every update run refreshes releases'
 }
 
+test_workflow_run_trigger_contract() {
+    local workflow="$ROOT_DIR/.github/workflows/repo-state.yml"
+    local caller="$ROOT_DIR/.github/workflows/repo-state-caller.yml"
+    local gate
+    gate=$(mktemp "$TEST_TMP/update-gate.XXXXXX")
+    awk '
+        /^  update:/ { update = 1; next }
+        update && /^    if: >-/ { found = 1; next }
+        found && !/^      / { closed = 1; exit }
+        found { print }
+        END { if (!found || !closed) exit 1 }
+    ' "$workflow" > "$gate" || fail 'workflow update if block not found or unclosed'
+
+    grep -Fq "github.event_name == 'workflow_run'" "$gate" \
+        || fail 'workflow update gate does not accept workflow_run'
+    grep -Fq "github.event.workflow_run.conclusion == 'success'" "$gate" \
+        || fail 'workflow update gate does not require successful completion'
+    grep -Fq "github.event_name == 'release'" "$gate" \
+        || fail 'workflow update gate does not accept release'
+    grep -Fq "github.event_name == 'workflow_dispatch'" "$gate" \
+        || fail 'workflow update gate does not accept workflow_dispatch'
+    grep -Fq 'chore(repo-state):' "$gate" \
+        || fail 'workflow update gate lost the push loop guard'
+
+    awk '
+        /- name: check out default branch/ { found = 1; next }
+        found { print; exit }
+    ' "$workflow" | grep -Fq "if: github.event_name != 'push'" \
+        || fail 'default-branch checkout is not gated on non-push events'
+
+    grep -Fxq '#   workflow_run:' "$workflow" \
+        || fail 'caller example does not declare workflow_run'
+    grep -Fxq '#     workflows: [release-sync]' "$workflow" \
+        || fail 'caller example does not listen to release-sync'
+    grep -Fxq '#     types: [completed]' "$workflow" \
+        || fail 'caller example does not listen to completed runs'
+    grep -Fxq '  workflow_run:' "$caller" \
+        || fail 'caller does not declare workflow_run'
+    grep -Fxq '    workflows: [release-sync]' "$caller" \
+        || fail 'caller does not listen to release-sync'
+    grep -Fxq '    types: [completed]' "$caller" \
+        || fail 'caller does not listen to completed runs'
+
+    awk '
+        /^  check:/ { check = 1; next }
+        check && /^    if:/ { print; exit }
+    ' "$workflow" | grep -Fxq "    if: github.event_name == 'pull_request'" \
+        || fail 'workflow check job is not gated on pull_request'
+    printf '%s\n' 'workflow_run trigger contract: release-sync completion refreshes the stamp'
+}
+
 test_refresh_release_404_maps_null() {
     local repo mock_dir git_marker
     repo=$(new_repo FOR-AGENTS.md)
@@ -650,6 +701,7 @@ test_refresh_release_flag_queries_gh
 test_refresh_release_env_queries_gh
 test_refresh_release_replaces_stale_existing_tag
 test_workflow_refreshes_release_on_every_update_run
+test_workflow_run_trigger_contract
 test_refresh_release_404_maps_null
 test_refresh_release_transport_error_is_fatal
 test_refresh_release_http_error_is_fatal
