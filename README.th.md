@@ -27,7 +27,7 @@ Family OS คือแผนที่ที่บอกว่ากลไกซ�
 
 </div>
 <!-- repo-state:begin (generated; do not edit) -->
-<p align="center"><sub>generation: <code>769c33d</code> (2026-09-05T10:45:00Z) · verify: <a href="https://api.github.com/repos/caty-ai/family-os/commits/main">API HEAD</a> · <a href="./status.json">status.json</a></sub></p>
+<p align="center"><sub>generation: <code>91704ff</code> (2026-09-05T11:55:53Z) · verify: <a href="https://api.github.com/repos/caty-ai/family-os/commits/main">API HEAD</a> · <a href="./status.json">status.json</a></sub></p>
 <!-- repo-state:end -->
 
 - [คุณเคยเจอเรื่องแบบนี้ไหม](#problems)
