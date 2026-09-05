@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   repo-state:
-    uses: caty-ai/family-os/.github/workflows/repo-state.yml@v0.18.0
+    uses: caty-ai/family-os/.github/workflows/repo-state.yml@v0.19.0
     secrets: inherit
     with:
-      generator_ref: v0.18.0
+      generator_ref: v0.19.0
