@@ -382,6 +382,7 @@ flowchart TB
 | แกนนอน · รากฐาน | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) | บัสความทรงจำ — ชั้นที่ครอบครัวใช้แบ่งปันสิ่งที่รู้ | เปิดแล้ว・MIT |
 | แกนนอน | [Sitter](https://github.com/caty-ai/sitter) | พี่เลี้ยงของงานที่มอบหมายให้เอเจนต์ — เฝ้าดู เก็บหลักฐาน และรีสตาร์ตเฉพาะในขอบเขตที่ประกาศไว้ | เปิดแล้ว・MIT |
 | แกนนอน | [Alpha Nightshift](https://github.com/caty-ai/alpha-nightshift) | ลูปบำรุงรักษาอัตโนมัติยามค่ำคืน — เลนกลางคืนทำงานหลังการ์ดแบบปฏิเสธโดยปริยาย ตอนเช้ามนุษย์เลือก cherry-pick | เปิดแล้ว・MIT |
+| แกนตั้ง | **Caty Gateway** | เกตเวย์ฝั่ง PC ของ CatyPhone — ติดตั้งด้วยคำสั่งบรรทัดเดียว เชื่อมโทรศัพท์กับเอเจนต์ที่รันบนเครื่องของคุณ (Claude Code / Codex CLI / OpenClaw / Hermes / OpenAI-compatible) | กำลังเตรียมเปิด |
 <!-- family:generated:family-table:end -->
 
 ---

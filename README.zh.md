@@ -382,6 +382,7 @@ Family OS 这边没有要做的事。不用安装，不用注册账号，也没�
 | 横轴・基座 | [Family Memory Architecture](https://github.com/caty-ai/family-memory-architecture) | 记忆总线 — 家族共享所知的一层 | 已公开・MIT |
 | 横轴 | [Sitter](https://github.com/caty-ai/sitter) | 替你盯着委派出去的智能体 — 监视、留证、仅在声明范围内重启 | 已公开・MIT |
 | 横轴 | [Alpha Nightshift](https://github.com/caty-ai/alpha-nightshift) | 夜间自主维护循环 — 在默认拒绝的防护边界内运行夜间通道，早晨由人工挑选合并 | 已公开・MIT |
+| 纵轴 | **Caty Gateway** | CatyPhone 的电脑端网关 — 一行命令安装，把手机与本机运行的智能体（Claude Code / Codex CLI / OpenClaw / Hermes / OpenAI 兼容）连接起来 | 准备公开中 |
 <!-- family:generated:family-table:end -->
 
 ---
