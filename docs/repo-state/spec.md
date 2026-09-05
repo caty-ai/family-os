@@ -83,13 +83,16 @@ not hand reviewers branch-pinned raw URLs and do not use dates as evidence of fr
 ## 4. CI semantics
 
 The reusable workflow has two jobs. `update` runs for default-branch pushes, published
-releases, and manual dispatches. Push events alone are skipped when the actor is
+releases, manual dispatches, and successful completions of the repository's `release-sync`
+workflow (`workflow_run`). `workflow_run` fires on `release-sync` completion regardless of which token created the Release, which is why it closes the gap left by the silent `release` event; the caller must declare `on: workflow_run: workflows: [release-sync], types: [completed]`,
+and the reusable job ignores runs whose conclusion is not `success`.
+Push events alone are skipped when the actor is
 `github-actions[bot]` or the organization's stamp app, or the head commit message begins
 `chore(repo-state):`. Release and manual events are never skipped. Every `update` run
-(push, release, and manual dispatch) refreshes release metadata by running the generator with a release refresh requested
+(push, release, manual dispatch, and successful workflow_run) refreshes release metadata by running the generator with a release refresh requested
 (`REPO_STATE_REFRESH_RELEASE=1 repo-state-gen.sh --stamp-mode auto`; the `--refresh-release` flag is equivalent), because Releases created with
 `GITHUB_TOKEN` (the family release-sync carrier) do not emit a `release` event.
-Release and manual-dispatch runs still check out the default branch HEAD, not the release
+Release, manual-dispatch, and `workflow_run` runs still check out the default branch HEAD, not the release
 tag. An explicit GitHub 404 maps the
 release fields to `null`; any other refresh failure fails the run without writing a
 partial update.
@@ -97,7 +100,7 @@ partial update.
 Release refresh adds one `gh api repos/{repo}/releases/latest` call per `update` run
 (at most two with the rebase retry), authenticated with `GITHUB_TOKEN`. A non-404 API
 failure now also fails a push stamp run; this is intentionally fail-closed.
-A Release created after the last default-branch push is picked up by the next `update` run; until then the stamp carries the previous Release (tracked in [#165](https://github.com/caty-ai/family-os/issues/165)).
+A caller that declares the `workflow_run` trigger **and pins a reusable workflow that carries this gate (v0.19.0 or later)** receives the refresh within one run of the Release; a caller without either keeps the previous Release until its next `update` run.
 
 An update regenerates deterministic output and exits without a commit when the managed
 files have no diff. Otherwise it commits as `github-actions[bot]` with message
