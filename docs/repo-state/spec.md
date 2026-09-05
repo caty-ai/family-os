@@ -50,7 +50,7 @@ Its schema is [`status.schema.json`](./status.schema.json). Field semantics are:
 | `describes_commit` | Full lowercase 40-character SHA of the nearest ancestor whose commit message does not start with `chore(repo-state):`. |
 | `describes_commit_date` | Committer date of `describes_commit`, in ISO-8601 UTC. |
 | `branch` | Branch whose API HEAD is the comparison target, normally the default branch. |
-| `latest_tag` | Carried forward from the existing `status.json` on ordinary runs. It becomes `null` when no prior value exists, and it is refreshed from GitHub only during an explicit release refresh. |
+| `latest_tag` | Carried forward from the existing `status.json` on ordinary runs. It becomes `null` when no prior value exists, and it is refreshed from GitHub only during an explicit release refresh; the reusable workflow requests that refresh on every `update` run (§4). |
 | `latest_release_url` | Carried forward from the existing `status.json` on ordinary runs. It becomes `null` when no prior value exists, maps to `null` on an explicit GitHub 404 during release refresh, and any other refresh failure is fatal. |
 | `agents_entry` | The stamped agent entry file, exactly `FOR-AGENTS.md` or `AGENTS.md`, or `null` when the repository has neither file. |
 | `canonical_api` | CDN-independent GitHub commits API URL for `repo` and `branch`. |
@@ -85,13 +85,18 @@ not hand reviewers branch-pinned raw URLs and do not use dates as evidence of fr
 The reusable workflow has two jobs. `update` runs for default-branch pushes, published
 releases, and manual dispatches. Push events alone are skipped when the actor is
 `github-actions[bot]` or the organization's stamp app, or the head commit message begins
-`chore(repo-state):`. Release and manual events are never skipped. Push runs preserve the
-existing release fields and do
-not query GitHub releases. Release and manual-dispatch runs check out the default branch
-HEAD, not the release tag, and they refresh release metadata by running
-`repo-state-gen.sh --stamp-mode auto --refresh-release`. An explicit GitHub 404 maps the
+`chore(repo-state):`. Release and manual events are never skipped. Every `update` run
+(push, release, and manual dispatch) refreshes release metadata by running
+`repo-state-gen.sh --stamp-mode auto --refresh-release`, because Releases created with
+`GITHUB_TOKEN` (the family release-sync carrier) do not emit a `release` event.
+Release and manual-dispatch runs still check out the default branch HEAD, not the release
+tag. An explicit GitHub 404 maps the
 release fields to `null`; any other refresh failure fails the run without writing a
 partial update.
+
+Release refresh adds one `gh api repos/{repo}/releases/latest` call per `update` run
+(at most two with the rebase retry), authenticated with `GITHUB_TOKEN`. A non-404 API
+failure now also fails a push stamp run; this is intentionally fail-closed.
 
 An update regenerates deterministic output and exits without a commit when the managed
 files have no diff. Otherwise it commits as `github-actions[bot]` with message

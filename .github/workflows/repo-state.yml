@@ -112,15 +112,11 @@ jobs:
           set -eu
 
           generator="$RUNNER_TEMP/repo-state-gen.sh"
+          # GITHUB_TOKEN-created Releases do not fire the release event.
+          # Query gh api repos/{repo}/releases/latest once per update run (again on rebase retry).
+          # An explicit 404 maps to null; other failures fail the run.
           regenerate() {
-            case "${GITHUB_EVENT_NAME:-}" in
-              release|workflow_dispatch)
-                REPO_STATE_REFRESH_RELEASE=1 "$generator" --stamp-mode auto
-                ;;
-              *)
-                "$generator" --stamp-mode auto
-                ;;
-            esac
+            REPO_STATE_REFRESH_RELEASE=1 "$generator" --stamp-mode auto
           }
 
           regenerate
