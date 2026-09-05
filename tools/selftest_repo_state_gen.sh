@@ -502,16 +502,34 @@ EOF
 
 test_workflow_refreshes_release_on_every_update_run() {
     local workflow="$ROOT_DIR/.github/workflows/repo-state.yml"
-    grep -Fq 'REPO_STATE_REFRESH_RELEASE=1 "$generator" --stamp-mode auto' "$workflow" \
-        || fail 'workflow does not request release refresh'
-    if grep -nE '^[[:space:]]*"\$generator" --stamp-mode auto' "$workflow"; then
-        fail 'workflow invokes generator without release refresh'
+    local body
+    body=$(mktemp "$TEST_TMP/regenerate.XXXXXX")
+    awk '
+        /^[[:space:]]*regenerate\(\) \{/ { found = 1; next }
+        found && /^[[:space:]]*\}/ { closed = 1; exit }
+        found { print }
+        END { if (!found || !closed) exit 1 }
+    ' "$workflow" > "$body" || fail 'workflow regenerate function not found or unclosed'
+    [[ -s "$body" ]] || fail 'workflow regenerate function is empty'
+
+    assert_eq 1 "$(grep -Fc '"$generator"' "$body" || true)" \
+        'workflow regenerate must invoke the generator exactly once'
+    grep -Eq '^[[:space:]]*(REPO_STATE_REFRESH_RELEASE=1 "\$generator" --stamp-mode auto|"\$generator" --stamp-mode auto --refresh-release)[[:space:]]*$' "$body" \
+        || fail 'workflow regenerate does not unconditionally request release refresh'
+    if grep -nE 'case|if |GITHUB_EVENT_NAME|REFRESH_RELEASE=0|event_name' "$body"; then
+        fail 'workflow regenerate contains conditional release refresh'
     fi
-    if grep -Fn 'release|workflow_dispatch)' "$workflow"; then
-        fail 'workflow retains the old release refresh event gate'
+
+    assert_eq 1 "$(grep -Fc -- '--stamp-mode auto' "$workflow" || true)" \
+        'workflow must have exactly one auto generation call site'
+    if grep -F -- '--stamp-mode auto' "$workflow" | grep -nvE 'REPO_STATE_REFRESH_RELEASE=1|--refresh-release'; then
+        fail 'workflow invokes auto generation without release refresh'
     fi
-    if grep -Fn 'do not query GitHub releases' "$ROOT_DIR/docs/repo-state/spec.md"; then
-        fail 'spec retains the old push release query contract'
+
+    grep -Fq '"$RUNNER_TEMP/repo-state-gen.sh" --check' "$workflow" \
+        || fail 'workflow does not invoke check mode'
+    if grep -F -- '--check' "$workflow" | grep -n 'refresh'; then
+        fail 'workflow check mode requests release refresh'
     fi
     printf '%s\n' 'workflow refresh contract: every update run refreshes releases'
 }
