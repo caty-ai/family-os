@@ -473,6 +473,67 @@ EOF
     printf '%s\n' 'refresh-release env flag: ok'
 }
 
+test_refresh_release_replaces_stale_existing_tag() {
+    local repo mock_dir
+    repo=$(new_repo FOR-AGENTS.md)
+    run_gen "$repo" > /dev/null
+    seed_release_fields "$repo" 'v1.2.3' 'https://github.com/fixture/repo/releases/tag/v1.2.3'
+    mock_dir=$(mktemp -d "$TEST_TMP/mock-refresh-stale.XXXXXX")
+    cat > "$mock_dir/gh" <<'EOF'
+#!/bin/bash
+set -euo pipefail
+if [[ "${1-}" == api && "${2-}" == repos/fixture/repo/releases/latest ]]; then
+    printf 'v1.3.0\thttps://github.com/fixture/repo/releases/tag/v1.3.0\n'
+    exit 0
+fi
+printf 'unexpected gh invocation: %s\n' "$*" >&2
+exit 98
+EOF
+    chmod +x "$mock_dir/gh"
+
+    PATH="$mock_dir:$PATH" REPO_STATE_GH_BIN="$mock_dir/gh" REPO_STATE_NO_GH=0 REPO_STATE_REFRESH_RELEASE=1 run_gen "$repo" > /dev/null
+
+    assert_eq 'v1.3.0' "$(jq -r '.latest_tag' "$repo/status.json")" 'release refresh did not replace stale latest_tag'
+    assert_eq 'https://github.com/fixture/repo/releases/tag/v1.3.0' "$(jq -r '.latest_release_url' "$repo/status.json")" \
+        'release refresh did not replace stale latest_release_url'
+    run_gen "$repo" --check > /dev/null
+    printf '%s\n' 'refresh-release over stale existing tag: ok'
+}
+
+test_workflow_refreshes_release_on_every_update_run() {
+    local workflow="$ROOT_DIR/.github/workflows/repo-state.yml"
+    local body
+    body=$(mktemp "$TEST_TMP/regenerate.XXXXXX")
+    awk '
+        /^[[:space:]]*regenerate\(\) \{/ { found = 1; next }
+        found && /^[[:space:]]*\}/ { closed = 1; exit }
+        found { print }
+        END { if (!found || !closed) exit 1 }
+    ' "$workflow" > "$body" || fail 'workflow regenerate function not found or unclosed'
+    [[ -s "$body" ]] || fail 'workflow regenerate function is empty'
+
+    assert_eq 1 "$(grep -Fc '"$generator"' "$body" || true)" \
+        'workflow regenerate must invoke the generator exactly once'
+    grep -Eq '^[[:space:]]*(REPO_STATE_REFRESH_RELEASE=1 "\$generator" --stamp-mode auto|"\$generator" --stamp-mode auto --refresh-release)[[:space:]]*$' "$body" \
+        || fail 'workflow regenerate does not unconditionally request release refresh'
+    if grep -nE 'case|if |GITHUB_EVENT_NAME|REFRESH_RELEASE=0|event_name' "$body"; then
+        fail 'workflow regenerate contains conditional release refresh'
+    fi
+
+    assert_eq 1 "$(grep -Fc -- '--stamp-mode auto' "$workflow" || true)" \
+        'workflow must have exactly one auto generation call site'
+    if grep -F -- '--stamp-mode auto' "$workflow" | grep -nvE 'REPO_STATE_REFRESH_RELEASE=1|--refresh-release'; then
+        fail 'workflow invokes auto generation without release refresh'
+    fi
+
+    grep -Fq '"$RUNNER_TEMP/repo-state-gen.sh" --check' "$workflow" \
+        || fail 'workflow does not invoke check mode'
+    if grep -F -- '--check' "$workflow" | grep -n 'refresh'; then
+        fail 'workflow check mode requests release refresh'
+    fi
+    printf '%s\n' 'workflow refresh contract: every update run refreshes releases'
+}
+
 test_refresh_release_404_maps_null() {
     local repo mock_dir git_marker
     repo=$(new_repo FOR-AGENTS.md)
@@ -587,6 +648,8 @@ test_normal_run_without_gh_on_path
 test_refresh_release_without_gh_on_path_fails
 test_refresh_release_flag_queries_gh
 test_refresh_release_env_queries_gh
+test_refresh_release_replaces_stale_existing_tag
+test_workflow_refreshes_release_on_every_update_run
 test_refresh_release_404_maps_null
 test_refresh_release_transport_error_is_fatal
 test_refresh_release_http_error_is_fatal
