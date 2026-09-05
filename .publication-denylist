@@ -17,6 +17,17 @@ windows-user-path	\b[A-Za-z]:[\\/]+Users[\\/]+(?![<{])[\w.-]+
 # 先頭セパレータが単数 `[\\/]` なのも意図的（`+` は長いセパレータ連続で二次バックトラッキングを起こす）。
 # 代償は URL パス形の過検出だが fail-closed 側であり、3リポ537ファイルの実測で誤検出ゼロ。
 wsl-drvfs-user-path	[\\/]mnt[\\/]+[A-Za-z][\\/]+users[\\/]+(?![<{])[\w.-]+
+# `wsl-unc-linux-home` / `host-mount-user-path` = caty-ai/x-collector#78 (PR#101 / v0.3.4) で凍結した family 形をそのまま採用。
+# `wsl-unc-linux-home` は Windows 側に現れる `absolute-personal-path` の鏡像として、`\\wsl$` と
+# `\\wsl.localhost` の `<distro>\\home\\<name>` を対象にする。
+# `host-mount-user-path` は `/cygdrive/`、`/host_mnt/`、および Docker Desktop の
+# `/run/desktop/mnt/host/` を含む `/mnt/<root>/<drive>/users/` を対象にする。
+# bare `[\\/][A-Za-z][\\/]+users` は 3 family gate script 自身の selftest canary に 390 件 self-hit して全 family gate を赤にし、先行 lookbehind（例: `(?<![\w\\])[\\/][A-Za-z][\\/]+users`）は corpus 0 件だが `vscode-remote://wsl+<distro>/c/users/<name>`、`sftp://<host>/c/users/<name>`、`https://<host>/c/users/<name>`、`file://localhost/c/users/<name>` で fail-open（caty-ai/x-collector#76）する。
+# family shape は先行 anchor を持たないためいずれも採用せず、将来 lookbehind anchor を許す family decision があれば再評価する；`/c/users/`（Git-Bash MSYS を含む）と `/mnt` 外は対象外、tool 出力の `/c/Users/<name>` は `absolute-personal-path` が捕捉する。
+# `/mnt/cdrive/users/` は #76 の trade を変更せず対象外とする。
+# `absolute-personal-path` を case-insensitive 化して代用してはならない。
+wsl-unc-linux-home	wsl(?:\$|\.localhost)[\\/]+[^\\/\s]+[\\/]+home[\\/]+(?![<{])[\w.-]+
+host-mount-user-path	[\\/](?:cygdrive|host_mnt|mnt[\\/]+[\w.-]+)[\\/]+[A-Za-z][\\/]+users[\\/]+(?![<{])[\w.-]+
 private-network-address	\b100\.(?:6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\.\d+\.\d+\b
 local-service-host-port	localhost:\d+
 local-service-loopback	\b(?:127\.0\.0\.1|0\.0\.0\.0)\b
