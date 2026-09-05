@@ -551,6 +551,13 @@ test_workflow_run_trigger_contract() {
         || fail 'workflow update gate does not accept workflow_run'
     grep -Fq "github.event.workflow_run.conclusion == 'success'" "$gate" \
         || fail 'workflow update gate does not require successful completion'
+    sed 's/^[[:space:]]*//' "$gate" | grep -Fxq "(github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success') ||" \
+        || fail 'workflow update gate does not join successful workflow_run as an alternative'
+    if sed 's/[[:space:]]*$//' "$gate" | sed '$d' | grep -vE '(\|\||&&)$'; then
+        fail 'workflow update gate has a line without an operator join'
+    fi
+    sed 's/[[:space:]]*$//' "$gate" | tail -n 1 | grep -Eq '\)$' \
+        || fail 'workflow update gate final line does not close the expression'
     grep -Fq "github.event_name == 'release'" "$gate" \
         || fail 'workflow update gate does not accept release'
     grep -Fq "github.event_name == 'workflow_dispatch'" "$gate" \

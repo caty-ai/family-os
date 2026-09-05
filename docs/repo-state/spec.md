@@ -84,8 +84,7 @@ not hand reviewers branch-pinned raw URLs and do not use dates as evidence of fr
 
 The reusable workflow has two jobs. `update` runs for default-branch pushes, published
 releases, manual dispatches, and successful completions of the repository's `release-sync`
-workflow (`workflow_run`). `workflow_run` is the event that actually fires after a Release
-created with `GITHUB_TOKEN`; the caller must declare `on: workflow_run: workflows: [release-sync], types: [completed]`,
+workflow (`workflow_run`). `workflow_run` fires on `release-sync` completion regardless of which token created the Release, which is why it closes the gap left by the silent `release` event; the caller must declare `on: workflow_run: workflows: [release-sync], types: [completed]`,
 and the reusable job ignores runs whose conclusion is not `success`.
 Push events alone are skipped when the actor is
 `github-actions[bot]` or the organization's stamp app, or the head commit message begins
@@ -101,7 +100,7 @@ partial update.
 Release refresh adds one `gh api repos/{repo}/releases/latest` call per `update` run
 (at most two with the rebase retry), authenticated with `GITHUB_TOKEN`. A non-404 API
 failure now also fails a push stamp run; this is intentionally fail-closed.
-A caller that declares the `workflow_run` trigger receives the refresh within one run of the Release; a caller without it keeps the previous Release until its next `update` run.
+A caller that declares the `workflow_run` trigger **and pins a reusable workflow that carries this gate (v0.19.0 or later)** receives the refresh within one run of the Release; a caller without either keeps the previous Release until its next `update` run.
 
 An update regenerates deterministic output and exits without a commit when the managed
 files have no diff. Otherwise it commits as `github-actions[bot]` with message
