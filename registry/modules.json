@@ -644,7 +644,7 @@
       "name": "errmeter",
       "repo": "caty-ai/errmeter",
       "status": "published",
-      "maturity": "product",
+      "maturity": "public preview",
       "tagline": {
         "en": "Reports failed or silent AI agents and scheduled jobs across machines — emit, spool, shared board, repair hook; a shout that is never lost",
         "ja": "複数マシンの AI エージェントと定期ジョブの失敗・沈黙を報告する — emit・spool・共有掲示板・復旧フック。消えない叫び",
