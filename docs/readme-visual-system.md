@@ -147,6 +147,7 @@ the generated block directly.
 | Family Memory Architecture | `caty-ai/family-memory-architecture` | published, MIT |
 | Sitter | `caty-ai/sitter` | published, MIT |
 | Alpha Nightshift | `caty-ai/alpha-nightshift` | published, MIT |
+| errmeter | `caty-ai/errmeter` | published, MIT |
 <!-- family:generated:repository-links:end -->
 
 ## Deliberate palette split

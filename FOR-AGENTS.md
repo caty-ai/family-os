@@ -70,6 +70,7 @@ For each repository: its role in one line, and the one thing to verify. These ar
 | [family-memory-architecture](https://github.com/caty-ai/family-memory-architecture) (published, MIT) | the horizontal axis where a family shares memory (single write path, provenance) | that there is a single write path and provenance records are kept |
 | [sitter](https://github.com/caty-ai/sitter) (published, MIT) | the watcher for long-running tasks (zero-dependency bash, stall detection) | that the monitoring runs with zero dependencies |
 | [alpha-nightshift](https://github.com/caty-ai/alpha-nightshift) (published, MIT) | the nightly autonomous maintenance loop — night lanes in isolated worktrees behind a deny-by-default guard; humans cherry-pick in the morning | that the guard denies publishing by default and results reach main only through a morning human cherry-pick |
+| [errmeter](https://github.com/caty-ai/errmeter) (published, MIT) | push-style failure reporting for agents and scheduled jobs across machines (emit → local spool → shared board → repair hook) | that nothing unacknowledged is ever evicted from the spool, and that the board token is inbox-scoped (Issues RW + Metadata R only) |
 
 (Modules still being prepared for release are listed in the registry as `preparing`. They are not linked.)
 
