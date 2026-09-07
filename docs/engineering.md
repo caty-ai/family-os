@@ -69,6 +69,7 @@ The rules layer sits **above** both axes rather than inside either one. It is a 
 | [Sitter](https://github.com/caty-ai/sitter) | runtime, observation | local process and reply facts, dispatch-attempt evidence, delegated same-attempt restart | published, MIT |
 | [Alpha Nightshift](https://github.com/caty-ai/alpha-nightshift) | runtime, autonomous ops loop | overnight observe/implement/verify lanes, the guard publish boundary, and morning triage | published, MIT |
 | [errmeter](https://github.com/caty-ai/errmeter) | runtime, observation | failure and heartbeat events, the local spool, the shared inbox board, claim/dispatch of the repair hook, and the dead-man switch for silent hosts | published, MIT |
+| [Caty Gateway](https://github.com/caty-ai/caty-gateway) | runtime, phone-facing interface | phone pairing, the voice session between CatyPhone and a local agent backend, and the backend adapters (Claude Code / Codex CLI / OpenClaw / Hermes / OpenAI-compatible) | published, MIT |
 <!-- family:generated:module-inventory:end -->
 
 This table is generated from [`registry/modules.json`](../registry/modules.json). Links marked *publication in preparation* cannot be opened yet. They are listed so the map stays honest about what exists and where it will live.

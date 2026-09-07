@@ -383,6 +383,7 @@ Every module on this map, with its current state — generated from the same reg
 | Horizontal | [Sitter](https://github.com/caty-ai/sitter) | Babysits delegated agent runs — watches, keeps evidence, restarts only within declared bounds | published, MIT |
 | Horizontal | [Alpha Nightshift](https://github.com/caty-ai/alpha-nightshift) | Nightly autonomous maintenance loop — isolated night lanes behind a deny-by-default guard; humans cherry-pick in the morning | published, MIT |
 | Horizontal | [errmeter](https://github.com/caty-ai/errmeter) | Reports failed or silent AI agents and scheduled jobs across machines — emit, spool, shared board, repair hook; a shout that is never lost | published, MIT |
+| Vertical | [Caty Gateway](https://github.com/caty-ai/caty-gateway) | PC-side gateway for CatyPhone — one-line install; pairs your phone with the agent running on your machine (Claude Code / Codex CLI / OpenClaw / Hermes / OpenAI-compatible) | published, MIT |
 <!-- family:generated:family-table:end -->
 
 ---

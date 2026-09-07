@@ -148,6 +148,7 @@ the generated block directly.
 | Sitter | `caty-ai/sitter` | published, MIT |
 | Alpha Nightshift | `caty-ai/alpha-nightshift` | published, MIT |
 | errmeter | `caty-ai/errmeter` | published, MIT |
+| Caty Gateway | `caty-ai/caty-gateway` | published, MIT |
 <!-- family:generated:repository-links:end -->
 
 ## Deliberate palette split
