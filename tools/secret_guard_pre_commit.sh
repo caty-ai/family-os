@@ -27,11 +27,16 @@
 # 2026-09-17: terminate keyword values to exclude long identifier/call
 # expressions and human-readable quoted labels containing spaces (see
 # caty-ai/family-os#156 and caty-ai/meetmate#101). Quoted runs must close with
-# a quote; unquoted runs must end at line end or supported punctuation (including
-# query/shell delimiters), never an opening parenthesis or another word.
+# a quote (after optional base64 padding); unquoted runs end at line end or are
+# terminated by any non-run character other than `(`.
 # Contiguous credential literals still block, including quoted JSON keys.
+# Quoted JSON keys now match, so space-free placeholder values block; write a
+# spaced label or use --no-verify with an audit note, as before.
+# The chaining block is carried verbatim from the host hook; whether it fires
+# depends on how `git rev-parse --git-path hooks/` resolves under `core.hooksPath`
+# (it does not on git 2.48 with a global hooksPath); activation is tracked separately.
 # gitleaks remains the primary scanner;
-# SECRET_GUARD_SKIP_GITLEAKS=1 bypasses it only for the regex selftest.
+# SECRET_GUARD_SKIP_GITLEAKS=1 is intended for the regex selftest only; nothing else should set it.
 set -eu
 
 if [ "${SECRET_GUARD_SKIP_GITLEAKS:-0}" != 1 ] && command -v gitleaks >/dev/null 2>&1; then
@@ -39,11 +44,12 @@ if [ "${SECRET_GUARD_SKIP_GITLEAKS:-0}" != 1 ] && command -v gitleaks >/dev/null
 fi
 
 # A secret-shaped value is >=16 credential-alphabet chars, with a boundary.
-# Backtracking to a shorter run cannot help: the next run character is neither
-# a quote nor a terminator. Calls and spaced labels therefore cannot match.
+# Unquoted runs are terminated by any non-run character other than `(`, or EOL.
+# Backtracking cannot help: a remaining run character is not a terminator.
+# Quoted runs must close after optional padding, excluding spaced labels.
 run='[A-Za-z0-9_/+-]{16,}'
-quoted_value='["'"'"']'"${run}"'["'"'"']'
-unquoted_value="${run}[[:space:]]*([,;)}#&|\"'\\\\]|\]|$)"
+quoted_value='["'"'"']'"${run}={0,2}"'["'"'"']'
+unquoted_value="${run}([^A-Za-z0-9_/+(-]|$)"
 keyword_api='[Aa][Pp][Ii][_-]?[Kk][Ee][Yy]'
 keyword_token='[Tt][Oo][Kk][Ee][Nn]'
 sep='[[:space:]]*[:=][[:space:]]*'
@@ -72,4 +78,10 @@ else
     printf 'Secret guard: staged content matches a common secret pattern. Commit blocked.\n' >&2
     exit 1
   fi
+fi
+
+# Chain to a repo-local pre-commit hook if one exists (global hooksPath shadows it).
+repo_hook=$(git rev-parse --git-path hooks/pre-commit 2>/dev/null || true)
+if [ -n "$repo_hook" ] && [ -x "$repo_hook" ] && [ "$repo_hook" != "$0" ]; then
+  exec "$repo_hook" "$@"
 fi

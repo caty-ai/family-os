@@ -25,7 +25,7 @@ git commit -q --allow-empty -m base
 count=0
 failures=''
 check_commit() {
-  local expected=$1 label=$2 actual=pass prerequisite=${3:-1}
+  local expected=$1 label=$2 actual=pass prerequisite=${3:-1} marker=${4:-}
   count=$((count + 1))
   if git commit -q -m x > "$TEST_TMP/commit.log" 2>&1; then
     :
@@ -37,6 +37,10 @@ check_commit() {
     fi
     git reset -q
   fi
+  case "$marker" in
+    present) [ -f chained.marker ] || prerequisite=0 ;;
+    absent) [ ! -f chained.marker ] || prerequisite=0 ;;
+  esac
   if [ "$actual" = "$expected" ] && [ "$prerequisite" = 1 ]; then
     printf 'PASS: %s\n' "$label"
   else
@@ -66,6 +70,10 @@ vector pass 'quoted human-readable label with comment' "$comment_label"
 vector pass 'tokenizer regression' 'token = tokens[index]'
 vector pass 'mixed-case translation call' 'const apiKeyLabel = t("settings.apiKeyDescription");'
 vector pass 'environment lookup call' 'api_key: os.environ.get("ELEVENLABS_API_KEY")'
+equality='token === someLong'
+equality="${equality}IdentifierName;"
+vector pass 'JS strict equality with long identifier' "$equality"
+vector pass 'dotted identifier chain' 'api_key = config.settings.value'
 
 key='sk_01234567'
 key="${key}89abcdef0123"
@@ -90,6 +98,40 @@ vector block 'URL query key with ampersand' "curl \"https://api.example.com/v1?a
 vector block 'shell assignment with closing double quote' "docker run -e \"API_KEY=${key}\" img"
 vector block 'unquoted key with line continuation' "  API_KEY=${key} \\"
 vector block 'unquoted token with pipe' "TOKEN=${ghp} | tee"
+base64='YWJjZGVmZ2hp'
+base64="${base64}amtsbW5vcHFy"
+vector block 'base64 padded quoted' "API_KEY=\"${base64}==\""
+vector block 'base64 padded unquoted at EOL' "api_key: ${base64}="
+jwt='eyJhbGciOiJI'
+jwt="${jwt}UzI1NiJ9.eyJzdWIi"
+jwt="${jwt}OiIxMjM0In0.abc"
+vector block 'JWT three-segment token' "token = ${jwt}"
+vector block 'unquoted key with question mark' "api_key=${key}?x=1"
+vector block 'unquoted key with redirection' "api_key=${key}>out"
+vector block 'unquoted key with colon' "api_key: ${key}:v2"
+vector block 'URL-embedded credential' "https://x-access-token:${ghp}@github.com/o/r.git"
+vector block 'markdown backtick key' "\`API_KEY=${key}\`"
+vector block 'f-string key with exclamation mark' "raise ValueError(f\"api_key=${key}!\")"
+vector block 'bold markdown key' "**api_key=${key}**"
+vector block 'token at sentence end' "set token = ${ghp}."
+vector block 'key with colon latest suffix' "API_KEY=${key}:latest"
+placeholder='REPLACE_ME_WITH_'
+placeholder="${placeholder}YOUR_KEY"
+vector block 'JSON placeholder value (accepted trade, see header)' "\"api_key\": \"${placeholder}\""
+
+# A repo-local hook must not break benign commits; secrets block before it.
+cat > .git/hooks/pre-commit <<'HOOK'
+#!/bin/sh
+: > chained.marker
+HOOK
+chmod +x .git/hooks/pre-commit
+printf '%s\n' 'benign chained content' > vector.txt
+git add vector.txt
+check_commit pass 'benign commit with repo-local hook present succeeds'
+rm -f chained.marker
+printf '%s\n' "$tp1" > vector.txt
+git add vector.txt
+check_commit block 'secret blocked before repo-local hook' 1 absent
 
 # An inherited secret must pass the merge filter; a novel one must block.
 # Seed the inherited fixture with the hook explicitly disabled only for setup.
