@@ -26,8 +26,8 @@
 #
 # 2026-09-17: terminate keyword values to exclude long identifier/call
 # expressions and human-readable quoted labels containing spaces (see
-# caty-ai/family-os#156 and caty-ai/meetmate#101). Quoted runs must close with
-# a quote (after optional base64 padding); unquoted runs end at line end or are
+# caty-ai/family-os#156 and caty-ai/meetmate#101). A quoted value is a run followed
+# by anything but whitespace up to the closing quote; unquoted runs end at line end or are
 # terminated by any non-run character other than `(`.
 # Contiguous credential literals still block, including quoted JSON keys.
 # Quoted JSON keys now match, so space-free placeholder values block; write a
@@ -46,9 +46,10 @@ fi
 # A secret-shaped value is >=16 credential-alphabet chars, with a boundary.
 # Unquoted runs are terminated by any non-run character other than `(`, or EOL.
 # Backtracking cannot help: a remaining run character is not a terminator.
-# Quoted runs must close after optional padding, excluding spaced labels.
+# A quoted value is a run followed by anything but whitespace up to the closing quote.
+# This excludes spaced labels while allowing punctuation and padding inside quotes.
 run='[A-Za-z0-9_/+-]{16,}'
-quoted_value='["'"'"']'"${run}={0,2}"'["'"'"']'
+quoted_value='["'"'"']'"${run}[^[:space:]]*"'["'"'"']'
 unquoted_value="${run}([^A-Za-z0-9_/+(-]|$)"
 keyword_api='[Aa][Pp][Ii][_-]?[Kk][Ee][Yy]'
 keyword_token='[Tt][Oo][Kk][Ee][Nn]'
