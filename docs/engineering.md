@@ -197,7 +197,7 @@ flowchart TB
 
 ## How the pieces connect
 
-Only two cross-module edges are implemented today. Everything else is either a shape with no consumer yet, or a boundary owned by someone outside the family.
+Three cross-module edges are implemented today: the request/evidence pair between Self Growth Loop and the harness, and Persona Growth Loop's read-only observation of Persona Engine. Everything else is either a shape with no consumer yet, or a boundary owned by someone outside the family.
 
 ```mermaid
 flowchart LR
@@ -205,15 +205,18 @@ flowchart LR
   H["Caty Agent Harness"]
   S["Sitter"]
   P["Persona Growth Loop"]
+  PE["Persona Engine"]
 
   SG -->|"implemented: tr-enqueue task request"| H
   H -->|"implemented, read-only: terminal artifact"| SG
   H -.->|"proposed: LaunchRequest supervision"| S
   S -.->|"proposed: verdict-free evidence"| H
   P -.->|"planned: minimised proposal"| SG
+  PE -->|"implemented, read-only: observation"| P
+  P -.->|"gated: write-back, injection not enabled"| PE
 ```
 
-The implemented pair is worth reading closely, because it is the template for every later edge:
+The implemented harness pair is worth reading closely, because it is the template for every later edge:
 
 - **Request flows toward the module that owns the next decision.** Self Growth Loop enqueues a task; it never writes task state, attempt numbers, retry policy, or dead-letter status. Those belong to the harness.
 - **Evidence flows back without transferring authority.** The harness publishes a correlated terminal artifact. Terminal does **not** mean adopted, applied, or effective — those are three further facts owned by three further parties.
