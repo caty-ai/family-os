@@ -97,8 +97,8 @@ Persona Engine と X Collector は単独で使え、他のどれからも必須�
 | Family OS | non-runtime な地図 | エージェントの縦軸へ、点線の案内専用経路を持つ | 公開・MIT |
 | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（公開・MIT） | 1エージェントにつき1つの縦軸基盤。完了を所有する | Self Growth Loop と trial 要求および終端結果をやり取りする | 実装済み |
 | [context-kit](https://github.com/caty-ai/context-kit)（公開・MIT） | 単独利用可能な机まわりの装備 | 完了権限を持たずにエージェントを装備する | 実装済み |
-| [Persona Engine](https://github.com/caty-ai/persona-engine)（公開・MIT） | 単独利用可能な人格の source / target | Persona Growth Loop と接続する | 実装済み |
-| [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop)（公開・MIT） | 独立した人格成長ループ | Persona Engine との人格 source / target 関係が計画中。Self Growth Loop への governance 経路も計画中 | 計画中 |
+| [Persona Engine](https://github.com/caty-ai/persona-engine)（公開・MIT） | 単独利用可能な人格の source / target | Persona Growth Loop の観測の source（実装済み・稼働中）。書き戻しの target でもあるが、そのコードは承認ゲートの手前で止まっている（injection 未有効化） | 実装済み |
+| [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop)（公開・MIT） | 独立した人格成長ループ | Persona Engine を人格 source として観測する（実装済み・夜間稼働中）。Persona Engine を人格 target とする書き戻しは承認ゲートの手前でのみ存在する（injection 未有効化）。Self Growth Loop への governance 経路は計画中 | 実装済み（観測）・ゲート付き（書き戻し）・計画中（governance） |
 | [X Collector](https://github.com/caty-ai/x-collector)（公開・MIT） | 単独利用可能で置き換え可能な外部情報源 | `family-feed` / sense を morning agents へ供給する | 実装済み |
 | morning agents | 現在 / 既定の sense bridge | 収集した素材を Self Growth Loop 向けの proposal に変える | 実装済み |
 | human / evaluator | 帰属可能な別入力 | Self Growth Loop へ別の入力を与えられる | 実装済みの入力形 |
@@ -116,8 +116,9 @@ flowchart TB
   subgraph PersonaAxis["Growth of personality"]
     direction LR
     PersonaEngine["Persona Engine<br/>persona layers and a gradation of feeling<br/>usable on its own"]
-    PersonaGrowth["Persona Growth Loop<br/>independent growth of personality<br/>planned"]
-    PersonaEngine ---|"persona source / target"| PersonaGrowth
+    PersonaGrowth["Persona Growth Loop<br/>independent growth of personality<br/>observation implemented · write-back gated"]
+    PersonaEngine -->|"implemented: observation (persona source)"| PersonaGrowth
+    PersonaGrowth -.->|"gated: write-back (persona target)"| PersonaEngine
   end
 
   subgraph AbilityAxis["Growth of ability"]

@@ -97,8 +97,8 @@ The figures below move the README's detailed topology into the engineering view.
 | Family OS | non-runtime map | dotted navigation-only route to the agent's vertical axis | published, MIT |
 | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) (published, MIT) | one-per-agent vertical foundation; owns completion | exchanges trial requests and terminal results with Self Growth Loop | implemented |
 | [context-kit](https://github.com/caty-ai/context-kit) (published, MIT) | independently usable desk equipment | equips the agent without becoming completion authority | implemented |
-| [Persona Engine](https://github.com/caty-ai/persona-engine) (published, MIT) | independently usable persona source and target | connects to Persona Growth Loop | implemented |
-| [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop) (published, MIT) | independent persona-growth loop | planned persona source/target relation with Persona Engine; planned governance path to Self Growth Loop | planned |
+| [Persona Engine](https://github.com/caty-ai/persona-engine) (published, MIT) | independently usable persona source and target | persona source for Persona Growth Loop observation (implemented, running); persona target for its write-back, which exists in code but stays behind an approval gate (injection not enabled) | implemented |
+| [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop) (published, MIT) | independent persona-growth loop | observes Persona Engine as persona source (implemented, running nightly); writes back to Persona Engine as persona target only behind an approval gate (injection not enabled); planned governance path to Self Growth Loop | implemented (observation); gated (write-back); planned (governance) |
 | [X Collector](https://github.com/caty-ai/x-collector) (published, MIT) | independently usable, replaceable outside-information source | supplies `family-feed` / sense to morning agents | implemented |
 | morning agents | current/default sense bridge | turns collected material into proposals for Self Growth Loop | implemented |
 | human / evaluator | attributable alternative input | may provide another input to Self Growth Loop | implemented input shape |
@@ -116,8 +116,9 @@ flowchart TB
   subgraph PersonaAxis["Growth of personality"]
     direction LR
     PersonaEngine["Persona Engine<br/>persona layers and a gradation of feeling<br/>usable on its own"]
-    PersonaGrowth["Persona Growth Loop<br/>independent growth of personality<br/>planned"]
-    PersonaEngine ---|"persona source / target"| PersonaGrowth
+    PersonaGrowth["Persona Growth Loop<br/>independent growth of personality<br/>observation implemented · write-back gated"]
+    PersonaEngine -->|"implemented: observation (persona source)"| PersonaGrowth
+    PersonaGrowth -.->|"gated: write-back (persona target)"| PersonaEngine
   end
 
   subgraph AbilityAxis["Growth of ability"]
