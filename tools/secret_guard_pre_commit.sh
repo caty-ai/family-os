@@ -7,9 +7,9 @@
 # 2026-07-28: the keyword patterns now require a secret-shaped VALUE after the
 # separator, not merely the keyword followed by ":" or "=". The old form matched
 # any line containing `token =` or `token:`, so it blocked every tokenizer,
-# lexer, and parser the family writes — alpha-loom #4 could not be committed at
-# all because src/core/hook_enforcer.py is a shell tokenizer full of
-# `token = tokens[index]`. Detection strength is unchanged: a bare `token =`
+# lexer, and parser the family writes — a private shell tokenizer full of
+# `token = tokens[index]` could not be committed at all. Detection strength is
+# unchanged: a bare `token =`
 # with no literal after it was never evidence of a secret, and gitleaks above
 # remains the primary scanner.
 #
