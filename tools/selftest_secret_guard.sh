@@ -79,6 +79,8 @@ key='sk_01234567'
 key="${key}89abcdef0123"
 tp1="api_key = \"${key}\""
 vector block 'double-quoted key' "$tp1"
+vector block 'unclosed double-quoted key at EOL' "api_key = \"${key}"
+vector block 'quoted key glued to parenthesis' "api_key = \"${key}(\""
 vector block 'unquoted key at EOL' "API_KEY=${key}"
 ghp='ghp_abcdefghijk'
 ghp="${ghp}lmnopqrstuv"
