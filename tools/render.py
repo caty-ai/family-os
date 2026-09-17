@@ -148,6 +148,14 @@ def state_text(registry: dict, module: dict, lang: str) -> str:
     return table_cell(module, "state.%s" % lang, state)
 
 
+def inventory_name_cell(module: dict) -> str:
+    name = table_cell(module, "name", module["name"])
+    repo = table_cell(module, "repo", module["repo"])
+    if module["status"] == "published":
+        return "[%s](https://github.com/%s)" % (name, repo)
+    return "**%s**" % name
+
+
 def render_inventory(registry: dict, lang: str) -> str:
     try:
         headers = INVENTORY_HEADERS[lang]
@@ -157,10 +165,9 @@ def render_inventory(registry: dict, lang: str) -> str:
     rows = ["| %s | %s | %s | %s |" % headers, "| --- | --- | --- | --- |"]
     for module in registry["modules"]:
         rows.append(
-            "| [%s](https://github.com/%s) | %s | %s | %s |"
+            "| %s | %s | %s | %s |"
             % (
-                table_cell(module, "name", module["name"]),
-                table_cell(module, "repo", module["repo"]),
+                inventory_name_cell(module),
                 table_cell(module, "class.%s" % lang, module["class"][lang]),
                 table_cell(module, "owns.%s" % lang, module["owns"][lang]),
                 state_text(registry, module, lang),

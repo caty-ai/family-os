@@ -72,7 +72,7 @@ flowchart TB
 | [Caty Gateway](https://github.com/caty-ai/caty-gateway) | runtime・スマホ向けインターフェース | スマホとのペアリング、CatyPhone とローカルエージェント backend の間の音声セッション、backend アダプタ（Claude Code / Codex CLI / OpenClaw / Hermes / OpenAI 互換） | 公開・MIT |
 <!-- family:generated:module-inventory:end -->
 
-この表は [`registry/modules.json`](../registry/modules.json) から生成しています。「公開準備中」のリンクは、いまはまだ開けません。何が存在し、どこに置かれるのかを地図として正直に保つために載せています。
+この表は [`registry/modules.json`](../registry/modules.json) から生成しています。「公開準備中」のモジュールは、公開されるまでリンクなしで載せています。何が存在し、どこに置かれるのかを地図として正直に保つために載せています。
 
 レジストリは家族の契約でもあります。各モジュールは閉じた語彙である `product`・`public preview`・`reference` のいずれかの `maturity` を宣言し、`maturity` は Tier-2 の成熟度表示（公開ゲートのロールアウト、Issue #68）のために予約されています。任意の `aliases` は旧パスを記録し、レジストリ自身を除くどこでも検出されるため、文書は常に canonical なリポジトリパスを使います。任意の `depends_on` は依存先の pin を記録し、意図的に据え置く `pin_reason` がなければ GitHub の最新 tag と照合されます。`ci.required` を宣言するモジュールは workflow 名も宣言し、その存在は週次のレジストリ実行で検査されます。
 

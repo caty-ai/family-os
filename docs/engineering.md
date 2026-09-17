@@ -72,7 +72,7 @@ The rules layer sits **above** both axes rather than inside either one. It is a 
 | [Caty Gateway](https://github.com/caty-ai/caty-gateway) | runtime, phone-facing interface | phone pairing, the voice session between CatyPhone and a local agent backend, and the backend adapters (Claude Code / Codex CLI / OpenClaw / Hermes / OpenAI-compatible) | published, MIT |
 <!-- family:generated:module-inventory:end -->
 
-This table is generated from [`registry/modules.json`](../registry/modules.json). Links marked *publication in preparation* cannot be opened yet. They are listed so the map stays honest about what exists and where it will live.
+This table is generated from [`registry/modules.json`](../registry/modules.json). Modules marked *publication in preparation* are listed without a link until they are public. They are listed so the map stays honest about what exists and where it will live.
 
 The registry is also the family contract: every module declares a closed-vocabulary `maturity` of `product`, `public preview`, or `reference`; `maturity` is reserved for the Tier-2 maturity display (publication-gate rollout, issue #68). Optional `aliases` record former paths and are rejected everywhere except the registry, so documentation always uses the canonical repository path. Optional `depends_on` entries record a dependency pin; their pins are checked against the newest GitHub tag unless a `pin_reason` records an intentional hold. A module declaring `ci.required` also declares its workflow filename, whose existence is checked by the weekly registry run.
 
