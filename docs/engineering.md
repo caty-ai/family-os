@@ -268,7 +268,7 @@ A good way to test whether a boundary is real is to delete the module and ask wh
 | Family Memory Architecture | shared memory and check-in observation | each module's own domain state |
 | Sitter | optional external supervision | the harness's task semantics and local failure posture |
 | Self Growth Loop | growth governance and interpretation | tasks and evidence in the harness |
-| Persona Growth Loop | a future proposal input | everything currently running |
+| Persona Growth Loop | its running observation of Persona Engine and a future proposal input | everything else currently running |
 
 Nothing in the top half of that table takes runtime state with it. That is the whole point of the layering.
 

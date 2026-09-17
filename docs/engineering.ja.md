@@ -268,7 +268,7 @@ Harness 側の実装済みの2本は、後続のすべてのエッジの雛形�
 | Family Memory Architecture | 共有記憶と check-in の観測 | 各モジュール自身のドメイン状態 |
 | Sitter | 任意の外部監督 | 基盤のタスク意味論とローカルの失敗時の姿勢 |
 | Self Growth Loop | 成長のガバナンスと解釈 | 基盤の中のタスクと証拠 |
-| Persona Growth Loop | 将来の提案入力 | いま動いているものすべて |
+| Persona Growth Loop | 稼働中の Persona Engine の観測と、将来の提案入力 | それ以外の、いま動いているものすべて |
 
 この表の上半分は、どれも runtime の状態を道連れにしません。層を分けている理由がまさにそこです。
 
