@@ -97,8 +97,8 @@ Persona Engine と X Collector は単独で使え、他のどれからも必須�
 | Family OS | non-runtime な地図 | エージェントの縦軸へ、点線の案内専用経路を持つ | 公開・MIT |
 | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness)（公開・MIT） | 1エージェントにつき1つの縦軸基盤。完了を所有する | Self Growth Loop と trial 要求および終端結果をやり取りする | 実装済み |
 | [context-kit](https://github.com/caty-ai/context-kit)（公開・MIT） | 単独利用可能な机まわりの装備 | 完了権限を持たずにエージェントを装備する | 実装済み |
-| [Persona Engine](https://github.com/caty-ai/persona-engine)（公開・MIT） | 単独利用可能な人格の source / target | Persona Growth Loop と接続する | 実装済み |
-| [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop)（公開・MIT） | 独立した人格成長ループ | Persona Engine との人格 source / target 関係が計画中。Self Growth Loop への governance 経路も計画中 | 計画中 |
+| [Persona Engine](https://github.com/caty-ai/persona-engine)（公開・MIT） | 単独利用可能な人格の source / target | Persona Growth Loop の観測の source（実装済み・稼働中）。書き戻しの target でもあるが、そのコードは承認ゲートの手前で止まっている（injection 未有効化） | 実装済み |
+| [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop)（公開・MIT） | 独立した人格成長ループ | Persona Engine を人格 source として観測する（実装済み・夜間稼働中）。Persona Engine を人格 target とする書き戻しは承認ゲートの手前でのみ存在する（injection 未有効化）。Self Growth Loop への governance 経路は計画中 | 実装済み（観測）・ゲート付き（書き戻し）・計画中（governance） |
 | [X Collector](https://github.com/caty-ai/x-collector)（公開・MIT） | 単独利用可能で置き換え可能な外部情報源 | `family-feed` / sense を morning agents へ供給する | 実装済み |
 | morning agents | 現在 / 既定の sense bridge | 収集した素材を Self Growth Loop 向けの proposal に変える | 実装済み |
 | human / evaluator | 帰属可能な別入力 | Self Growth Loop へ別の入力を与えられる | 実装済みの入力形 |
@@ -116,8 +116,9 @@ flowchart TB
   subgraph PersonaAxis["Growth of personality"]
     direction LR
     PersonaEngine["Persona Engine<br/>persona layers and a gradation of feeling<br/>usable on its own"]
-    PersonaGrowth["Persona Growth Loop<br/>independent growth of personality<br/>planned"]
-    PersonaEngine ---|"persona source / target"| PersonaGrowth
+    PersonaGrowth["Persona Growth Loop<br/>independent growth of personality<br/>observation implemented · write-back gated"]
+    PersonaEngine -->|"implemented: observation (persona source)"| PersonaGrowth
+    PersonaGrowth -.->|"gated: write-back (persona target)"| PersonaEngine
   end
 
   subgraph AbilityAxis["Growth of ability"]
@@ -196,7 +197,7 @@ flowchart TB
 
 ## どうつながっているか
 
-今日この時点で実装済みのモジュール間エッジは2本だけです。それ以外は、まだ消費者のいない形か、家族の外側の誰かが所有する境界です。
+今日この時点で実装済みのモジュール間エッジは3本です。Self Growth Loop と Harness のあいだの要求／証拠の対と、Persona Growth Loop による Persona Engine の読み取り専用の観測です。それ以外は、まだ消費者のいない形か、家族の外側の誰かが所有する境界です。
 
 ```mermaid
 flowchart LR
@@ -204,15 +205,18 @@ flowchart LR
   H["Caty Agent Harness"]
   S["Sitter"]
   P["Persona Growth Loop"]
+  PE["Persona Engine"]
 
   SG -->|"実装済み: tr-enqueue タスク要求"| H
   H -->|"実装済み・読み取り専用: 終端成果物"| SG
   H -.->|"提案: LaunchRequest 監督要求"| S
   S -.->|"提案: 判定を含まない証拠"| H
   P -.->|"計画中: 最小化された提案"| SG
+  PE -->|"実装済み・読み取り専用: 観測"| P
+  P -.->|"ゲート付き: 書き戻し・injection 未有効化"| PE
 ```
 
-実装済みの2本は、後続のすべてのエッジの雛形なので、よく読む価値があります。
+Harness 側の実装済みの2本は、後続のすべてのエッジの雛形なので、よく読む価値があります。
 
 - **要求は、次の判断を所有するモジュールへ向かって流れます。** Self Growth Loop はタスクを投入しますが、タスクの状態・試行番号・リトライ方針・DLQ には決して書き込みません。それらは基盤のものです。
 - **証拠は、権限を移さずに戻ってきます。** 基盤は相関づけられた終端成果物を publish します。終端は、採用でも適用でも有効でもありません — それらは別の3者が持つ、別の3つの事実です。
@@ -264,7 +268,7 @@ flowchart LR
 | Family Memory Architecture | 共有記憶と check-in の観測 | 各モジュール自身のドメイン状態 |
 | Sitter | 任意の外部監督 | 基盤のタスク意味論とローカルの失敗時の姿勢 |
 | Self Growth Loop | 成長のガバナンスと解釈 | 基盤の中のタスクと証拠 |
-| Persona Growth Loop | 将来の提案入力 | いま動いているものすべて |
+| Persona Growth Loop | 稼働中の Persona Engine の観測と、将来の提案入力 | それ以外の、いま動いているものすべて |
 
 この表の上半分は、どれも runtime の状態を道連れにしません。層を分けている理由がまさにそこです。
 

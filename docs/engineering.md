@@ -97,8 +97,8 @@ The figures below move the README's detailed topology into the engineering view.
 | Family OS | non-runtime map | dotted navigation-only route to the agent's vertical axis | published, MIT |
 | [Caty Agent Harness](https://github.com/caty-ai/caty-agent-harness) (published, MIT) | one-per-agent vertical foundation; owns completion | exchanges trial requests and terminal results with Self Growth Loop | implemented |
 | [context-kit](https://github.com/caty-ai/context-kit) (published, MIT) | independently usable desk equipment | equips the agent without becoming completion authority | implemented |
-| [Persona Engine](https://github.com/caty-ai/persona-engine) (published, MIT) | independently usable persona source and target | connects to Persona Growth Loop | implemented |
-| [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop) (published, MIT) | independent persona-growth loop | planned persona source/target relation with Persona Engine; planned governance path to Self Growth Loop | planned |
+| [Persona Engine](https://github.com/caty-ai/persona-engine) (published, MIT) | independently usable persona source and target | persona source for Persona Growth Loop observation (implemented, running); persona target for its write-back, which exists in code but stays behind an approval gate (injection not enabled) | implemented |
+| [Persona Growth Loop](https://github.com/caty-ai/persona-growth-loop) (published, MIT) | independent persona-growth loop | observes Persona Engine as persona source (implemented, running nightly); writes back to Persona Engine as persona target only behind an approval gate (injection not enabled); planned governance path to Self Growth Loop | implemented (observation); gated (write-back); planned (governance) |
 | [X Collector](https://github.com/caty-ai/x-collector) (published, MIT) | independently usable, replaceable outside-information source | supplies `family-feed` / sense to morning agents | implemented |
 | morning agents | current/default sense bridge | turns collected material into proposals for Self Growth Loop | implemented |
 | human / evaluator | attributable alternative input | may provide another input to Self Growth Loop | implemented input shape |
@@ -116,8 +116,9 @@ flowchart TB
   subgraph PersonaAxis["Growth of personality"]
     direction LR
     PersonaEngine["Persona Engine<br/>persona layers and a gradation of feeling<br/>usable on its own"]
-    PersonaGrowth["Persona Growth Loop<br/>independent growth of personality<br/>planned"]
-    PersonaEngine ---|"persona source / target"| PersonaGrowth
+    PersonaGrowth["Persona Growth Loop<br/>independent growth of personality<br/>observation implemented · write-back gated"]
+    PersonaEngine -->|"implemented: observation (persona source)"| PersonaGrowth
+    PersonaGrowth -.->|"gated: write-back (persona target)"| PersonaEngine
   end
 
   subgraph AbilityAxis["Growth of ability"]
@@ -196,7 +197,7 @@ flowchart TB
 
 ## How the pieces connect
 
-Only two cross-module edges are implemented today. Everything else is either a shape with no consumer yet, or a boundary owned by someone outside the family.
+Three cross-module edges are implemented today: the request/evidence pair between Self Growth Loop and the harness, and Persona Growth Loop's read-only observation of Persona Engine. Everything else is either a shape with no consumer yet, or a boundary owned by someone outside the family.
 
 ```mermaid
 flowchart LR
@@ -204,15 +205,18 @@ flowchart LR
   H["Caty Agent Harness"]
   S["Sitter"]
   P["Persona Growth Loop"]
+  PE["Persona Engine"]
 
   SG -->|"implemented: tr-enqueue task request"| H
   H -->|"implemented, read-only: terminal artifact"| SG
   H -.->|"proposed: LaunchRequest supervision"| S
   S -.->|"proposed: verdict-free evidence"| H
   P -.->|"planned: minimised proposal"| SG
+  PE -->|"implemented, read-only: observation"| P
+  P -.->|"gated: write-back, injection not enabled"| PE
 ```
 
-The implemented pair is worth reading closely, because it is the template for every later edge:
+The implemented harness pair is worth reading closely, because it is the template for every later edge:
 
 - **Request flows toward the module that owns the next decision.** Self Growth Loop enqueues a task; it never writes task state, attempt numbers, retry policy, or dead-letter status. Those belong to the harness.
 - **Evidence flows back without transferring authority.** The harness publishes a correlated terminal artifact. Terminal does **not** mean adopted, applied, or effective — those are three further facts owned by three further parties.
@@ -264,7 +268,7 @@ A good way to test whether a boundary is real is to delete the module and ask wh
 | Family Memory Architecture | shared memory and check-in observation | each module's own domain state |
 | Sitter | optional external supervision | the harness's task semantics and local failure posture |
 | Self Growth Loop | growth governance and interpretation | tasks and evidence in the harness |
-| Persona Growth Loop | a future proposal input | everything currently running |
+| Persona Growth Loop | its running observation of Persona Engine and a future proposal input | everything else currently running |
 
 Nothing in the top half of that table takes runtime state with it. That is the whole point of the layering.
 
