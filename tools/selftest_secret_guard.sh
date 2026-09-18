@@ -2,15 +2,20 @@
 set -eu
 
 ROOT_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
-# Keep all scratch files inside the ignored workspace, including hook mktemp.
+# Keep test repositories inside the ignored workspace; probe hook mktemp below.
 mkdir -p "$ROOT_DIR/.omc"
 TEST_TMP=$(mktemp -d "$ROOT_DIR/.omc/secret-guard.XXXXXX")
 trap 'rm -rf "$TEST_TMP"' EXIT
 export TMPDIR="$TEST_TMP"
+probe=$(mktemp)
+mktemp_dir=$(dirname "$probe")
+rm -f "$probe"
+export LC_ALL=C
 export SECRET_GUARD_SKIP_GITLEAKS=1 GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1
 # A test invoked from another hook must never inherit that repository's index.
 unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_COMMON_DIR GIT_OBJECT_DIRECTORY \
-  GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_CONFIG GIT_CONFIG_PARAMETERS GIT_CONFIG_COUNT
+  GIT_ALTERNATE_OBJECT_DIRECTORIES GIT_CONFIG GIT_CONFIG_PARAMETERS GIT_CONFIG_COUNT \
+  SECRET_GUARD_CHAINED
 mkdir "$TEST_TMP/hooks" "$TEST_TMP/repo"
 cp "$ROOT_DIR/tools/secret_guard_pre_commit.sh" "$TEST_TMP/hooks/pre-commit"
 chmod +x "$TEST_TMP/hooks/pre-commit"
@@ -27,19 +32,37 @@ failures=''
 check_commit() {
   local expected=$1 label=$2 actual=pass prerequisite=${3:-1} marker=${4:-}
   count=$((count + 1))
-  if git commit -q -m x > "$TEST_TMP/commit.log" 2>&1; then
+  # Perl alarm bounds the self-copy test on macOS too (no timeout(1) needed).
+  local bounded=${5:-0}
+  if { if [ "$bounded" = 1 ]; then
+    perl -e 'alarm 20; exec @ARGV' git commit -q -m x
+  else
+    git commit -q -m x
+  fi; } > "$TEST_TMP/commit.log" 2>&1; then
     :
   else
     actual=block
     # Nonzero alone could hide Git setup failures unrelated to the guard.
     if ! grep -q '^Secret guard: .* Commit blocked\.$' "$TEST_TMP/commit.log"; then
       actual=error
+      if [ "$expected" = chainfail ] && ! grep -q '^Secret guard:' "$TEST_TMP/commit.log"; then
+        actual=chainfail
+      fi
     fi
     git reset -q
   fi
   case "$marker" in
     present) [ -f chained.marker ] || prerequisite=0 ;;
     absent) [ ! -f chained.marker ] || prerequisite=0 ;;
+    merge-clean)
+      [ -f chained.marker ] || prerequisite=0
+      find "$mktemp_dir" -maxdepth 1 -type f -name 'tmp.*' -newer "$TEST_TMP/merge-start" | sort > "$TEST_TMP/temps-after"
+      comm -13 "$TEST_TMP/temps-before" "$TEST_TMP/temps-after" > "$TEST_TMP/temps-new"
+      [ ! -s "$TEST_TMP/temps-new" ] || prerequisite=0 ;;
+    nested-blocked)
+      [ "$(cat "$TEST_TMP/nested.rc")" = 1 ] || prerequisite=0
+      grep -q '^Secret guard: .* Commit blocked\.$' "$TEST_TMP/nested.log" || prerequisite=0
+      [ "$(git -C "$TEST_TMP/repo-b" rev-parse HEAD)" = "$nested_head" ] || prerequisite=0 ;;
   esac
   if [ "$actual" = "$expected" ] && [ "$prerequisite" = 1 ]; then
     printf 'PASS: %s\n' "$label"
@@ -133,11 +156,109 @@ HOOK
 chmod +x .git/hooks/pre-commit
 printf '%s\n' 'benign chained content' > vector.txt
 git add vector.txt
-check_commit pass 'benign commit with repo-local hook present succeeds'
+rm -f chained.marker
+check_commit pass 'benign commit reaches repo-local hook (marker written)' 1 present
 rm -f chained.marker
 printf '%s\n' "$tp1" > vector.txt
 git add vector.txt
 check_commit block 'secret blocked before repo-local hook' 1 absent
+
+# Preserve the marker-only hook while testing chained failure and self-copy.
+cp .git/hooks/pre-commit "$TEST_TMP/marker-hook"
+printf '%s\n' 'exit 1' >> .git/hooks/pre-commit
+rm -f chained.marker
+printf '%s\n' 'benign rejected by local hook' > vector.txt
+git add vector.txt
+check_commit chainfail 'repo-local hook failure propagates after marker' 1 present
+cp "$TEST_TMP/marker-hook" .git/hooks/pre-commit
+# Restore the tracked file after the deliberately rejected commit.
+git checkout -- vector.txt
+rm -f chained.marker
+
+git worktree add -q "$TEST_TMP/wt" -b guard-wt
+cd "$TEST_TMP/wt"
+printf '%s\n' 'benign worktree content' > worktree.txt
+git add worktree.txt
+check_commit pass 'benign commit in linked worktree reaches repo-local hook' 1 present
+rm -f chained.marker
+printf '%s\n' "$tp1" > worktree.txt
+git add worktree.txt
+check_commit block 'secret in linked worktree blocked before repo-local hook' 1 absent
+cd "$TEST_TMP/repo"
+
+cp "$TEST_TMP/hooks/pre-commit" .git/hooks/pre-commit
+rm -f chained.marker
+printf '%s\n' 'benign with guard copy' > vector.txt
+git add vector.txt
+check_commit pass 'repo-local guard copy does not recurse' 1 absent 1
+cp "$TEST_TMP/marker-hook" .git/hooks/pre-commit
+
+# Generate the pre-#180 loop shape from the current hook, without history.
+# Shallow clones and exported trees may not contain the original commit.
+sed -e '/^# Chain to a repo-local pre-commit hook/,$d' \
+  -e '/^this_common=/,/^fi$/d' \
+  -e '/^#.*git-common-dir/d' -e '/^#.*SECRET_GUARD_CHAINED/d' \
+  "$TEST_TMP/hooks/pre-commit" > "$TEST_TMP/old-guard"
+cat >> "$TEST_TMP/old-guard" <<'OLD'
+repo_hook=$(git rev-parse --git-path hooks/pre-commit 2>/dev/null || true)
+if [ -n "$repo_hook" ] && [ -x "$repo_hook" ] && [ "$repo_hook" != "$0" ]; then
+  exec "$repo_hook" "$@"
+fi
+OLD
+if [ "$(grep -c -- '--git-path hooks/pre-commit' "$TEST_TMP/old-guard" || true)" != 1 ] ||
+   [ "$(grep -Ec 'git-common-dir|SECRET_GUARD_CHAINED' "$TEST_TMP/old-guard" || true)" != 0 ] ||
+   [ "$(grep -c 'Commit blocked' "$TEST_TMP/old-guard" || true)" != 2 ]; then
+  printf 'FAIL: generated old guard must have one old tail, no new chaining or marker, and two scan diagnostics\n' >&2
+  exit 1
+fi
+cp "$TEST_TMP/old-guard" .git/hooks/pre-commit
+chmod +x .git/hooks/pre-commit
+rm -f chained.marker
+printf '%s\n' 'benign with old guard copy' > vector.txt
+git add vector.txt
+check_commit pass 'repo-local pre-#180 guard copy does not recurse' 1 absent 1
+cp "$TEST_TMP/marker-hook" .git/hooks/pre-commit
+
+rm -f .git/hooks/pre-commit
+mkdir .git/hooks/pre-commit
+printf '%s\n' 'benign with hook directory' > vector.txt
+git add vector.txt
+check_commit pass 'directory at repo-local hook path is ignored' 1 absent
+rmdir .git/hooks/pre-commit
+cp "$TEST_TMP/marker-hook" .git/hooks/pre-commit
+
+# A chained child must scan another repository despite inheriting the marker.
+git init -q "$TEST_TMP/repo-b"
+git -C "$TEST_TMP/repo-b" config user.name 'Secret Guard Selftest'
+git -C "$TEST_TMP/repo-b" config user.email 'secret-guard@localhost'
+git -C "$TEST_TMP/repo-b" config core.hooksPath "$TEST_TMP/hooks"
+git -C "$TEST_TMP/repo-b" config commit.gpgsign false
+git -C "$TEST_TMP/repo-b" commit -q --allow-empty -m base
+nested_head=$(git -C "$TEST_TMP/repo-b" rev-parse HEAD)
+printf '%s\n' "$tp1" > "$TEST_TMP/repo-b/secret.txt"
+git -C "$TEST_TMP/repo-b" add secret.txt
+export SECRET_GUARD_TEST_TMP="$TEST_TMP"
+cat > .git/hooks/pre-commit <<'HOOK'
+#!/bin/sh
+# Git exports repo-local variables to hooks; clear them before changing repos.
+unset $(git rev-parse --local-env-vars)
+git -C "$SECRET_GUARD_TEST_TMP/repo-b" commit -q -m nested > "$SECRET_GUARD_TEST_TMP/nested.log" 2>&1
+printf '%s\n' "$?" > "$SECRET_GUARD_TEST_TMP/nested.rc"
+exit 0
+HOOK
+printf '%s\n' 'benign outer commit' > vector.txt
+git add vector.txt
+check_commit pass 'chained hook committing into another repo is still scanned' 1 nested-blocked
+cp "$TEST_TMP/marker-hook" .git/hooks/pre-commit
+unset SECRET_GUARD_TEST_TMP
+
+# Legacy and invalid marker values must not bypass a first-hop scan.
+export SECRET_GUARD_CHAINED=1
+vector block 'legacy marker does not bypass scanning' "$tp1"
+export SECRET_GUARD_CHAINED="$TEST_TMP/missing-directory"
+vector block 'missing marker directory does not bypass scanning' "$tp1"
+unset SECRET_GUARD_CHAINED
+git checkout -- vector.txt
 
 # An inherited secret must pass the merge filter; a novel one must block.
 # Seed the inherited fixture with the hook explicitly disabled only for setup.
@@ -153,6 +274,7 @@ git -c core.hooksPath=/dev/null commit -q -m right
 git checkout -q guard-left
 git merge --no-commit --no-ff guard-right > "$TEST_TMP/merge.log" 2>&1
 test -f .git/MERGE_HEAD
+# Direct invocation also chains to the marker-only hook, which exits zero.
 inherited_ok=1
 if ! "$TEST_TMP/hooks/pre-commit" > "$TEST_TMP/inherited.log" 2>&1; then
   inherited_ok=0
@@ -161,6 +283,14 @@ fi
 printf '%s\n' "API_KEY=${key}" > novel.txt
 git add novel.txt
 check_commit block 'merge inherited content allowed; novel secret blocked' "$inherited_ok"
+
+# The rejected commit reset cleared MERGE_HEAD; recreate the passing merge.
+rm -f right.txt novel.txt chained.marker
+git merge --no-commit --no-ff guard-right > "$TEST_TMP/merge.log" 2>&1
+test -f .git/MERGE_HEAD
+find "$mktemp_dir" -maxdepth 1 -type f -name 'tmp.*' | sort > "$TEST_TMP/temps-before"
+touch "$TEST_TMP/merge-start"
+check_commit pass 'merge temp files removed before chaining' 1 merge-clean
 
 if [ -n "$failures" ]; then
   printf 'FAIL: secret guard selftest:%s\n' "$failures" >&2

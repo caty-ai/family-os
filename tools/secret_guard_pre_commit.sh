@@ -32,12 +32,27 @@
 # Contiguous credential literals still block, including quoted JSON keys.
 # Quoted JSON keys now match, so space-free placeholder values block; write a
 # spaced label or use --no-verify with an audit note, as before.
-# The chaining block is carried verbatim from the host hook; whether it fires
-# depends on how `git rev-parse --git-path hooks/` resolves under `core.hooksPath`
-# (it does not on git 2.48 with a global hooksPath); activation is tracked separately.
+# Chaining activated 2026-09-18, see below.
 # gitleaks remains the primary scanner;
 # SECRET_GUARD_SKIP_GITLEAKS=1 is intended for the regex selftest only; nothing else should set it.
+#
+# 2026-09-18 (caty-ai/family-os#180): resolve the repository's own hook via
+# `git rev-parse --git-common-dir`; linked worktrees share <main>/.git/hooks.
+# Previously --git-path hooks/ returned this very file under a global
+# core.hooksPath on git 2.48, making chaining a no-op. This is a behaviour
+# change: repo-local pre-commit hooks (lint, format, own secret checks) run
+# after the guard passes; blocked commits never reach them. A repo-local
+# hook must not invoke the global hook (e.g. a stale guard copy);
+# SECRET_GUARD_CHAINED scopes loop prevention to the same repository.
 set -eu
+this_common=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null || git rev-parse --git-common-dir 2>/dev/null || true)
+case "$this_common" in ''|/*) ;; *) this_common=$PWD/$this_common ;; esac
+# Scope re-entry to one repository: another repo committed by a chained hook
+# still gets scanned. Only a second hop into the same repo skips the index
+# scan that the first hop already passed, preventing a chaining loop.
+if [ -n "${SECRET_GUARD_CHAINED:-}" ] && [ -d "$SECRET_GUARD_CHAINED" ] && [ "$SECRET_GUARD_CHAINED" -ef "$this_common" ]; then
+  exit 0
+fi
 
 if [ "${SECRET_GUARD_SKIP_GITLEAKS:-0}" != 1 ] && command -v gitleaks >/dev/null 2>&1; then
   gitleaks protect --staged >/dev/null
@@ -82,7 +97,15 @@ else
 fi
 
 # Chain to a repo-local pre-commit hook if one exists (global hooksPath shadows it).
-repo_hook=$(git rev-parse --git-path hooks/pre-commit 2>/dev/null || true)
-if [ -n "$repo_hook" ] && [ -x "$repo_hook" ] && [ "$repo_hook" != "$0" ]; then
-  exec "$repo_hook" "$@"
+# Compare paths and file identity to skip the same hook.
+common_dir=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null || git rev-parse --git-common-dir 2>/dev/null || true)
+case "$common_dir" in ''|/*) ;; *) common_dir=$PWD/$common_dir ;; esac
+if [ -n "$common_dir" ]; then
+  repo_hook="$common_dir/hooks/pre-commit"
+  if [ -f "$repo_hook" ] && [ -x "$repo_hook" ] && [ "$repo_hook" != "$0" ] && ! [ "$repo_hook" -ef "$0" ]; then
+    # exec bypasses the EXIT trap; explicitly remove merge temps first.
+    if [ -n "${tmp_head:-}" ]; then rm -f "$tmp_head" "${tmp_merge:-}"; fi
+    export SECRET_GUARD_CHAINED="$common_dir"
+    exec "$repo_hook" "$@"
+  fi
 fi
