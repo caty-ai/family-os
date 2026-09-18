@@ -42,8 +42,13 @@
 # core.hooksPath on git 2.48, making chaining a no-op. This is a behaviour
 # change: repo-local pre-commit hooks (lint, format, own secret checks) run
 # after the guard passes; blocked commits never reach them. A repo-local
-# copy of this guard is not re-entered.
+# hook must not invoke the global hook (e.g. a stale guard copy);
+# SECRET_GUARD_CHAINED=1 makes re-entry exit immediately instead of looping.
 set -eu
+if [ "${SECRET_GUARD_CHAINED:-0}" = 1 ]; then
+  # The first hop already passed the same index scan before setting this marker; rescanning adds nothing and rechaining loops. Caller presets can bypass it, like --no-verify: this is not a security boundary.
+  exit 0
+fi
 
 if [ "${SECRET_GUARD_SKIP_GITLEAKS:-0}" != 1 ] && command -v gitleaks >/dev/null 2>&1; then
   gitleaks protect --staged >/dev/null
@@ -88,14 +93,14 @@ else
 fi
 
 # Chain to a repo-local pre-commit hook if one exists (global hooksPath shadows it).
-# With core.hooksPath=.git/hooks or a local guard copy, different path spellings
-# may name the same file: compare identity as well as strings to avoid recursion.
+# Compare paths and file identity to skip the same hook.
 common_dir=$(git rev-parse --git-common-dir 2>/dev/null || true)
 if [ -n "$common_dir" ]; then
   repo_hook="$common_dir/hooks/pre-commit"
-  if [ -x "$repo_hook" ] && [ "$repo_hook" != "$0" ] && ! [ "$repo_hook" -ef "$0" ]; then
+  if [ -f "$repo_hook" ] && [ -x "$repo_hook" ] && [ "$repo_hook" != "$0" ] && ! [ "$repo_hook" -ef "$0" ]; then
     # exec bypasses the EXIT trap; explicitly remove merge temps first.
     if [ -n "${tmp_head:-}" ]; then rm -f "$tmp_head" "${tmp_merge:-}"; fi
+    export SECRET_GUARD_CHAINED=1
     exec "$repo_hook" "$@"
   fi
 fi
