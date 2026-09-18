@@ -41,11 +41,13 @@
   <rect class="node" x="75" y="300" width="175" height="62" rx="10"/>
   <text class="label" x="162" y="328">Persona Engine</text>
   <text class="small" x="162" y="349">persona layers</text>
-  <rect class="node focus" x="295" y="300" width="220" height="62" rx="10"/>
-  <text class="label" x="405" y="328">Persona Growth Loop</text>
-  <text class="small" x="405" y="349">implemented · write-back gated</text>
+  <rect class="node focus" x="295" y="300" width="250" height="62" rx="10"/>
+  <text class="label" x="420" y="328">Persona Growth Loop</text>
+  <text class="small" x="420" y="349">implemented · write-back gated</text>
   <path class="solid" d="M250 320 H295"/>
   <path class="dashed" d="M295 342 H250"/>
+  <text class="small" x="272" y="290">observation →</text>
+  <text class="small" x="272" y="380">← write-back (gated)</text>
 
   <rect class="node" x="75" y="410" width="165" height="62" rx="10"/>
   <text class="label" x="157" y="438">X Collector</text>
@@ -57,7 +59,7 @@
   <text class="small" x="620" y="459">ability growth</text>
   <path class="solid" d="M240 441 H275"/>
   <path class="solid" d="M440 441 H505"/>
-  <path class="dashed" d="M405 362 V388 H620 V410"/>
+  <path class="dashed" d="M420 362 V388 H620 V410"/>
 
   <rect class="node" x="75" y="535" width="175" height="62" rx="10"/>
   <text class="label" x="162" y="571">context-kit</text>
