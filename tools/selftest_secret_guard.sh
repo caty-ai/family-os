@@ -27,13 +27,22 @@ failures=''
 check_commit() {
   local expected=$1 label=$2 actual=pass prerequisite=${3:-1} marker=${4:-}
   count=$((count + 1))
-  if git commit -q -m x > "$TEST_TMP/commit.log" 2>&1; then
+  # Perl alarm bounds the self-copy test on macOS too (no timeout(1) needed).
+  local bounded=${5:-0}
+  if { if [ "$bounded" = 1 ]; then
+    perl -e 'alarm 20; exec @ARGV' git commit -q -m x
+  else
+    git commit -q -m x
+  fi; } > "$TEST_TMP/commit.log" 2>&1; then
     :
   else
     actual=block
     # Nonzero alone could hide Git setup failures unrelated to the guard.
     if ! grep -q '^Secret guard: .* Commit blocked\.$' "$TEST_TMP/commit.log"; then
       actual=error
+      if [ "$expected" = chainfail ] && ! grep -q '^Secret guard:' "$TEST_TMP/commit.log"; then
+        actual=chainfail
+      fi
     fi
     git reset -q
   fi
@@ -133,11 +142,42 @@ HOOK
 chmod +x .git/hooks/pre-commit
 printf '%s\n' 'benign chained content' > vector.txt
 git add vector.txt
-check_commit pass 'benign commit with repo-local hook present succeeds'
+rm -f chained.marker
+check_commit pass 'benign commit reaches repo-local hook (marker written)' 1 present
 rm -f chained.marker
 printf '%s\n' "$tp1" > vector.txt
 git add vector.txt
 check_commit block 'secret blocked before repo-local hook' 1 absent
+
+# Preserve the marker-only hook while testing chained failure and self-copy.
+cp .git/hooks/pre-commit "$TEST_TMP/marker-hook"
+printf '%s\n' 'exit 1' >> .git/hooks/pre-commit
+rm -f chained.marker
+printf '%s\n' 'benign rejected by local hook' > vector.txt
+git add vector.txt
+check_commit chainfail 'repo-local hook failure propagates after marker' 1 present
+cp "$TEST_TMP/marker-hook" .git/hooks/pre-commit
+# Restore the tracked file after the deliberately rejected commit.
+git checkout -- vector.txt
+rm -f chained.marker
+
+git worktree add -q "$TEST_TMP/wt" -b guard-wt
+cd "$TEST_TMP/wt"
+printf '%s\n' 'benign worktree content' > worktree.txt
+git add worktree.txt
+check_commit pass 'benign commit in linked worktree reaches repo-local hook' 1 present
+rm -f chained.marker
+printf '%s\n' "$tp1" > worktree.txt
+git add worktree.txt
+check_commit block 'secret in linked worktree blocked before repo-local hook' 1 absent
+cd "$TEST_TMP/repo"
+
+cp "$TEST_TMP/hooks/pre-commit" .git/hooks/pre-commit
+rm -f chained.marker
+printf '%s\n' 'benign with guard copy' > vector.txt
+git add vector.txt
+check_commit pass 'repo-local guard copy does not recurse' 1 absent 1
+cp "$TEST_TMP/marker-hook" .git/hooks/pre-commit
 
 # An inherited secret must pass the merge filter; a novel one must block.
 # Seed the inherited fixture with the hook explicitly disabled only for setup.
@@ -153,6 +193,7 @@ git -c core.hooksPath=/dev/null commit -q -m right
 git checkout -q guard-left
 git merge --no-commit --no-ff guard-right > "$TEST_TMP/merge.log" 2>&1
 test -f .git/MERGE_HEAD
+# Direct invocation also chains to the marker-only hook, which exits zero.
 inherited_ok=1
 if ! "$TEST_TMP/hooks/pre-commit" > "$TEST_TMP/inherited.log" 2>&1; then
   inherited_ok=0
