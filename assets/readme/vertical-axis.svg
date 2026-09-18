@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 650" role="img" aria-labelledby="title desc">
   <title id="title">Vertical axis topology for one agent</title>
-  <desc id="desc">A Caty Agent Harness foundation supports separate persona and ability growth branches, context equipment, and an implemented Self Growth trial and result seam.</desc>
+  <desc id="desc">A Caty Agent Harness foundation supports separate persona and ability growth branches (Persona Growth Loop observation implemented, its write-back to Persona Engine gated), context equipment, and an implemented Self Growth trial and result seam.</desc>
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#57606a"/>
@@ -33,10 +33,13 @@
   <rect class="node" x="95" y="210" width="210" height="82" rx="12"/>
   <text class="label" x="200" y="246">Persona Engine</text>
   <text class="small" x="200" y="271">persona source / target</text>
-  <rect class="node planned focus" x="350" y="210" width="210" height="82" rx="12"/>
+  <rect class="node focus" x="350" y="210" width="210" height="82" rx="12"/>
   <text class="label" x="455" y="246">Persona Growth Loop</text>
   <text class="small" x="455" y="271">persona growth</text>
-  <path class="dashed" d="M305 251 H350"/>
+  <path class="solid" d="M305 238 H350"/>
+  <path class="dashed" d="M350 264 H305"/>
+  <text class="small" x="327" y="200">observation →</text>
+  <text class="small" x="327" y="312">← write-back (gated)</text>
 
   <rect class="zone" x="630" y="125" width="605" height="300" rx="16"/>
   <text class="heading" x="655" y="158">Growth of ability</text>
