@@ -2,11 +2,15 @@
 set -eu
 
 ROOT_DIR=$(CDPATH='' cd -- "$(dirname -- "$0")/.." && pwd)
-# Keep all scratch files inside the ignored workspace, including hook mktemp.
+# Keep test repositories inside the ignored workspace; probe hook mktemp below.
 mkdir -p "$ROOT_DIR/.omc"
 TEST_TMP=$(mktemp -d "$ROOT_DIR/.omc/secret-guard.XXXXXX")
 trap 'rm -rf "$TEST_TMP"' EXIT
 export TMPDIR="$TEST_TMP"
+probe=$(mktemp)
+mktemp_dir=$(dirname "$probe")
+rm -f "$probe"
+export LC_ALL=C
 export SECRET_GUARD_SKIP_GITLEAKS=1 GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_NOSYSTEM=1
 # A test invoked from another hook must never inherit that repository's index.
 unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE GIT_COMMON_DIR GIT_OBJECT_DIRECTORY \
@@ -52,7 +56,13 @@ check_commit() {
     absent) [ ! -f chained.marker ] || prerequisite=0 ;;
     merge-clean)
       [ -f chained.marker ] || prerequisite=0
-      [ "$(find "$TMPDIR" -type f -name 'tmp.*' | wc -l)" -eq "$temps_before" ] || prerequisite=0 ;;
+      find "$mktemp_dir" -maxdepth 1 -type f -name 'tmp.*' -newer "$TEST_TMP/merge-start" | sort > "$TEST_TMP/temps-after"
+      comm -13 "$TEST_TMP/temps-before" "$TEST_TMP/temps-after" > "$TEST_TMP/temps-new"
+      [ ! -s "$TEST_TMP/temps-new" ] || prerequisite=0 ;;
+    nested-blocked)
+      [ "$(cat "$TEST_TMP/nested.rc")" = 1 ] || prerequisite=0
+      grep -q '^Secret guard: .* Commit blocked\.$' "$TEST_TMP/nested.log" || prerequisite=0
+      [ "$(git -C "$TEST_TMP/repo-b" rev-parse HEAD)" = "$nested_head" ] || prerequisite=0 ;;
   esac
   if [ "$actual" = "$expected" ] && [ "$prerequisite" = 1 ]; then
     printf 'PASS: %s\n' "$label"
@@ -186,8 +196,8 @@ cp "$TEST_TMP/marker-hook" .git/hooks/pre-commit
 # Generate the pre-#180 loop shape from the current hook, without history.
 # Shallow clones and exported trees may not contain the original commit.
 sed -e '/^# Chain to a repo-local pre-commit hook/,$d' \
-  -e '/^if \[ "${SECRET_GUARD_CHAINED:-0}" = 1 \]; then/,/^fi$/d' \
-  -e '/^# SECRET_GUARD_CHAINED=/d' \
+  -e '/^this_common=/,/^fi$/d' \
+  -e '/^#.*git-common-dir/d' -e '/^#.*SECRET_GUARD_CHAINED/d' \
   "$TEST_TMP/hooks/pre-commit" > "$TEST_TMP/old-guard"
 cat >> "$TEST_TMP/old-guard" <<'OLD'
 repo_hook=$(git rev-parse --git-path hooks/pre-commit 2>/dev/null || true)
@@ -195,8 +205,10 @@ if [ -n "$repo_hook" ] && [ -x "$repo_hook" ] && [ "$repo_hook" != "$0" ]; then
   exec "$repo_hook" "$@"
 fi
 OLD
-if [ "$(grep -c SECRET_GUARD_CHAINED "$TEST_TMP/old-guard" || true)" != 0 ]; then
-  printf 'FAIL: generated old guard still contains the re-entry marker\n' >&2
+if [ "$(grep -c -- '--git-path hooks/pre-commit' "$TEST_TMP/old-guard" || true)" != 1 ] ||
+   [ "$(grep -Ec 'git-common-dir|SECRET_GUARD_CHAINED' "$TEST_TMP/old-guard" || true)" != 0 ] ||
+   [ "$(grep -c 'Commit blocked' "$TEST_TMP/old-guard" || true)" != 2 ]; then
+  printf 'FAIL: generated old guard must have one old tail, no new chaining or marker, and two scan diagnostics\n' >&2
   exit 1
 fi
 cp "$TEST_TMP/old-guard" .git/hooks/pre-commit
@@ -214,6 +226,39 @@ git add vector.txt
 check_commit pass 'directory at repo-local hook path is ignored' 1 absent
 rmdir .git/hooks/pre-commit
 cp "$TEST_TMP/marker-hook" .git/hooks/pre-commit
+
+# A chained child must scan another repository despite inheriting the marker.
+git init -q "$TEST_TMP/repo-b"
+git -C "$TEST_TMP/repo-b" config user.name 'Secret Guard Selftest'
+git -C "$TEST_TMP/repo-b" config user.email 'secret-guard@localhost'
+git -C "$TEST_TMP/repo-b" config core.hooksPath "$TEST_TMP/hooks"
+git -C "$TEST_TMP/repo-b" config commit.gpgsign false
+git -C "$TEST_TMP/repo-b" commit -q --allow-empty -m base
+nested_head=$(git -C "$TEST_TMP/repo-b" rev-parse HEAD)
+printf '%s\n' "$tp1" > "$TEST_TMP/repo-b/secret.txt"
+git -C "$TEST_TMP/repo-b" add secret.txt
+export SECRET_GUARD_TEST_TMP="$TEST_TMP"
+cat > .git/hooks/pre-commit <<'HOOK'
+#!/bin/sh
+# Git exports repo-local variables to hooks; clear them before changing repos.
+unset $(git rev-parse --local-env-vars)
+git -C "$SECRET_GUARD_TEST_TMP/repo-b" commit -q -m nested > "$SECRET_GUARD_TEST_TMP/nested.log" 2>&1
+printf '%s\n' "$?" > "$SECRET_GUARD_TEST_TMP/nested.rc"
+exit 0
+HOOK
+printf '%s\n' 'benign outer commit' > vector.txt
+git add vector.txt
+check_commit pass 'chained hook committing into another repo is still scanned' 1 nested-blocked
+cp "$TEST_TMP/marker-hook" .git/hooks/pre-commit
+unset SECRET_GUARD_TEST_TMP
+
+# Legacy and invalid marker values must not bypass a first-hop scan.
+export SECRET_GUARD_CHAINED=1
+vector block 'legacy marker does not bypass scanning' "$tp1"
+export SECRET_GUARD_CHAINED="$TEST_TMP/missing-directory"
+vector block 'missing marker directory does not bypass scanning' "$tp1"
+unset SECRET_GUARD_CHAINED
+git checkout -- vector.txt
 
 # An inherited secret must pass the merge filter; a novel one must block.
 # Seed the inherited fixture with the hook explicitly disabled only for setup.
@@ -243,7 +288,8 @@ check_commit block 'merge inherited content allowed; novel secret blocked' "$inh
 rm -f right.txt novel.txt chained.marker
 git merge --no-commit --no-ff guard-right > "$TEST_TMP/merge.log" 2>&1
 test -f .git/MERGE_HEAD
-temps_before=$(find "$TMPDIR" -type f -name 'tmp.*' | wc -l)
+find "$mktemp_dir" -maxdepth 1 -type f -name 'tmp.*' | sort > "$TEST_TMP/temps-before"
+touch "$TEST_TMP/merge-start"
 check_commit pass 'merge temp files removed before chaining' 1 merge-clean
 
 if [ -n "$failures" ]; then

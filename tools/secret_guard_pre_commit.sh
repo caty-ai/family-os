@@ -43,10 +43,14 @@
 # change: repo-local pre-commit hooks (lint, format, own secret checks) run
 # after the guard passes; blocked commits never reach them. A repo-local
 # hook must not invoke the global hook (e.g. a stale guard copy);
-# SECRET_GUARD_CHAINED=1 makes re-entry exit immediately instead of looping.
+# SECRET_GUARD_CHAINED scopes loop prevention to the same repository.
 set -eu
-if [ "${SECRET_GUARD_CHAINED:-0}" = 1 ]; then
-  # The first hop already passed the same index scan before setting this marker; rescanning adds nothing and rechaining loops. Caller presets can bypass it, like --no-verify: this is not a security boundary.
+this_common=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null || git rev-parse --git-common-dir 2>/dev/null || true)
+case "$this_common" in ''|/*) ;; *) this_common=$PWD/$this_common ;; esac
+# Scope re-entry to one repository: another repo committed by a chained hook
+# still gets scanned. Only a second hop into the same repo skips the index
+# scan that the first hop already passed, preventing a chaining loop.
+if [ -n "${SECRET_GUARD_CHAINED:-}" ] && [ -d "$SECRET_GUARD_CHAINED" ] && [ "$SECRET_GUARD_CHAINED" -ef "$this_common" ]; then
   exit 0
 fi
 
@@ -94,13 +98,14 @@ fi
 
 # Chain to a repo-local pre-commit hook if one exists (global hooksPath shadows it).
 # Compare paths and file identity to skip the same hook.
-common_dir=$(git rev-parse --git-common-dir 2>/dev/null || true)
+common_dir=$(git rev-parse --path-format=absolute --git-common-dir 2>/dev/null || git rev-parse --git-common-dir 2>/dev/null || true)
+case "$common_dir" in ''|/*) ;; *) common_dir=$PWD/$common_dir ;; esac
 if [ -n "$common_dir" ]; then
   repo_hook="$common_dir/hooks/pre-commit"
   if [ -f "$repo_hook" ] && [ -x "$repo_hook" ] && [ "$repo_hook" != "$0" ] && ! [ "$repo_hook" -ef "$0" ]; then
     # exec bypasses the EXIT trap; explicitly remove merge temps first.
     if [ -n "${tmp_head:-}" ]; then rm -f "$tmp_head" "${tmp_merge:-}"; fi
-    export SECRET_GUARD_CHAINED=1
+    export SECRET_GUARD_CHAINED="$common_dir"
     exec "$repo_hook" "$@"
   fi
 fi
