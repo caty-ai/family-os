@@ -4,6 +4,7 @@
 # checks — the scripts themselves are canonical; do not add logic here.
 test:
 	bash tools/selftest_repo_state_gen.sh
+	bash tools/selftest_secret_guard.sh
 	python3 -B tools/selftest_repo_state_audit.py
 	python3 -B tools/selftest_check_registry.py
 	python3 -B tools/selftest_family_footer.py
